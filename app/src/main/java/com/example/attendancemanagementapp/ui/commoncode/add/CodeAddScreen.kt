@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.view
+package com.example.attendancemanagementapp.ui.commoncode.add
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,14 +18,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.attendancemanagementapp.view.component.BasicLongButton
-import com.example.attendancemanagementapp.view.component.BasicTopBar
-import com.example.attendancemanagementapp.view.component.BigEditBar
-import com.example.attendancemanagementapp.view.component.EditBar
-import com.example.attendancemanagementapp.view.component.RadioEditBar
-import com.example.attendancemanagementapp.view.component.SearchEditBar
-import com.example.attendancemanagementapp.viewmodel.CodeInfoField
-import com.example.attendancemanagementapp.viewmodel.CodeViewModel
+import com.example.attendancemanagementapp.ui.components.BasicLongButton
+import com.example.attendancemanagementapp.ui.components.BasicTopBar
+import com.example.attendancemanagementapp.ui.components.BigEditBar
+import com.example.attendancemanagementapp.ui.components.EditBar
+import com.example.attendancemanagementapp.ui.components.RadioEditBar
+import com.example.attendancemanagementapp.ui.components.SearchEditBar
+import com.example.attendancemanagementapp.ui.commoncode.CodeInfoField
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 
 @Preview
 @Composable

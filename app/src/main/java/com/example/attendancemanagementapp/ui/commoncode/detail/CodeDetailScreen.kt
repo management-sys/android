@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.view
+package com.example.attendancemanagementapp.ui.commoncode.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,10 +28,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.attendancemanagementapp.view.component.BasicButton
-import com.example.attendancemanagementapp.view.component.BasicDialog
-import com.example.attendancemanagementapp.view.component.BasicTopBar
-import com.example.attendancemanagementapp.viewmodel.CodeViewModel
+import com.example.attendancemanagementapp.ui.components.BasicButton
+import com.example.attendancemanagementapp.ui.components.BasicDialog
+import com.example.attendancemanagementapp.ui.components.BasicTopBar
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
