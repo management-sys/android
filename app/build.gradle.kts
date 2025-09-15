@@ -74,4 +74,12 @@ dependencies {
 
     // Hilt + Compose 연동
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    // 서버 통신 위해 Retrofit2 추가
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
+
+    // JSON 파싱 위해 Moshi 추가
+    implementation("com.squareup.moshi:moshi:1.15.1")
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
 }
