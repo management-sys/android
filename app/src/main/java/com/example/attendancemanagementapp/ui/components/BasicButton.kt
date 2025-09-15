@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.view.component
+package com.example.attendancemanagementapp.ui.components
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
