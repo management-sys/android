@@ -18,7 +18,7 @@ object CommonCodeDTO {
         val content: List<CommonCodesInfo>  // 공통코드 목록
     )
 
-    // 임시 공통코드 데이터
+    // 임시 공통코드 상세 데이터
     data class CodeInfo(
         val code: String = "",          // 코드
         val codeName: String = "",      // 코드명
@@ -26,6 +26,6 @@ object CommonCodeDTO {
         val upperCodeName: String = "", // 상위코드명
         val codeValue: String = "",     // 코드값
         val description: String = "",   // 설명
-        val isUse: Boolean = true      // 사용여부
+        val isUse: Boolean = true       // 사용여부
     )
 }
