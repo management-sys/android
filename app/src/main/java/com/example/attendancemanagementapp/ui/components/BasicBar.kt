@@ -28,6 +28,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.attendancemanagementapp.ui.theme.DarkGray
@@ -81,6 +82,28 @@ fun BasicTopBar(
             }
         }
     )
+}
+
+/* 두가지 정보 출력 바 */
+@Composable
+fun TwoInfoBar(value1: String, value2: String, color: Color = Color.Black, fontSize: TextUnit = 16.sp) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = value1,
+            fontSize = fontSize,
+            color = color
+        )
+
+        Text(
+            text = value2,
+            fontSize = fontSize,
+            color = if (value2 == "사용중") MainBlue else color
+        )
+    }
 }
 
 /* 정보 수정 바 */
