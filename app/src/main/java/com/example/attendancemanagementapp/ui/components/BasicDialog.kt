@@ -16,7 +16,8 @@ fun BasicDialog(
     text: String = "",          // 내용
     onDismiss: () -> Unit,
     onClickConfirm: () -> Unit
-) {    AlertDialog(
+) {
+    AlertDialog(
         title = {
             Text(
                 text = title,
