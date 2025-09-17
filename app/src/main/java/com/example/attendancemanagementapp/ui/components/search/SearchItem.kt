@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,38 +22,37 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
-import com.example.attendancemanagementapp.ui.commoncode.SearchField
+import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.LightBlue
 import com.example.attendancemanagementapp.ui.theme.LightGray
-import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.MiddleBlue
-import com.example.attendancemanagementapp.ui.theme.TextGray
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 검색바 */
 @Composable
-fun SearchBar(value: String, onValueChange: (String) -> Unit, onClickSearch: () -> Unit) {
+fun SearchBar(value: String, onValueChange: (String) -> Unit, onClickSearch: () -> Unit, onClickInit: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -85,7 +86,7 @@ fun SearchBar(value: String, onValueChange: (String) -> Unit, onClickSearch: () 
 
         IconButton(
             modifier = Modifier.weight(0.12f),
-            onClick = { onValueChange("") }
+            onClick = { onClickInit() }
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
@@ -98,12 +99,12 @@ fun SearchBar(value: String, onValueChange: (String) -> Unit, onClickSearch: () 
 
 /* 카테고리 칩 */
 @Composable
-fun CategoryChip(selected: String, name: String, onClick: (String) -> Unit) {
-    val selected = selected == name
+fun CategoryChip(selected: SearchType, name: String, onClick: () -> Unit) {
+    val selected = selected.label == name
 
     FilterChip(
         selected = selected,
-        onClick = { onClick(name) },
+        onClick = { onClick() },
         label = {
             Text(
                 text = name,
@@ -134,6 +135,9 @@ fun CategorySearchBar(searchUiState: SearchUiState) {
         onValueChange = { searchUiState.onValueChange(it) },
         onClickSearch = {
             searchUiState.onClickSearch()
+        },
+        onClickInit = {
+            searchUiState.onClickInit()
         }
     )
 
@@ -143,9 +147,9 @@ fun CategorySearchBar(searchUiState: SearchUiState) {
     ) {
         items(searchUiState.categories) { category ->
             CategoryChip(
-                selected = searchUiState.selected,
-                name = category,
-                onClick = { searchUiState.onClickCategory(it) }
+                selected = searchUiState.selectedCategory,
+                name = category.label,
+                onClick = { searchUiState.onClickCategory(category) }
             )
         }
     }
@@ -154,6 +158,8 @@ fun CategorySearchBar(searchUiState: SearchUiState) {
 /* 공통코드 검색 디알로그 */
 @Composable
 fun CommonCodeDialog(
+    listState: LazyListState,
+    isLoading: Boolean,
     searchUiState: SearchUiState,
     commonCodes: List<CommonCodeDTO.CommonCodesInfo>,
     onDismiss: () -> Unit = {},
@@ -175,7 +181,8 @@ fun CommonCodeDialog(
             Spacer(Modifier.height(15.dp))
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                state = listState
             ) {
                 items(commonCodes) { item ->
                     CodeInfoItem(
@@ -185,6 +192,19 @@ fun CommonCodeDialog(
                             onDismiss()
                         }
                     )
+                }
+
+                if (isLoading) {
+                    item {
+                        Box(
+                            Modifier.fillMaxWidth().padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) { CircularProgressIndicator() }
+                    }
+                }
+
+                item {
+                    Spacer(Modifier.height(5.dp))
                 }
             }
         }

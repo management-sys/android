@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.ui.commoncode.detail
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,8 +12,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,6 +53,8 @@ private fun Preview_CodeDetailScreen() {
 fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel) {
     val codeDetailUiState by codeViewModel.codeDetailUiState.collectAsState()
 
+    var openDialog by remember { mutableStateOf(false) }    // 삭제 확인 디알로그 열림 상태
+
     val infos = listOf(
         Pair("상위코드", codeDetailUiState.codeInfo.upperCode),
         Pair("상위코드명", codeDetailUiState.codeInfo.upperCodeName),
@@ -55,10 +62,8 @@ fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel)
         Pair("코드명", codeDetailUiState.codeInfo.codeName),
         Pair("코드 설정값", codeDetailUiState.codeInfo.codeValue),
         Pair("설명", codeDetailUiState.codeInfo.description),
-        Pair("사용여부", if (codeDetailUiState.codeInfo.isUse) "사용중" else "미사용")
+        Pair("사용여부", codeDetailUiState.codeInfo.isUse)
     )
-
-    var openDialog by remember { mutableStateOf(false) }    // 삭제 확인 디알로그 열림 상태
 
     if (openDialog) {
         BasicDialog(
@@ -67,7 +72,10 @@ fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel)
                 openDialog = false
             },
             onClickConfirm = {
-                codeViewModel.deleteCode()
+                codeViewModel.deleteCode(isSuccess = {
+                    codeViewModel.initSearchState()
+                    navController.popBackStack()
+                })
             }
         )
     }
@@ -88,7 +96,7 @@ fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel)
         ) {
             Spacer(modifier = Modifier.height(32.dp))
             for (info in infos) {
-                InfoBar(name = info.first, value = info.second)
+                InfoBar(name = info.first, value = info.second ?: "")
                 Spacer(modifier = Modifier.height(10.dp))
             }
 

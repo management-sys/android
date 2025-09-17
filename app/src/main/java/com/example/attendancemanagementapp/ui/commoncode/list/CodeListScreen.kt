@@ -1,26 +1,28 @@
 package com.example.attendancemanagementapp.ui.commoncode.list
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,22 +30,19 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
-import com.example.attendancemanagementapp.ui.theme.MainBlue
+import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
-import com.example.attendancemanagementapp.ui.commoncode.SearchField
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
-import com.example.attendancemanagementapp.ui.components.search.CategoryChip
 import com.example.attendancemanagementapp.ui.components.search.CategorySearchBar
-import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +62,20 @@ fun CodeListScreen(navController: NavController, codeViewModel: CodeViewModel) {
 
     val codeListUiState by codeViewModel.codeListUiState.collectAsState()
 
-    val categories = listOf("전체", "상위코드", "상위코드 이름", "코드", "코드 이름") // 검색 카테고리 칩
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val lastVisiblaIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
+        }.distinctUntilChanged().collect { shouldLoad ->
+            if (shouldLoad && !codeListUiState.isLoading && codeListUiState.currentPage < codeListUiState.totalPage) {
+                codeViewModel.getCodes()
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -75,7 +87,10 @@ fun CodeListScreen(navController: NavController, codeViewModel: CodeViewModel) {
             )
         },
         floatingActionButton = {
-            BasicFloatingButton(onClick = { navController.navigate("codeAdd") })
+            BasicFloatingButton(onClick = {
+                navController.navigate("codeAdd")
+                codeViewModel.initSearchState()
+            })
         }
     ) { paddingValues ->
         Column(
@@ -84,34 +99,49 @@ fun CodeListScreen(navController: NavController, codeViewModel: CodeViewModel) {
             Spacer(Modifier.height(20.dp))
             CategorySearchBar(
                 searchUiState = SearchUiState(
-                    value = codeListUiState.searchText.value,
-                    onValueChange = { codeViewModel.onSearchFieldChange(field = SearchField.SEARCHTEXT, input = it) },
+                    value = codeListUiState.searchText,
+                    onValueChange = { codeViewModel.onSearchTextChange(it) },
                     onClickSearch = {
                         // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        codeViewModel.getFilteredCode()
+                        codeViewModel.getCodes()
                         keyboardController?.hide()
                         focusManager.clearFocus(force = true)
                     },
-                    selected = codeListUiState.selectedFilter.value,
-                    categories = categories,
-                    onClickCategory = { codeViewModel.onSearchFieldChange(field = SearchField.FILTER, input = it) }
+                    onClickInit = {
+                        codeViewModel.onSearchTextChange("")
+                        codeViewModel.getCodes()
+                    },
+                    selectedCategory = codeListUiState.selectedCategory,
+                    categories = SearchType.entries,
+                    onClickCategory = { codeViewModel.onSearchTypeChange(it) }
                 )
             )
 
             Spacer(Modifier.height(15.dp))
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                state = listState
             ) {
                 items(codeListUiState.codes) { item ->
                     CodeInfoItem(
                         upperCodeInfo = item,
                         onClick = {
+                            codeViewModel.getCodeInfo(item.code)
                             navController.navigate("codeDetail")
-                            codeViewModel.getCodeInfo()
                         }
                     )
                 }
+
+                if (codeListUiState.isLoading) {
+                    item {
+                        Box(
+                            Modifier.fillMaxWidth().padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) { CircularProgressIndicator() }
+                    }
+                }
+
                 item {
                     Spacer(Modifier.height(70.dp))
                 }
@@ -131,7 +161,7 @@ private fun CodeInfoItem(upperCodeInfo: CommonCodeDTO.CommonCodesInfo, onClick: 
         onClick = onClick
     ) {
         Spacer(modifier = Modifier.height(12.dp))
-        TwoInfoBar(upperCodeInfo.upperCode ?: "-", upperCodeInfo.upperCodeName ?: "-")
+        TwoInfoBar(upperCodeInfo.upperCode ?: "", upperCodeInfo.upperCodeName ?: "")
         TwoInfoBar(upperCodeInfo.code, upperCodeInfo.codeName)
         Spacer(modifier = Modifier.height(14.dp))
         TwoInfoBar(upperCodeInfo.registerDate, upperCodeInfo.isUse, TextGray)
