@@ -9,7 +9,7 @@ import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.commoncode.add.CodeAddUiState
 import com.example.attendancemanagementapp.ui.commoncode.detail.CodeDetailUiState
 import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditUiState
-import com.example.attendancemanagementapp.ui.commoncode.list.CodeListUiState
+import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.io.path.Path
 
 enum class Target { ADD, EDIT }
 enum class CodeInfoField { CODE, CODENAME, CODEVALUE, DESCRIPTION }
@@ -32,8 +31,8 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
     private val _snackbar = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 1)
     val snackbar = _snackbar.asSharedFlow()
 
-    private val _codeListUiState = MutableStateFlow(CodeListUiState())
-    val codeListUiState = _codeListUiState.asStateFlow()
+    private val _codeManageUiState = MutableStateFlow(CodeManageUiState())
+    val codeListUiState = _codeManageUiState.asStateFlow()
     private val _codeDetailUiState = MutableStateFlow(CodeDetailUiState())
     val codeDetailUiState = _codeDetailUiState.asStateFlow()
     private val _codeEditUiState = MutableStateFlow(CodeEditUiState())
@@ -57,19 +56,19 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
 
     /* 검색어, 카테고리 상태 초기화 */
     fun initSearchState() {
-        _codeListUiState.value = CodeListUiState()
+        _codeManageUiState.value = CodeManageUiState()
         getCodes()  // 전체 코드 목록 가져옴
     }
 
     /* 검색어 입력 필드 값 변경 */
     fun onSearchTextChange(input: String) {
-        _codeListUiState.update { it.copy(searchText = input, currentPage = 0) }
+        _codeManageUiState.update { it.copy(searchText = input, currentPage = 0) }
     }
 
     /* 검색 카테고리 값 변경 */
     fun onSearchTypeChange(selected: SearchType) {
-        _codeListUiState.update { it.copy(selectedCategory = selected, currentPage = 0) }
-        if (_codeListUiState.value.searchText != "") {  // 검색어가 빈 값이면 목록 조회 안 함
+        _codeManageUiState.update { it.copy(selectedCategory = selected, currentPage = 0) }
+        if (_codeManageUiState.value.searchText != "") {  // 검색어가 빈 값이면 목록 조회 안 함
             getCodes()
         }
     }
@@ -133,10 +132,10 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
 
     /* 공통코드 목록 조회 */
     fun getCodes() {
-        val state = _codeListUiState.value
+        val state = _codeManageUiState.value
 
         viewModelScope.launch {
-            _codeListUiState.update { it.copy(isLoading = true) }
+            _codeManageUiState.update { it.copy(isLoading = true) }
 
             repository.getCommonCodes(
                 state.selectedCategory,
@@ -146,10 +145,10 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                 result
                     .onSuccess { data ->
                         if (state.currentPage == 0) {
-                            _codeListUiState.update { it.copy(codes = data.content, currentPage = it.currentPage + 1, totalPage = data.totalPages, isLoading = false) }
+                            _codeManageUiState.update { it.copy(codes = data.content, currentPage = it.currentPage + 1, totalPage = data.totalPages, isLoading = false) }
                         }
                         else {
-                            _codeListUiState.update { it.copy(codes = it.codes + data.content, currentPage = it.currentPage + 1, isLoading = false) }
+                            _codeManageUiState.update { it.copy(codes = it.codes + data.content, currentPage = it.currentPage + 1, isLoading = false) }
                         }
                         Log.d(TAG, "공통코드 목록 조회 성공: ${state.currentPage + 1}/${data.totalPages}, 검색(${state.selectedCategory}, ${state.searchText})\n${data.content}")
                     }

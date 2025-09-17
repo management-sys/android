@@ -1,9 +1,9 @@
-package com.example.attendancemanagementapp.ui.commoncode.list
+package com.example.attendancemanagementapp.ui.commoncode.manage
 
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 
-data class CodeListUiState(
+data class CodeManageUiState(
     val codes: List<CommonCodeDTO.CommonCodesInfo> = emptyList(),   // 공통코드 목록
     val searchText: String = "",                                    // 검색어
     val selectedCategory: SearchType = SearchType.ALL,              // 선택한 카테고리

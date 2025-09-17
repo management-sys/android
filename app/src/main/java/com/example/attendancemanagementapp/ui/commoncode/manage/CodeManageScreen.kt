@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.commoncode.list
+package com.example.attendancemanagementapp.ui.commoncode.manage
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,13 +50,13 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 private fun Preview_CodeManageScreen() {
     val navController = rememberNavController()
     val codeViewModel: CodeViewModel = viewModel()
-    CodeListScreen(navController, codeViewModel)
+    CodeManageScreen(navController, codeViewModel)
 }
 
 /* 공통코드 관리 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CodeListScreen(navController: NavController, codeViewModel: CodeViewModel) {
+fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel) {
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 

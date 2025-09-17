@@ -17,7 +17,7 @@ import com.example.attendancemanagementapp.ui.commoncode.add.CodeAddScreen
 import com.example.attendancemanagementapp.ui.commoncode.detail.CodeDetailScreen
 import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditScreen
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
-import com.example.attendancemanagementapp.ui.commoncode.list.CodeListScreen
+import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageScreen
 
 @Composable
 fun MainNavGraph(navController: NavHostController = rememberNavController()) {
@@ -36,10 +36,10 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = "codeList",
+            startDestination = "codeManage",
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable("codeList") { CodeListScreen(navController, codeViewModel) }     // 공통코드 목록 화면
+            composable("codeManage") { CodeManageScreen(navController, codeViewModel) } // 공통코드 목록 화면
             composable("codeDetail") { CodeDetailScreen(navController, codeViewModel) } // 공통코드 상세 화면
             composable("codeEdit") { CodeEditScreen(navController, codeViewModel) }     // 공통코드 수정 화면
             composable("codeAdd") { CodeAddScreen(navController, codeViewModel) }       // 공통코드 등록 화면
