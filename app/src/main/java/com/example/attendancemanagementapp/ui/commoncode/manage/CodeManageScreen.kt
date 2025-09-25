@@ -11,14 +11,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,11 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.theme.TextGray
@@ -41,17 +37,10 @@ import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.CategorySearchBar
+import com.example.attendancemanagementapp.ui.components.search.CodeSearchUiState
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
+import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
-
-@Preview
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun Preview_CodeManageScreen() {
-    val navController = rememberNavController()
-    val codeViewModel: CodeViewModel = viewModel()
-    CodeManageScreen(navController, codeViewModel)
-}
 
 /* 공통코드 관리 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,7 +49,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
-    val codeListUiState by codeViewModel.codeListUiState.collectAsState()
+    val codeManageUiState by codeViewModel.codeManageUiState.collectAsState()
 
     val listState = rememberLazyListState()
 
@@ -71,9 +60,15 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
             val total = info.totalItemsCount
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !codeListUiState.isLoading && codeListUiState.currentPage < codeListUiState.totalPage) {
+            if (shouldLoad && !codeManageUiState.isLoading && codeManageUiState.currentPage < codeManageUiState.totalPage) {
                 codeViewModel.getCodes()
             }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            codeViewModel.initSearchState()
         }
     }
 
@@ -81,9 +76,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
         topBar = {
             BasicTopBar(
                 title = "공통코드 관리",
-                actIcon = Icons.Default.Menu,
-                onClickNavIcon = { navController.popBackStack() },
-                onClickActIcon = { /* TODO: [UI] 메뉴 아이콘 클릭 이벤트 - 드로어 열림 */ }
+                onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         },
         floatingActionButton = {
@@ -96,22 +89,23 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
         Column(
             modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp)
         ) {
-            Spacer(Modifier.height(20.dp))
             CategorySearchBar(
-                searchUiState = SearchUiState(
-                    value = codeListUiState.searchText,
-                    onValueChange = { codeViewModel.onSearchTextChange(it) },
-                    onClickSearch = {
-                        // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        codeViewModel.getCodes()
-                        keyboardController?.hide()
-                        focusManager.clearFocus(force = true)
-                    },
-                    onClickInit = {
-                        codeViewModel.onSearchTextChange("")
-                        codeViewModel.getCodes()
-                    },
-                    selectedCategory = codeListUiState.selectedCategory,
+                codeSearchUiState = CodeSearchUiState(
+                    searchUiState = SearchUiState(
+                        value = codeManageUiState.searchText,
+                        onValueChange = { codeViewModel.onSearchTextChange(it) },
+                        onClickSearch = {
+                            // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
+                            codeViewModel.getCodes()
+                            keyboardController?.hide()
+                            focusManager.clearFocus(force = true)
+                        },
+                        onClickInit = {
+                            codeViewModel.onSearchTextChange("")
+                            codeViewModel.getCodes()
+                        }
+                    ),
+                    selectedCategory = codeManageUiState.selectedCategory,
                     categories = SearchType.entries,
                     onClickCategory = { codeViewModel.onSearchTypeChange(it) }
                 )
@@ -123,7 +117,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 state = listState
             ) {
-                items(codeListUiState.codes) { item ->
+                items(codeManageUiState.codes) { item ->
                     CodeInfoItem(
                         upperCodeInfo = item,
                         onClick = {
@@ -133,7 +127,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                     )
                 }
 
-                if (codeListUiState.isLoading) {
+                if (codeManageUiState.isLoading) {
                     item {
                         Box(
                             Modifier.fillMaxWidth().padding(16.dp),

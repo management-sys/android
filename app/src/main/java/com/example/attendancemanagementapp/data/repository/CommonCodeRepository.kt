@@ -12,7 +12,7 @@ import javax.inject.Inject
 class CommonCodeRepository @Inject constructor() {
     private val jsonService: JsonService = RetrofitInstance.retrofit.create(JsonService::class.java)
 
-    // 공통코드 목록 조회
+    // 공통코드 목록 조회 및 검색
     fun getCommonCodes(searchType: SearchType, searchKeyword: String, page: Int): Flow<Result<CommonCodeDTO.GetCommonCodesResponse>> = flow {
         val response = jsonService.getCommonCodes(
             searchType = searchType.toString(),

@@ -37,15 +37,7 @@ import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
-
-@Preview
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun Preview_CodeDetailScreen() {
-    val navController = rememberNavController()
-    val codeViewModel: CodeViewModel = viewModel()
-    CodeDetailScreen(navController, codeViewModel)
-}
+import com.example.attendancemanagementapp.ui.components.InfoBar
 
 /* 공통코드 상세 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,7 +86,6 @@ fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel)
         Column(
             modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp)
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
             for (info in infos) {
                 InfoBar(name = info.first, value = info.second ?: "")
                 Spacer(modifier = Modifier.height(10.dp))
@@ -107,27 +98,5 @@ fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel)
                 BasicButton(name = "수정", onClick = { navController.navigate("codeEdit") })
             }
         }
-    }
-}
-
-/* 정보 출력 바 */
-@Composable
-private fun InfoBar(name: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = name,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(0.35f)
-        )
-
-        Text(
-            text = value,
-            fontSize = 16.sp,
-            modifier = Modifier.weight(0.65f)
-        )
     }
 }

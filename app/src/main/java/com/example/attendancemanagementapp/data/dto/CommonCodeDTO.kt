@@ -13,12 +13,6 @@ object CommonCodeDTO {
         @Json(name = "useAtNm") val isUse: String = ""                  // 사용여부: 사용중, 미사용
     )
 
-    // 공통코드 목록 조회 응답
-    data class GetCommonCodesResponse(
-        val content: List<CommonCodesInfo>,     // 공통코드 목록
-        val totalPages: Int                     // 총 페이지 개수
-    )
-
     // 공통코드 상세 데이터
     data class CommonCodeInfo(
         val code: String = "",                                          // 코드
@@ -28,6 +22,12 @@ object CommonCodeDTO {
         val codeValue: String? = "",                                    // 코드값
         @Json(name = "dc") val description: String? = "",               // 설명
         @Json(name = "useAtNm") val isUse: String = ""                  // 사용여부
+    )
+
+    // 공통코드 목록 조회 응답
+    data class GetCommonCodesResponse(
+        val content: List<CommonCodesInfo>,     // 공통코드 목록
+        val totalPages: Int                     // 총 페이지 개수
     )
 
     // 공통코드 등록, 수정 요청

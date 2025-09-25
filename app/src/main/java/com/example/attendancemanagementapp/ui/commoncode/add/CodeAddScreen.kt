@@ -1,6 +1,5 @@
 package com.example.attendancemanagementapp.ui.commoncode.add
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,14 +20,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -40,17 +35,10 @@ import com.example.attendancemanagementapp.ui.commoncode.CodeInfoField
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.commoncode.Target
 import com.example.attendancemanagementapp.ui.components.search.CommonCodeDialog
+import com.example.attendancemanagementapp.ui.components.search.CodeSearchUiState
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
+import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlin.text.compareTo
-
-@Preview
-@Composable
-private fun Preview_CodeAddScreen() {
-    val navController = rememberNavController()
-    val codeViewModel: CodeViewModel = viewModel()
-    CodeAddScreen(navController, codeViewModel)
-}
 
 /* 공통코드 등록 화면 */
 @Composable
@@ -59,7 +47,7 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
     val codeAddUiState by codeViewModel.codeAddUiState.collectAsState()
-    val codeListUiState by codeViewModel.codeListUiState.collectAsState()
+    val codeListUiState by codeViewModel.codeManageUiState.collectAsState()
 
     var openDialog by remember { mutableStateOf(false) }    // 공통코드 검색 디알로그 열림 상태
 
@@ -88,19 +76,21 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
         CommonCodeDialog(
             listState = listState,
             isLoading = codeListUiState.isLoading,
-            searchUiState = SearchUiState(
-                value = codeListUiState.searchText,
-                onValueChange = { codeViewModel.onSearchTextChange(it) },
-                onClickSearch = {
-                    // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                    codeViewModel.getCodes()
-                    keyboardController?.hide()
-                    focusManager.clearFocus(force = true)
-                },
-                onClickInit = {
-                    codeViewModel.onSearchTextChange("")
-                    codeViewModel.getCodes()
-                },
+            codeSearchUiState = CodeSearchUiState(
+                searchUiState = SearchUiState(
+                    value = codeListUiState.searchText,
+                    onValueChange = { codeViewModel.onSearchTextChange(it) },
+                    onClickSearch = {
+                        // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
+                        codeViewModel.getCodes()
+                        keyboardController?.hide()
+                        focusManager.clearFocus(force = true)
+                    },
+                    onClickInit = {
+                        codeViewModel.onSearchTextChange("")
+                        codeViewModel.getCodes()
+                    }
+                ),
                 selectedCategory = codeListUiState.selectedCategory,
                 categories = SearchType.entries,
                 onClickCategory = { codeViewModel.onSearchTypeChange(it) }
@@ -118,7 +108,7 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
         topBar = {
             BasicTopBar(
                 title = "공통코드 등록",
-                onClickNavIcon = { navController.popBackStack() }
+                onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         }
     ) { paddingValues ->
@@ -129,7 +119,6 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Spacer(modifier = Modifier.height(22.dp))
                 SearchEditBar(name = "상위코드", value = codeAddUiState.inputData.upperCode ?: "", onClick = { openDialog = true } )
 
                 EditBar(name = "상위코드명", value = codeAddUiState.inputData.upperCodeName ?: "", enabled = false)

@@ -32,7 +32,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
     val snackbar = _snackbar.asSharedFlow()
 
     private val _codeManageUiState = MutableStateFlow(CodeManageUiState())
-    val codeListUiState = _codeManageUiState.asStateFlow()
+    val codeManageUiState = _codeManageUiState.asStateFlow()
     private val _codeDetailUiState = MutableStateFlow(CodeDetailUiState())
     val codeDetailUiState = _codeDetailUiState.asStateFlow()
     private val _codeEditUiState = MutableStateFlow(CodeEditUiState())
