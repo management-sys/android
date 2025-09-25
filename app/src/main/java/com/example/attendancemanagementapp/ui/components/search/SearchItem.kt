@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,8 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,19 +45,18 @@ import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.LightBlue
 import com.example.attendancemanagementapp.ui.theme.LightGray
 import com.example.attendancemanagementapp.ui.theme.MiddleBlue
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 검색바 */
 @Composable
-fun SearchBar(value: String, onValueChange: (String) -> Unit, onClickSearch: () -> Unit, onClickInit: () -> Unit) {
+fun SearchBar(searchUiState: SearchUiState, hint: String = "검색어를 입력하세요") {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
             modifier = Modifier.weight(0.88f),
-            value = value,
-            onValueChange = { onValueChange(it) },
+            value = searchUiState.value,
+            onValueChange = { searchUiState.onValueChange(it) },
             singleLine = true,
             shape = RoundedCornerShape(90.dp),
             colors = TextFieldDefaults.colors(
@@ -71,7 +67,7 @@ fun SearchBar(value: String, onValueChange: (String) -> Unit, onClickSearch: () 
             ),
             placeholder = {
                 Text(
-                    text = "검색어를 입력하세요",
+                    text = hint,
                     fontSize = 15.sp,
                     color = DarkGray
                 )
@@ -80,13 +76,13 @@ fun SearchBar(value: String, onValueChange: (String) -> Unit, onClickSearch: () 
                 imeAction = ImeAction.Search
             ),
             keyboardActions = KeyboardActions(
-                onSearch = { onClickSearch() }
+                onSearch = { searchUiState.onClickSearch() }
             )
         )
 
         IconButton(
             modifier = Modifier.weight(0.12f),
-            onClick = { onClickInit() }
+            onClick = { searchUiState.onClickInit() }
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
@@ -129,27 +125,18 @@ fun CategoryChip(selected: SearchType, name: String, onClick: () -> Unit) {
 
 /* 카테고리 선택 포함 검색바 */
 @Composable
-fun CategorySearchBar(searchUiState: SearchUiState) {
-    SearchBar(
-        value = searchUiState.value,
-        onValueChange = { searchUiState.onValueChange(it) },
-        onClickSearch = {
-            searchUiState.onClickSearch()
-        },
-        onClickInit = {
-            searchUiState.onClickInit()
-        }
-    )
+fun CategorySearchBar(codeSearchUiState: CodeSearchUiState) {
+    SearchBar(searchUiState = codeSearchUiState.searchUiState)
 
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(searchUiState.categories) { category ->
+        items(codeSearchUiState.categories) { category ->
             CategoryChip(
-                selected = searchUiState.selectedCategory,
+                selected = codeSearchUiState.selectedCategory,
                 name = category.label,
-                onClick = { searchUiState.onClickCategory(category) }
+                onClick = { codeSearchUiState.onClickCategory(category) }
             )
         }
     }
@@ -160,7 +147,7 @@ fun CategorySearchBar(searchUiState: SearchUiState) {
 fun CommonCodeDialog(
     listState: LazyListState,
     isLoading: Boolean,
-    searchUiState: SearchUiState,
+    codeSearchUiState: CodeSearchUiState,
     commonCodes: List<CommonCodeDTO.CommonCodesInfo>,
     onDismiss: () -> Unit = {},
     onClickItem: (CommonCodeDTO.CommonCodesInfo) -> Unit = {}
@@ -176,7 +163,7 @@ fun CommonCodeDialog(
                 .fillMaxWidth()
                 .fillMaxHeight(0.9f),
         ) {
-            CategorySearchBar(searchUiState = searchUiState)
+            CategorySearchBar(codeSearchUiState = codeSearchUiState)
 
             Spacer(Modifier.height(15.dp))
             LazyColumn(

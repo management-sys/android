@@ -13,12 +13,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 
 /* 기본 플로팅 버튼 */
@@ -74,6 +77,22 @@ fun BasicLongButton(name: String, onClick: () -> Unit) {
             text = name,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+/* 기본 텍스트 버튼 */
+@Composable
+fun BasicTextButton(name: String, onClick: () -> Unit, color: Color = DarkGray) {
+    TextButton(
+        modifier = Modifier.padding(end = 10.dp),
+        onClick = { onClick() }
+    ) {
+        Text(
+            text = name,
+            fontSize = 14.sp,
+            color = color,
+            textDecoration = TextDecoration.Underline
         )
     }
 }

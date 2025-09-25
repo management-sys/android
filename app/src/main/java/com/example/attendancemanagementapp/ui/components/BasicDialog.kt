@@ -42,7 +42,7 @@ fun BasicDialog(
                 }
             ) {
                 Text(
-                    text = "삭제",
+                    text = "확인",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Red

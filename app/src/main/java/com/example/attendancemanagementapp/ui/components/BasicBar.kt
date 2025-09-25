@@ -3,17 +3,27 @@ package com.example.attendancemanagementapp.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.LaptopWindows
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
@@ -31,6 +41,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.attendancemanagementapp.ui.theme.DarkBlue
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
@@ -46,7 +57,7 @@ fun BasicTopBar(
     onClickActIcon: () -> Unit = {} // 액션 아이콘 클릭 이벤트
 ) {
     CenterAlignedTopAppBar(
-        modifier = Modifier.shadow(elevation = 1.dp),
+        windowInsets = WindowInsets(0),
         title = {
             Text(
                 text = title,
@@ -82,6 +93,102 @@ fun BasicTopBar(
             }
         }
     )
+}
+
+/* 드로어 상단바 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DrawerTopBar(
+    onClickNavIcon: () -> Unit,     // 드로어 아이콘 클릭 이벤트
+    onClickActIcon: () -> Unit = {} // 마이페이지 아이콘 클릭 이벤트
+) {
+    CenterAlignedTopAppBar(
+        windowInsets = WindowInsets(0),
+        title = {},
+        navigationIcon = {
+            IconButton(
+                onClick = {
+                    onClickNavIcon()
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "드로어 버튼"
+                )
+            }
+        },
+        actions = {
+            IconButton(
+                onClick = {
+                    onClickActIcon()
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "마이페이지 버튼"
+                )
+            }
+        }
+    )
+}
+
+/* 기본 하단 바 */
+@Composable
+fun BasicBottomBar(
+    selected: Int,
+    onSelected: (Int) -> Unit
+) {
+    val itemColors = NavigationBarItemDefaults.colors(
+        indicatorColor = DarkBlue,      // 선택된 버튼 배경(빨간색)
+        selectedIconColor = Color.White // 선택 아이콘 색
+    )
+
+    NavigationBar(
+        windowInsets = WindowInsets(0)
+    ) {
+        NavigationBarItem(
+            selected = selected == 0,
+            onClick = { onSelected(0) },
+            icon = { Icon(imageVector = Icons.Outlined.Timer, contentDescription = "근무체크 아이콘")},
+            label = { Text("근무체크") },
+            colors = itemColors
+        )
+        NavigationBarItem(
+            selected = selected == 1,
+            onClick = { onSelected(1) },
+            icon = { Icon(imageVector = Icons.Outlined.CalendarMonth, contentDescription = "캘린더 아이콘")},
+            label = { Text("캘린더") },
+            colors = itemColors
+        )
+        NavigationBarItem(
+            selected = selected == 2,
+            onClick = { onSelected(2) },
+            icon = { Icon(imageVector = Icons.Outlined.LaptopWindows, contentDescription = "프로젝트 아이콘")},
+            label = { Text("프로젝트") },
+            colors = itemColors
+        )
+    }
+}
+
+/* 정보 출력 바 */
+@Composable
+fun InfoBar(name: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 13.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = name,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Text(
+            text = value,
+            fontSize = 16.sp
+        )
+    }
 }
 
 /* 두가지 정보 출력 바 */
