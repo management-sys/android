@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.commoncode
+package com.example.attendancemanagementapp.ui.code
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -6,10 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.retrofit.param.SearchType
-import com.example.attendancemanagementapp.ui.commoncode.add.CodeAddUiState
-import com.example.attendancemanagementapp.ui.commoncode.detail.CodeDetailUiState
-import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditUiState
-import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageUiState
+import com.example.attendancemanagementapp.ui.code.add.CodeAddUiState
+import com.example.attendancemanagementapp.ui.code.detail.CodeDetailUiState
+import com.example.attendancemanagementapp.ui.code.edit.CodeEditUiState
+import com.example.attendancemanagementapp.ui.code.manage.CodeManageUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

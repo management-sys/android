@@ -1,5 +1,7 @@
 package com.example.attendancemanagementapp.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -10,8 +12,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,6 +27,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.attendancemanagementapp.ui.theme.DarkGray
+import com.example.attendancemanagementapp.ui.theme.DisableGray
+import com.example.attendancemanagementapp.ui.theme.LightBlue
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 
 /* 기본 플로팅 버튼 */
@@ -51,6 +58,28 @@ fun BasicButton(name: String, onClick: () -> Unit) {
             containerColor = MainBlue,
             contentColor = Color.White
         )
+    ) {
+        Text(
+            text = name,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+/* 부 버튼 */
+@Composable
+fun SubButton(name: String, onClick: () -> Unit) {
+    OutlinedButton(
+        modifier = Modifier.width(60.dp).height(40.dp),
+        contentPadding = PaddingValues(0.dp),
+        onClick = { onClick() },
+        shape = RoundedCornerShape(10.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = LightBlue,
+            contentColor = MainBlue
+        ),
+        border = BorderStroke(width = 1.dp, color = MainBlue)
     ) {
         Text(
             text = name,
@@ -95,4 +124,26 @@ fun BasicTextButton(name: String, onClick: () -> Unit, color: Color = DarkGray) 
             textDecoration = TextDecoration.Underline
         )
     }
+}
+
+/* 기본 체크박스 */
+@Composable
+fun BasicCheckbox(enabled: Boolean = true, isChecked: Boolean, onChecked: (Boolean) -> Unit) {
+    Checkbox(
+        enabled = enabled,
+        checked = isChecked,
+        onCheckedChange = { onChecked(it) },
+        colors = if (enabled) {
+            CheckboxDefaults.colors(
+                checkedColor = MainBlue,
+                checkmarkColor = Color.White
+            )
+        }
+        else {
+            CheckboxDefaults.colors(
+                disabledCheckedColor = DisableGray,
+                checkmarkColor = DarkGray
+            )
+        }
+    )
 }

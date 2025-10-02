@@ -7,10 +7,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -20,11 +26,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.attendancemanagementapp.data.dto.HrDTO
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTextButton
@@ -33,6 +42,7 @@ import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
 import com.example.attendancemanagementapp.ui.hr.HrViewModel
 import com.example.attendancemanagementapp.util.rememberOnce
+import java.util.Locale
 
 @Preview
 @Composable
@@ -88,11 +98,35 @@ fun EmployeeDetailScreen(navController: NavController, hrViewModel: HrViewModel)
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(paddingValues).verticalScroll(rememberScrollState()).padding(horizontal = 26.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(15.dp)
+        ) {
+            EmployeeInfoCard(employeeDetailUiState)
+            SalaryInfoCard(employeeDetailUiState.employeeInfo.salaries)
+            UpdateInitButtons(
+                onClickUpdate = { navController.navigate("employeeEdit") },
+                onClickInitPw = { openChangeDialog = true }
+            )
+        }
+    }
+}
+
+/* 직원 상세 정보 출력 카드 */
+@Composable
+private fun EmployeeInfoCard(employeeDetailUiState: EmployeeDetailUiState) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             ProfileImage()
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             InfoBar(name = "아이디", value = employeeDetailUiState.employeeInfo.id)
             InfoBar(name = "권한", value = employeeDetailUiState.employeeInfo.authors.joinToString(", "))
             InfoBar(name = "이름", value = employeeDetailUiState.employeeInfo.name)
@@ -102,23 +136,69 @@ fun EmployeeDetailScreen(navController: NavController, hrViewModel: HrViewModel)
             InfoBar(name = "연락처", value = employeeDetailUiState.employeeInfo.phone ?: "")
             InfoBar(name = "생년월일", value = employeeDetailUiState.employeeInfo.birthDate ?: "")
             InfoBar(name = "입사일", value = employeeDetailUiState.employeeInfo.hireDate)
-            InfoBar(name = "연봉", value = "${employeeDetailUiState.employeeInfo.salary}")    // TODO: 출력 형식 확인 필요
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.height(50.dp))
+/* 연봉 정보 출력 카드 */
+@Composable
+private fun SalaryInfoCard(salaries: List<HrDTO.SalaryInfo>) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 13.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
             ) {
-                BasicTextButton(
-                    name = "비밀번호 초기화",
-                    onClick = { openChangeDialog = true }
-                )
-
-                BasicButton(
-                    name = "수정",
-                    onClick = { navController.navigate("employeeEdit") }
+                Text(
+                    text = "연봉",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
+            for (salary in salaries) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "•   ${salary.year}년",
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = String.format(Locale.getDefault(), "%,d", salary.amount),
+                        fontSize = 16.sp
+                    )
+                }
+            }
         }
+    }
+}
+
+/* 수정 버튼, 비밀번호 초기화 버튼 */
+@Composable
+private fun UpdateInitButtons(onClickUpdate: () -> Unit, onClickInitPw: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        BasicTextButton(
+            name = "비밀번호 초기화",
+            onClick = { onClickInitPw() }
+        )
+
+        BasicButton(
+            name = "수정",
+            onClick = { onClickUpdate() }
+        )
     }
 }

@@ -42,6 +42,8 @@ import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.HrDTO
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
+import com.example.attendancemanagementapp.ui.components.DepthDropDownField
+import com.example.attendancemanagementapp.ui.components.DropDownField
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
@@ -105,17 +107,19 @@ fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel)
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                DepthDropDownField(
+                DepthDropDownField( // 부서 선택 드롭다운
                     options = employeeManageUiState.dropDownMenu.departmentMenu,
                     selected = employeeManageUiState.dropDownUiState.department,
                     onSelected = { hrViewModel.onSelectDropDown(DropDownMenu.DEPARTMENT, it) }
                 )
-                DropDownField(
+                DropDownField(  // 직급 선택 드롭다운
+                    modifier = Modifier.width(110.dp),
                     options = employeeManageUiState.dropDownMenu.gradeMenu,
                     selected = employeeManageUiState.dropDownUiState.grade,
                     onSelected = { hrViewModel.onSelectDropDown(DropDownMenu.GRADE, it) }
                 )
-                DropDownField(
+                DropDownField(  // 직책 선택 드롭다운
+                    modifier = Modifier.width(110.dp),
                     options = employeeManageUiState.dropDownMenu.titleMenu,
                     selected = employeeManageUiState.dropDownUiState.title,
                     onSelected = { hrViewModel.onSelectDropDown(DropDownMenu.TITLE, it) }
@@ -181,109 +185,4 @@ private fun EmployeeInfoItem(employeeInfo: HrDTO.ManageEmployeesInfo, deptGradeT
             TwoInfoBar(employeeInfo.hireDate, employeeInfo.userId)
             Spacer(modifier = Modifier.height(14.dp))
         }
-}
-
-/* 드롭다운 필드 */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DropDownField(options: List<String>, selected: String, onSelected: (String) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }  // 열림 여부
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
-    ) {
-        OutlinedTextField(
-            value = selected,
-            onValueChange = {},
-            readOnly = true,
-            singleLine = true,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier.menuAnchor().width(110.dp),
-            shape = RoundedCornerShape(5.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White,
-                unfocusedBorderColor = DarkGray,
-                focusedBorderColor = DarkGray,
-                disabledContainerColor = DisableGray,
-                disabledBorderColor = DarkGray,
-                disabledTextColor = DarkGray
-            )
-        )
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.exposedDropdownSize()
-        ) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = option,
-                            fontSize = 14.sp
-                        )
-                    },
-                    onClick = {
-                        onSelected(option)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-/* 계층 드롭다운 필드 */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DepthDropDownField(options: List<HrDTO.DepartmentsInfo>, selected: String, onSelected: (String) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }  // 열림 여부
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
-    ) {
-        OutlinedTextField(
-            value = selected,
-            onValueChange = {},
-            readOnly = true,
-            singleLine = true,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier.menuAnchor().width(110.dp),
-            shape = RoundedCornerShape(5.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White,
-                unfocusedBorderColor = DarkGray,
-                focusedBorderColor = DarkGray,
-                disabledContainerColor = DisableGray,
-                disabledBorderColor = DarkGray,
-                disabledTextColor = DarkGray
-            )
-        )
-
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = {
-                        Row(modifier = Modifier.fillMaxWidth().padding(start = (option.depth * 10).dp)) {
-                            Text(
-                                text = option.name,
-                                fontSize = 14.sp
-                            )
-                        }
-                    },
-                    onClick = {
-                        onSelected(option.name)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
 }

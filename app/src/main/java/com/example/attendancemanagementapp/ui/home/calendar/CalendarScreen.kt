@@ -309,9 +309,7 @@ fun RowScope.DayBlock(date: Int, isToday: Boolean, onClick: () -> Unit) {
 @Composable
 fun MonthInfo(month: Int, openMonthInfo: Boolean, onClick: () -> Unit) {
 //    var openMonthInfo by remember { mutableStateOf(false) } // 월 현황 열림 여부
-    val rotation by animateFloatAsState(
-        targetValue = if (openMonthInfo) 90f else 0f
-    )
+    val rotation by animateFloatAsState(targetValue = if (openMonthInfo) 90f else 0f)
 
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),

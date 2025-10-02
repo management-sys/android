@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.retrofit
 
+import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.data.dto.HrDTO
 import retrofit2.http.Body
@@ -67,7 +68,17 @@ interface JsonService {
         @Query("size") size: Int? = null   // 페이지 당 데이터 개수
     ): HrDTO.GetManageEmployeesResponse
 
+    // 직원 정보 수정
+    @PUT("/api/users")
+    suspend fun updateEmployee(
+        @Body request: HrDTO.UpdateEmployeeRequest
+    ): HrDTO.EmployeeInfo
+
     // 부서 목록 조회
     @GET("api/depts")
     suspend fun getDepartments(): List<HrDTO.DepartmentsInfo>
+
+    // 권한 목록 조회
+    @GET("/api/authors")
+    suspend fun getAuthors(): List<AuthorDTO.GetAuthorsResponse>
 }

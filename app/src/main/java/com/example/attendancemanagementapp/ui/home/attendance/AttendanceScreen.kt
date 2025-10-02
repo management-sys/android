@@ -420,7 +420,7 @@ fun RowScope.AnnualLeaveInfoItem(total: Int, used: Int) {
             )
 
             Text(
-                text = "$total (${used})",    // TODO: 괄호 안에 뭐지? 사용개수?
+                text = "$total",
                 fontSize = 14.sp
             )
         }

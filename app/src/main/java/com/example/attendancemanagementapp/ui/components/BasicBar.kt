@@ -1,6 +1,9 @@
 package com.example.attendancemanagementapp.ui.components
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -8,8 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -18,6 +24,8 @@ import androidx.compose.material.icons.outlined.LaptopWindows
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,8 +35,16 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -37,14 +53,24 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.attendancemanagementapp.ui.hr.DropDownMenu
 import com.example.attendancemanagementapp.ui.theme.DarkBlue
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlin.String
+import kotlin.collections.List
 
 /* 기본 상단바 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -373,14 +399,25 @@ fun RadioEditBar(
 fun SearchEditBar(
     name: String,
     value: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isRequired: Boolean = false,
+    enabled: Boolean = false,
+    icon: ImageVector = Icons.Default.Search
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = name,
+            text = buildAnnotatedString {
+                append(name)
+                if (isRequired) {
+                    append(" ")
+                    withStyle(style = SpanStyle(color = Color.Red)) {
+                        append("*")
+                    }
+                }
+            },
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.weight(0.35f)
@@ -391,6 +428,7 @@ fun SearchEditBar(
             value = value,
             onValueChange = {},
             singleLine = true,
+            readOnly = true,
             shape = RoundedCornerShape(5.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 disabledContainerColor = DisableGray,
@@ -403,15 +441,300 @@ fun SearchEditBar(
                     fontSize = 16.sp
                 )
             },
-            enabled = false
+            enabled = enabled
         )
 
         IconButton(
             onClick = { onClick() }
         ) {
             Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "상위코드 검색",
+                imageVector = icon,
+                contentDescription = "검색",
+                tint = MainBlue
+            )
+        }
+    }
+}
+
+/* 정보 수정 바 - 드롭다운 */
+@Composable
+fun DropdownEditBar(
+    name: String,                           // 이름
+    isRequired: Boolean = false,             // 필수 여부
+    options: List<String>,
+    selected: String,
+    onSelected: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                append(name)
+                if (isRequired) {
+                    append(" ")
+                    withStyle(style = SpanStyle(color = Color.Red)) {
+                        append("*")
+                    }
+                }
+            },
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(0.35f)
+        )
+
+        DropDownField(
+            modifier = Modifier.weight(0.65f),
+            options = options,
+            selected = selected,
+            onSelected = onSelected
+        )
+    }
+}
+
+/* 정보 수정 바 - 전화번호 */
+@Composable
+fun PhoneEditBar(
+    name: String,                           // 이름
+    value: String,                          // 값
+    onValueChange: (String) -> Unit = {},   // 값 변경 시 실행 함수
+    enabled: Boolean = true,                // 이용 가능 여부
+    isRequired: Boolean = false             // 필수 여부
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                append(name)
+                if (isRequired) {
+                    append(" ")
+                    withStyle(style = SpanStyle(color = Color.Red)) {
+                        append("*")
+                    }
+                }
+            },
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(0.35f)
+        )
+
+        OutlinedTextField(
+            modifier = Modifier.weight(0.65f),
+            value = value,
+            onValueChange = { onValueChange(it) },
+            singleLine = true,
+            shape = RoundedCornerShape(5.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = Color.White,
+                focusedContainerColor = Color.White,
+                unfocusedBorderColor = DarkGray,
+                focusedBorderColor = DarkGray,
+                disabledContainerColor = DisableGray,
+                disabledBorderColor = DarkGray,
+                disabledTextColor = DarkGray
+            ),
+            placeholder = {
+                Text(
+                    text = value,
+                    fontSize = 16.sp
+                )
+            },
+            enabled = enabled,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)   // 숫자 키보드 출력
+        )
+    }
+}
+
+/* 정보 수정 바 - 날짜 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateEditBar(
+    name: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    isRequired: Boolean = false
+) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    val fmt = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.KOREA) }
+
+    val parsed = remember(value) { runCatching { LocalDate.parse(value, fmt) }.getOrNull() }
+    val initialMillis = remember(parsed) { parsed?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli() }
+    val pickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+
+    if (open) {
+        DatePickerDialog(
+            onDismissRequest = { open = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { millis ->
+                        val picked = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                        onValueChange(picked.format(fmt))
+                    }
+                    open = false
+                }) { Text("확인") }
+            },
+            dismissButton = { TextButton({ open = false }) { Text("취소") } }
+        ) {
+            DatePicker(state = pickerState, showModeToggle = true)
+        }
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                append(name)
+                if (isRequired) {
+                    append(" ")
+                    withStyle(style = SpanStyle(color = Color.Red)) {
+                        append("*")
+                    }
+                }
+            },
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(0.35f)
+        )
+
+        Box(modifier = Modifier.weight(0.65f)) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = {},
+                singleLine = true,
+                readOnly = true,
+                shape = RoundedCornerShape(5.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledContainerColor = DisableGray,
+                    disabledBorderColor = DarkGray,
+                    disabledTextColor = DarkGray
+                ),
+                placeholder = {
+                    Text(
+                        text = value,
+                        fontSize = 16.sp
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "캘린더 열기",
+                    )
+                }
+            )
+
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { open = true }
+            )
+        }
+    }
+}
+
+/* 정보 수정 바 - 날짜, 삭제 아이콘 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateEditDeleteBar(
+    name: String,
+    value: String,
+    onClick: () -> Unit,
+    onValueChange: (String) -> Unit,
+    isRequired: Boolean = false
+) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    val fmt = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.KOREA) }
+
+    val parsed = remember(value) { runCatching { LocalDate.parse(value, fmt) }.getOrNull() }
+    val initialMillis = remember(parsed) { parsed?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli() }
+    val pickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+
+    if (open) {
+        DatePickerDialog(
+            onDismissRequest = { open = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { millis ->
+                        val picked = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                        onValueChange(picked.format(fmt))
+                    }
+                    open = false
+                }) { Text("확인") }
+            },
+            dismissButton = { TextButton({ open = false }) { Text("취소") } }
+        ) {
+            DatePicker(state = pickerState, showModeToggle = true)
+        }
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                append(name)
+                if (isRequired) {
+                    append(" ")
+                    withStyle(style = SpanStyle(color = Color.Red)) {
+                        append("*")
+                    }
+                }
+            },
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(0.35f)
+        )
+
+        Box(modifier = Modifier.weight(0.5f)) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = {},
+                singleLine = true,
+                readOnly = true,
+                shape = RoundedCornerShape(5.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledContainerColor = DisableGray,
+                    disabledBorderColor = DarkGray,
+                    disabledTextColor = DarkGray
+                ),
+                placeholder = {
+                    Text(
+                        text = value,
+                        fontSize = 16.sp
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "캘린더 열기",
+                    )
+                }
+            )
+
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { open = true }
+            )
+        }
+
+        IconButton(
+            onClick = { onClick() }
+        ) {
+            Icon(
+                imageVector = Icons.Default.Clear,
+                contentDescription = "날짜 삭제",
                 tint = MainBlue
             )
         }

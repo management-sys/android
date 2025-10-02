@@ -1,11 +1,9 @@
-package com.example.attendancemanagementapp.ui.commoncode.edit
+package com.example.attendancemanagementapp.ui.code.edit
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Scaffold
@@ -31,9 +29,9 @@ import com.example.attendancemanagementapp.ui.components.BigEditBar
 import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.RadioEditBar
 import com.example.attendancemanagementapp.ui.components.SearchEditBar
-import com.example.attendancemanagementapp.ui.commoncode.CodeInfoField
-import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
-import com.example.attendancemanagementapp.ui.commoncode.Target
+import com.example.attendancemanagementapp.ui.code.CodeInfoField
+import com.example.attendancemanagementapp.ui.code.CodeViewModel
+import com.example.attendancemanagementapp.ui.code.Target
 import com.example.attendancemanagementapp.ui.components.search.CommonCodeDialog
 import com.example.attendancemanagementapp.ui.components.search.CodeSearchUiState
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState

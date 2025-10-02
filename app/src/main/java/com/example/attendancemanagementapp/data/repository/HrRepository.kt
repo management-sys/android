@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.data.repository
 
+import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.HrDTO
 import com.example.attendancemanagementapp.retrofit.JsonService
 import com.example.attendancemanagementapp.retrofit.RetrofitInstance
@@ -45,9 +46,27 @@ class HrRepository @Inject constructor() {
         emit(Result.failure(e))
     }
 
+    // 직원 정보 수정
+    fun updateEmployee(request: HrDTO.UpdateEmployeeRequest): Flow<Result<HrDTO.EmployeeInfo>> = flow {
+        val response = jsonService.updateEmployee(
+            request = request
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
     // 부서 목록 조회
     fun getDepartments(): Flow<Result<List<HrDTO.DepartmentsInfo>>> = flow {
         val response = jsonService.getDepartments()
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 권한 목록 조회
+    fun getAuthors(): Flow<Result<List<AuthorDTO.GetAuthorsResponse>>> = flow {
+        val response = jsonService.getAuthors()
         emit(Result.success(response))
     }.catch { e ->
         emit(Result.failure(e))

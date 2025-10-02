@@ -1,8 +1,8 @@
-package com.example.attendancemanagementapp.ui.commoncode.edit
+package com.example.attendancemanagementapp.ui.code.add
 
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 
-data class CodeEditUiState(
+data class CodeAddUiState(
     val inputData: CommonCodeDTO.CommonCodeInfo = CommonCodeDTO.CommonCodeInfo(),   // 입력한 데이터
     val selectedCode: String = "",                                                  // 선택한 공통코드의 코드
 )

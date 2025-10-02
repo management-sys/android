@@ -14,14 +14,6 @@ import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.hr.HrViewModel
 import com.example.attendancemanagementapp.util.rememberOnce
 
-@Preview
-@Composable
-private fun Preview_EmployeeAddScreen() {
-    val navController = rememberNavController()
-    val hrViewModel: HrViewModel = viewModel()
-    EmployeeAddScreen(navController, hrViewModel)
-}
-
 /* 직원 등록 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

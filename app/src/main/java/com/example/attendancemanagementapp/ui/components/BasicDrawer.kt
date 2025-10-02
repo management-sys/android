@@ -69,6 +69,7 @@ fun BasicDrawer(drawerState: DrawerState, onItemClick: (String) -> Unit = {}, on
     }
 
     ModalNavigationDrawer(
+//        gesturesEnabled = false,
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(

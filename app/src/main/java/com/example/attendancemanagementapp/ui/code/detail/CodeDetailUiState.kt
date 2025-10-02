@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.commoncode.detail
+package com.example.attendancemanagementapp.ui.code.detail
 
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 
