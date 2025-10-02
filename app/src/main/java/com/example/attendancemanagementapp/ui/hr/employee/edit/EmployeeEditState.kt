@@ -2,10 +2,9 @@ package com.example.attendancemanagementapp.ui.hr.employee.edit
 
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.HrDTO
-import com.example.attendancemanagementapp.ui.hr.UiEvent
 import com.example.attendancemanagementapp.ui.hr.employee.manage.DropDownMenu
 
-data class EmployeeEditUiState(
+data class EmployeeEditState(
     val inputData: HrDTO.EmployeeInfo = HrDTO.EmployeeInfo(),           // 입력한 직원 정보
     val dropDownMenu: DropDownMenu = DropDownMenu(),                    // 드롭다운 메뉴
     val searchText: String = "",                                        // 검색어

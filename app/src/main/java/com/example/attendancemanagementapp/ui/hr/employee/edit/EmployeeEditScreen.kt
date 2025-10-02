@@ -62,29 +62,25 @@ import com.example.attendancemanagementapp.ui.components.SearchEditBar
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
-import com.example.attendancemanagementapp.ui.hr.EmployeeEditField
 import com.example.attendancemanagementapp.ui.hr.HrViewModel
-import com.example.attendancemanagementapp.ui.hr.SalaryField
 import com.example.attendancemanagementapp.ui.hr.UiEffect
-import com.example.attendancemanagementapp.ui.hr.UiEvent
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.util.rememberOnce
-import java.util.LinkedHashSet
 
 /* 직원 수정 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmployeeEditScreen(navController: NavController, hrViewModel: HrViewModel) {
     val onEvent = hrViewModel::onEvent
-    val employeeEditUiState by hrViewModel.employeeEditUiState.collectAsState()
+    val employeeEditState by hrViewModel.employeeEditUiState.collectAsState()
     
     var openDeptDialog by remember { mutableStateOf(false) }    // 부서 선택 팝업창 열림 상태
     var openAuthDialog by remember { mutableStateOf(false) }    // 권한 선택 팝업창 열림 상태
 
     if (openDeptDialog) {
         DepartmentDialog(
-            employeeEditUiState = employeeEditUiState,
+            employeeEditState = employeeEditState,
             onDismiss = { openDeptDialog = false },
             onEvent = onEvent
         )
@@ -92,14 +88,14 @@ fun EmployeeEditScreen(navController: NavController, hrViewModel: HrViewModel) {
 
     if (openAuthDialog) {
         AuthDialog(
-            employeeEditUiState = employeeEditUiState,
+            employeeEditState = employeeEditState,
             onDismiss = { openAuthDialog = false },
             onEvent = onEvent
         )
     }
 
     LaunchedEffect(Unit) {
-        onEvent(UiEvent.InitEditData)
+        onEvent(EmployeeEditEvent.Init)
     }
 
     LaunchedEffect(Unit) {
@@ -124,18 +120,18 @@ fun EmployeeEditScreen(navController: NavController, hrViewModel: HrViewModel) {
             verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
             EmployeeEditCard(
-                employeeEditUiState = employeeEditUiState,
+                employeeEditState = employeeEditState,
                 onEvent = onEvent,
                 onOpenAuth = { openAuthDialog = true },
                 onOpenDept = { openDeptDialog = true }
             )
             SalaryEditCard(
-                salaries = employeeEditUiState.inputData.salaries,
+                salaries = employeeEditState.inputData.salaries,
                 onEvent = onEvent
             )
             BasicLongButton(
                 name = "수정",
-                onClick = { onEvent(UiEvent.ClickUpdate) }
+                onClick = { onEvent(EmployeeEditEvent.ClickUpdate) }
             )
         }
     }
@@ -143,7 +139,7 @@ fun EmployeeEditScreen(navController: NavController, hrViewModel: HrViewModel) {
 
 /* 직원 상세 정보 수정 카드 */
 @Composable
-fun EmployeeEditCard(employeeEditUiState: EmployeeEditUiState, onEvent: (UiEvent) -> Unit, onOpenAuth: () -> Unit, onOpenDept: () -> Unit) {
+fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEditEvent) -> Unit, onOpenAuth: () -> Unit, onOpenDept: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp),
@@ -158,14 +154,14 @@ fun EmployeeEditCard(employeeEditUiState: EmployeeEditUiState, onEvent: (UiEvent
             Spacer(modifier = Modifier.height(20.dp))
             EditBar(
                 name = "아이디",
-                value = employeeEditUiState.inputData.id,
+                value = employeeEditState.inputData.id,
                 onValueChange = {},
                 enabled = false,
                 isRequired = true
             )
             SearchEditBar(
                 name = "권한",
-                value = employeeEditUiState.selectAuthor.joinToString("/") { it.name },
+                value = employeeEditState.selectAuthor.joinToString("/") { it.name },
                 onClick = { onOpenAuth() },
                 isRequired = true,
                 enabled = true,
@@ -173,45 +169,45 @@ fun EmployeeEditCard(employeeEditUiState: EmployeeEditUiState, onEvent: (UiEvent
             )
             EditBar(
                 name = "이름",
-                value = employeeEditUiState.inputData.name,
-                onValueChange = { onEvent(UiEvent.ChangedValue(EmployeeEditField.NAME, it)) },
+                value = employeeEditState.inputData.name,
+                onValueChange = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.NAME, it)) },
                 isRequired = true
             )
             SearchEditBar(
                 name = "부서",
-                value = employeeEditUiState.inputData.department,
+                value = employeeEditState.inputData.department,
                 onClick = { onOpenDept() },
                 isRequired = true,
                 enabled = true
             )
             DropdownEditBar(
                 name = "직급",
-                options = employeeEditUiState.dropDownMenu.gradeMenu,
-                selected = employeeEditUiState.inputData.grade,
-                onSelected = { onEvent(UiEvent.ChangedValue(EmployeeEditField.GRADE, it)) },
+                options = employeeEditState.dropDownMenu.gradeMenu,
+                selected = employeeEditState.inputData.grade,
+                onSelected = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.GRADE, it)) },
                 isRequired = true
             )
             DropdownEditBar(
                 name = "직책",
-                options = employeeEditUiState.dropDownMenu.titleMenu,
-                selected = employeeEditUiState.inputData.title ?: "직책",
-                onSelected = { onEvent(UiEvent.ChangedValue(EmployeeEditField.TITLE, it)) }
+                options = employeeEditState.dropDownMenu.titleMenu,
+                selected = employeeEditState.inputData.title ?: "직책",
+                onSelected = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.TITLE, it)) }
             )
             PhoneEditBar(
                 name = "연락처",
-                value = employeeEditUiState.inputData.phone ?: "",
-                onValueChange = { onEvent(UiEvent.ChangedValue(EmployeeEditField.PHONE, it)) }
+                value = employeeEditState.inputData.phone ?: "",
+                onValueChange = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.PHONE, it)) }
             )
             DateEditDeleteBar(
                 name = "생년월일",
-                value = employeeEditUiState.inputData.birthDate ?: "",
-                onClick = { onEvent(UiEvent.ClickInitBrth) },
-                onValueChange = { onEvent(UiEvent.ChangedValue(EmployeeEditField.BIRTHDATE, it)) }
+                value = employeeEditState.inputData.birthDate ?: "",
+                onClick = { onEvent(EmployeeEditEvent.ClickInitBrth) },
+                onValueChange = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.BIRTHDATE, it)) }
             )
             DateEditBar(
                 name = "입사일",
-                value = employeeEditUiState.inputData.hireDate,
-                onValueChange = { onEvent(UiEvent.ChangedValue(EmployeeEditField.HIREDATE, it)) },
+                value = employeeEditState.inputData.hireDate,
+                onValueChange = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.HIREDATE, it)) },
                 isRequired = true
             )
         }
@@ -220,7 +216,7 @@ fun EmployeeEditCard(employeeEditUiState: EmployeeEditUiState, onEvent: (UiEvent
 
 /* 연봉 정보 수정 카드 */
 @Composable
-private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (UiEvent) -> Unit) {
+private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (EmployeeEditEvent) -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp),
@@ -243,7 +239,7 @@ private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (UiEvent) 
                 )
 
                 IconButton(
-                    onClick = { onEvent(UiEvent.ClickAddSalary) }
+                    onClick = { onEvent(EmployeeEditEvent.ClickAddSalary) }
                 ) {
                     Icon(
                         imageVector = Icons.Default.AddCircle,
@@ -271,7 +267,7 @@ private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (UiEvent) 
                             modifier = Modifier.weight(0.3f),
                             value = salary.year,
                             onValueChange = {
-                                onEvent(UiEvent.ChangedSalary(SalaryField.YEAR, it, idx)
+                                onEvent(EmployeeEditEvent.ChangedSalary(SalaryField.YEAR, it, idx)
                                 )
                             },
                             singleLine = true,
@@ -298,7 +294,7 @@ private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (UiEvent) 
                             modifier = Modifier.weight(0.6f),
                             value = if (salary.amount == 0) "" else "${salary.amount}",
                             onValueChange = {
-                                onEvent(UiEvent.ChangedSalary(SalaryField.AMOUNT, it, idx)
+                                onEvent(EmployeeEditEvent.ChangedSalary(SalaryField.AMOUNT, it, idx)
                                 )
                             },
                             singleLine = true,
@@ -322,7 +318,7 @@ private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (UiEvent) 
                         )
 
                         IconButton(
-                            onClick = { onEvent(UiEvent.ClickDeleteSalary(idx)) },
+                            onClick = { onEvent(EmployeeEditEvent.ClickDeleteSalary(idx)) },
                             modifier = Modifier.weight(0.1f)
                         ) {
                             Icon(
@@ -340,9 +336,9 @@ private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (UiEvent) 
 /* 부서 선택 디알로그 */
 @Composable
 private fun DepartmentDialog(
-    employeeEditUiState: EmployeeEditUiState,
+    employeeEditState: EmployeeEditState,
     onDismiss: () -> Unit = {},
-    onEvent: (UiEvent) -> Unit
+    onEvent: (EmployeeEditEvent) -> Unit
 ) {
     Dialog(
         onDismissRequest = onDismiss
@@ -357,15 +353,15 @@ private fun DepartmentDialog(
         ) {
             SearchBar(
                 searchUiState = SearchUiState(
-                    value = employeeEditUiState.searchText,
-                    onValueChange = { onEvent(UiEvent.SearchChanged(it)) },
+                    value = employeeEditState.searchText,
+                    onValueChange = { onEvent(EmployeeEditEvent.SearchChanged(it)) },
                     onClickSearch = {
                         // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        onEvent(UiEvent.ClickSearch)
+                        onEvent(EmployeeEditEvent.ClickSearch)
 //                        keyboardController?.hide()
 //                        focusManager.clearFocus(force = true)
                     },
-                    onClickInit = { UiEvent.ClickInitSearch }
+                    onClickInit = { EmployeeEditEvent.ClickInitSearch }
                 ),
                 hint = "부서명"
             )
@@ -375,12 +371,12 @@ private fun DepartmentDialog(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(employeeEditUiState.dropDownMenu.departmentMenu) { item ->
+                items(employeeEditState.dropDownMenu.departmentMenu) { item ->
                     DepartmentInfoItem(
                         name = item.name,
                         head = "부서장",   // TODO: 부서장 이름 출력 (부서 목록 받을 때 부서장도 받기? 아니면 부서 검색에서만 받기?)
                         onClick = {
-                            onEvent(UiEvent.SelectDepartment(item.name, item.id))
+                            onEvent(EmployeeEditEvent.SelectDepartment(item.name, item.id))
                             onDismiss()
                         }
                     )
@@ -413,12 +409,12 @@ private fun DepartmentInfoItem(name: String, head: String, onClick: () -> Unit) 
 /* 권한 선택 디알로그 */
 @Composable
 private fun AuthDialog(
-    employeeEditUiState: EmployeeEditUiState,
+    employeeEditState: EmployeeEditState,
     onDismiss: () -> Unit = {},
-    onEvent: (UiEvent) -> Unit
+    onEvent: (EmployeeEditEvent) -> Unit
 ) {
-    val myAuthorName = employeeEditUiState.inputData.authors    // 내가 가진 권한 이름 리스트
-    val allAuthor = employeeEditUiState.authors                 // 전체 권한 목록
+    val myAuthorName = employeeEditState.inputData.authors    // 내가 가진 권한 이름 리스트
+    val allAuthor = employeeEditState.authors                 // 전체 권한 목록
     var selected by remember { mutableStateOf(                  // 내가 가진 이름에 해당하는 권한들만 저장된 set
         allAuthor.filter { it.name in myAuthorName.toHashSet() }
             .toCollection(LinkedHashSet()))
@@ -439,7 +435,7 @@ private fun AuthDialog(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(employeeEditUiState.authors) { item ->
+                items(employeeEditState.authors) { item ->
                     val isChecked = item in selected
                     AuthItem(
                         info = item,
@@ -465,7 +461,7 @@ private fun AuthDialog(
                 BasicButton(
                     name = "확인",
                     onClick = {
-                        onEvent(UiEvent.ClickSelectAuth(selected))
+                        onEvent(EmployeeEditEvent.ClickSelectAuth(selected))
                         onDismiss()
                     }
                 )

@@ -3,11 +3,14 @@ package com.example.attendancemanagementapp.ui.hr
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.HrDTO
 import com.example.attendancemanagementapp.data.repository.HrRepository
 import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailUiState
-import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditUiState
+import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditEvent
+import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditField
+import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditReducer
+import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditState
+import com.example.attendancemanagementapp.ui.hr.employee.edit.SalaryField
 import com.example.attendancemanagementapp.ui.hr.employee.manage.EmployeeManageUiState
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,48 +26,8 @@ enum class Target { MANAGE, SEARCH }
 enum class DropDownMenu { DEPARTMENT, GRADE, TITLE }
 enum class DepartmentField { NAME, DESCRIPTION }
 
-enum class EmployeeEditField { NAME, DEPARTMENT, GRADE, TITLE, PHONE, BIRTHDATE, HIREDATE }
-enum class SalaryField { YEAR, AMOUNT }
-
 sealed interface UiEffect {
     data object NavigateBack: UiEffect
-}
-
-sealed interface UiEvent {
-    data class ChangedValue( // 직원 수정 필드 값 변경 이벤트
-        val field: EmployeeEditField,
-        val value: String
-    ): UiEvent
-
-    data class ChangedSalary( // 연봉 필드 값 변경 이벤트
-        val field: SalaryField,
-        val value: String,
-        val idx: Int
-    ): UiEvent
-
-    data class SearchChanged( // 부서 검색어 변경 이벤트
-        val value: String
-    ): UiEvent
-
-    data class SelectDepartment( // 부서 선택 이벤트
-        val departmentName: String,
-        val departmentId: String
-    ): UiEvent
-
-    data class ClickSelectAuth( // 권한 추가 확인 버튼 클릭 이벤트
-        val selected: Set<AuthorDTO.GetAuthorsResponse>
-    ): UiEvent
-
-    data class ClickDeleteSalary( // 연봉 아이템 삭제 버튼 클릭 이벤트
-        val idx: Int
-    ): UiEvent
-
-    data object ClickSearch: UiEvent // 부서 검색 버튼 클릭 이벤트
-    data object ClickInitSearch: UiEvent // 검색어 초기화 버튼 클릭 이벤트
-    data object ClickAddSalary: UiEvent // 연봉 아이템 추가 버튼 클릭 이벤트
-    data object ClickUpdate: UiEvent // 직원 정보 수정 버튼 클릭 이벤트
-    data object ClickInitBrth: UiEvent // 생년월일 초기화 버튼 클릭 이벤트
-    data object InitEditData: UiEvent // 수정 데이터 가져오기
 }
 
 @HiltViewModel
@@ -80,8 +43,8 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
 
     private val _employeeDetailUiState = MutableStateFlow(EmployeeDetailUiState())
     val employeeDetailUiState = _employeeDetailUiState.asStateFlow()
-    private val _employeeEditUiState = MutableStateFlow(EmployeeEditUiState())
-    val employeeEditUiState = _employeeEditUiState.asStateFlow()
+    private val _employeeEditState = MutableStateFlow(EmployeeEditState())
+    val employeeEditUiState = _employeeEditState.asStateFlow()
     private val _employeeSearchUiState = MutableStateFlow(EmployeeSearchUiState())
     val employeeSearchUiState = _employeeSearchUiState.asStateFlow()
     private val _employeeManageUiState = MutableStateFlow(EmployeeManageUiState())
@@ -94,9 +57,11 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
         getAuthors()
     }
 
-    fun onEvent(e: UiEvent) {
+    fun onEvent(e: EmployeeEditEvent) {
+        _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
+
         when (e) {
-            is UiEvent.ChangedValue -> _employeeEditUiState.update { state ->
+            is EmployeeEditEvent.ChangedValue -> _employeeEditState.update { state ->
                 val name = if (e.field == EmployeeEditField.NAME) e.value else state.inputData.name
                 val department = if (e.field == EmployeeEditField.DEPARTMENT) e.value else state.inputData.department
                 val grade = if (e.field == EmployeeEditField.GRADE) e.value else state.inputData.grade
@@ -116,7 +81,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
                     )
                 )
             }
-            is UiEvent.ChangedSalary -> _employeeEditUiState.update { state ->
+            is EmployeeEditEvent.ChangedSalary -> _employeeEditState.update { state ->
                 val year = if (e.field == SalaryField.YEAR) e.value.filter(Char::isDigit) else state.inputData.salaries[e.idx].year
                 val amount = if (e.field == SalaryField.AMOUNT) e.value.filter(Char::isDigit).toInt() else state.inputData.salaries[e.idx].amount
                 val updated = state.inputData.salaries.mapIndexed { i, s ->
@@ -125,47 +90,60 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
 
                 state.copy(inputData = state.inputData.copy(salaries = updated))
             }
-            is UiEvent.SearchChanged -> _employeeEditUiState.update { it.copy(searchText = e.value) }
-            is UiEvent.ClickSearch -> searchDepartment()
-            is UiEvent.ClickInitSearch -> {
-                _employeeEditUiState.update { it.copy(dropDownMenu = _root_ide_package_.com.example.attendancemanagementapp.ui.hr.employee.manage.DropDownMenu(), searchText = "") }
+            is EmployeeEditEvent.SearchChanged -> _employeeEditState.update { it.copy(searchText = e.value) }
+            is EmployeeEditEvent.ClickSearch -> searchDepartment()
+            is EmployeeEditEvent.ClickInitSearch -> {
+                _employeeEditState.update { it.copy(dropDownMenu = _root_ide_package_.com.example.attendancemanagementapp.ui.hr.employee.manage.DropDownMenu(), searchText = "") }
                 getDepartments()
             }
-            is UiEvent.SelectDepartment -> _employeeEditUiState.update { state ->
+            is EmployeeEditEvent.SelectDepartment -> _employeeEditState.update { state ->
                 state.copy(
                     inputData = state.inputData.copy(department = e.departmentName),
                     selectDepartmentId = e.departmentId
                 )
             }
-            is UiEvent.ClickSelectAuth -> {
+            is EmployeeEditEvent.ClickSelectAuth -> {
                 val orderSelected = employeeEditUiState.value.authors.filter { it in e.selected }
-                _employeeEditUiState.update { it.copy(selectAuthor = orderSelected) }
+                _employeeEditState.update { it.copy(selectAuthor = orderSelected) }
             }
-            is UiEvent.ClickDeleteSalary -> _employeeEditUiState.update { state ->
+            is EmployeeEditEvent.ClickDeleteSalary -> _employeeEditState.update { state ->
                 val salaries = state.inputData.salaries
                 val updated = salaries.toMutableList().apply { removeAt(e.idx) }
                 state.copy(inputData = state.inputData.copy(salaries = updated))
             }
-            is UiEvent.ClickAddSalary -> _employeeEditUiState.update { state ->
+            is EmployeeEditEvent.ClickAddSalary -> _employeeEditState.update { state ->
                 state.copy(inputData = state.inputData.copy(
                     salaries = state.inputData.salaries + HrDTO.SalaryInfo(null, "", 0))
                 )
             }
-            is UiEvent.ClickUpdate -> updateEmployee()
-            is UiEvent.ClickInitBrth -> _employeeEditUiState.update { it.copy(inputData = it.inputData.copy(birthDate = "")) }
-            is UiEvent.InitEditData -> {
+            is EmployeeEditEvent.ClickUpdate -> updateEmployee()
+            is EmployeeEditEvent.ClickInitBrth -> _employeeEditState.update { it.copy(inputData = it.inputData.copy(birthDate = "")) }
+//            is EmployeeEditEvent.Init -> {
+//                val employeeInfo = employeeDetailUiState.value.employeeInfo
+//                val departments = employeeManageUiState.value.dropDownMenu.departmentMenu
+//
+//                _employeeEditState.update { it.copy(
+//                    inputData = employeeDetailUiState.value.employeeInfo,
+//                    selectAuthor = employeeEditUiState.value.authors.filter { it.name in employeeInfo.authors.toHashSet() }, // 권한 이름으로 권한 코드 찾기
+//                    selectDepartmentId = departments.firstOrNull { dept -> dept.name == employeeInfo.department }?.id ?: "", // 부서 이름으로 부서 아이디 찾기
+//                    dropDownMenu = it.dropDownMenu.copy(departmentMenu = it.dropDownMenu.departmentMenu + departments))
+//                }
+//
+//                if (employeeEditUiState.value.inputData.title == null) {  // 직책 값이 null인 경우 초기값 설정
+//                    _employeeEditState.update { state -> state.copy(inputData = state.inputData.copy(title = "직책")) }
+//                }
+//            }
+            is EmployeeEditEvent.Init -> {
                 val employeeInfo = employeeDetailUiState.value.employeeInfo
                 val departments = employeeManageUiState.value.dropDownMenu.departmentMenu
 
-                _employeeEditUiState.update { it.copy(
-                    inputData = employeeDetailUiState.value.employeeInfo,
-                    selectAuthor = employeeEditUiState.value.authors.filter { it.name in employeeInfo.authors.toHashSet() }, // 권한 이름으로 권한 코드 찾기
-                    selectDepartmentId = departments.firstOrNull { dept -> dept.name == employeeInfo.department }?.id ?: "", // 부서 이름으로 부서 아이디 찾기
-                    dropDownMenu = it.dropDownMenu.copy(departmentMenu = it.dropDownMenu.departmentMenu + departments))
+                _employeeEditState.update { s ->
+                    EmployeeEditReducer.reduce(s, EmployeeEditEvent.InitWith(employeeInfo, departments))
                 }
-
-                if (employeeEditUiState.value.inputData.title == null) {  // 직책 값이 null인 경우 초기값 설정
-                    _employeeEditUiState.update { state -> state.copy(inputData = state.inputData.copy(title = "직책")) }
+            }
+            else -> {
+                _employeeEditState.update { s ->
+                    EmployeeEditReducer.reduce(s, e)
                 }
             }
         }
@@ -318,7 +296,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
             grade = inputData.grade,
             title = if (inputData.title == "직책") "" else inputData.title!!,
             phone = formatPhone(inputData.phone ?: ""), // 전화번호 형식으로 포맷팅 (000-0000-0000)
-            birthDate = if (inputData.birthDate == "") "" else inputData.birthDate + "T00:00:00",
+            birthDate = if (inputData.birthDate.isNullOrBlank()) "" else inputData.birthDate + "T00:00:00",
             hireDate = inputData.hireDate + "T00:00:00",
             authors = employeeEditUiState.value.selectAuthor.map { it.code },
             salaries = inputData.salaries.filter { it.year != "" && it.amount != 0 } // 연봉 정보를 입력하지 않았으면 제거
@@ -372,7 +350,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
             repository.getAuthors().collect { result ->
                 result
                     .onSuccess { authors ->
-                        _employeeEditUiState.update { it.copy(authors = authors) }
+                        _employeeEditState.update { it.copy(authors = authors) }
                         Log.d(TAG, "권한 목록 조회 성공\n${authors}")
                     }
                     .onFailure { e ->
