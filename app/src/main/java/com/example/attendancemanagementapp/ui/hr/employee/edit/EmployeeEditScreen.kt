@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
-import com.example.attendancemanagementapp.data.dto.HrDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicCheckbox
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
@@ -216,7 +216,7 @@ fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEdi
 
 /* 연봉 정보 수정 카드 */
 @Composable
-private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (EmployeeEditEvent) -> Unit) {
+private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (EmployeeEditEvent) -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp),

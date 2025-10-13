@@ -1,7 +1,6 @@
 package com.example.attendancemanagementapp.ui.hr.department.detail
 
-import com.example.attendancemanagementapp.data.dto.HrDTO
-import kotlin.collections.plus
+import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 
 object DepartmentDetailReducer {
     fun reduce(s: DepartmentDetailState, e: DepartmentDetailEvent): DepartmentDetailState = when (e) {
@@ -38,7 +37,7 @@ object DepartmentDetailReducer {
     private fun handleSelectedAddEmployee(
         state: DepartmentDetailState,
         isChecked: Boolean,
-        user: HrDTO.DepartmentUserInfo
+        user: DepartmentDTO.DepartmentUserInfo
     ): DepartmentDetailState {
         return state.copy(selectedEmployees = if (isChecked) state.selectedEmployees - user else state.selectedEmployees + user)
     }
@@ -62,7 +61,7 @@ object DepartmentDetailReducer {
         return state.copy(selectedHead = if (isHead) state.selectedHead.filterNot { it.first == idName.first }.toSet() else state.selectedHead + idName)
     }
 
-    private val departmentUpdaters: Map<DepartmentField, (HrDTO.DepartmentInfo, String) -> HrDTO.DepartmentInfo> =
+    private val departmentUpdaters: Map<DepartmentField, (DepartmentDTO.DepartmentInfo, String) -> DepartmentDTO.DepartmentInfo> =
         mapOf(
             DepartmentField.NAME        to { s, v -> s.copy(name = v) },
             DepartmentField.DESCRIPTION to { s, v -> s.copy(description = v) }

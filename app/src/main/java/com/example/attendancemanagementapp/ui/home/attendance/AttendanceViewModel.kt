@@ -1,9 +1,7 @@
 package com.example.attendancemanagementapp.ui.home.attendance
 
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
-import com.example.attendancemanagementapp.data.repository.HrRepository
+import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +11,7 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
-class AttendanceViewModel @Inject constructor(private val repository: HrRepository) : ViewModel() {
+class AttendanceViewModel @Inject constructor(private val repository: EmployeeRepository) : ViewModel() {
     companion object {
         private const val TAG = "AttendanceViewModel"
     }

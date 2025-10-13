@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.attendancemanagementapp.data.dto.HrDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
@@ -138,7 +138,7 @@ private fun EmployeeInfoItem(name: String, deptGradeTitle: String, onClick: () -
 /* 직원 정보 바텀 시트 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EmployeeInfoBottomSheet(employeeInfo: HrDTO.EmployeeInfo, onDismiss: () -> Unit) {
+private fun EmployeeInfoBottomSheet(employeeInfo: EmployeeDTO.EmployeeInfo, onDismiss: () -> Unit) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(

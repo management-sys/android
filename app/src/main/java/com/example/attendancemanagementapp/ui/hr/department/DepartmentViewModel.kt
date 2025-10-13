@@ -3,8 +3,9 @@ package com.example.attendancemanagementapp.ui.hr.department
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.attendancemanagementapp.data.dto.HrDTO
-import com.example.attendancemanagementapp.data.repository.HrRepository
+import com.example.attendancemanagementapp.data.dto.DepartmentDTO
+import com.example.attendancemanagementapp.data.repository.DepartmentRepository
+import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailEvent
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailReducer
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailState
@@ -20,7 +21,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DepartmentViewModel @Inject constructor(private val repository: HrRepository) : ViewModel() {
+class DepartmentViewModel @Inject constructor(private val departmentRepository: DepartmentRepository, private val employeeRepository: EmployeeRepository) : ViewModel() {
     companion object {
         private const val TAG = "DepartmentViewModel"
     }
@@ -71,11 +72,11 @@ class DepartmentViewModel @Inject constructor(private val repository: HrReposito
     /* 직원 목록 조회 및 검색 */
     fun getEmployees() {
         viewModelScope.launch {
-            repository.getEmployees(_departmentDetailState.value.searchText).collect { result ->
+            employeeRepository.getEmployees(_departmentDetailState.value.searchText).collect { result ->
                 result
                     .onSuccess { employeesData ->
-                        val employees: List<HrDTO.DepartmentUserInfo> = employeesData.map {
-                            HrDTO.DepartmentUserInfo(
+                        val employees: List<DepartmentDTO.DepartmentUserInfo> = employeesData.map {
+                            DepartmentDTO.DepartmentUserInfo(
                                 id = it.id,
                                 name = it.name,
                                 grade = it.department,
@@ -96,7 +97,7 @@ class DepartmentViewModel @Inject constructor(private val repository: HrReposito
     /* 부서 목록 조회 */
     fun getDepartments() {
         viewModelScope.launch {
-            repository.getDepartments().collect { result ->
+            departmentRepository.getDepartments().collect { result ->
                 result
                     .onSuccess { departments ->
                         _departmentManageState.update { it.copy(departments = departments) }
@@ -112,7 +113,7 @@ class DepartmentViewModel @Inject constructor(private val repository: HrReposito
     /* 부서 정보 상세 조회 */
     fun getDepartmentDetail(departmentId: String) {
         viewModelScope.launch {
-            repository.getDepartmentDetail(departmentId = departmentId).collect { result ->
+            departmentRepository.getDepartmentDetail(departmentId = departmentId).collect { result ->
                 result
                     .onSuccess { departmentInfo ->
                         val headUsers = departmentInfo.users    // 부서장인 사용자의 아이디, 이름 저장

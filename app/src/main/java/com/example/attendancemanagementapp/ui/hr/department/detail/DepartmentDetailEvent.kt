@@ -1,6 +1,6 @@
 package com.example.attendancemanagementapp.ui.hr.department.detail
 
-import com.example.attendancemanagementapp.data.dto.HrDTO
+import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 
 enum class DepartmentField { NAME, DESCRIPTION }
 
@@ -22,7 +22,7 @@ sealed interface DepartmentDetailEvent {
     // 추가할 직원 목록 체크박스 선택 이벤트
     data class SelectedAddEmployeeWith(
         val isChecked: Boolean,
-        val user: HrDTO.DepartmentUserInfo
+        val user: DepartmentDTO.DepartmentUserInfo
     ): DepartmentDetailEvent
 
     // 추가할 직원 목록 저장 버튼 클릭 이벤트

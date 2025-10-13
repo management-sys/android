@@ -1,7 +1,8 @@
 package com.example.attendancemanagementapp.ui.hr.employee.edit
 
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
-import com.example.attendancemanagementapp.data.dto.HrDTO
+import com.example.attendancemanagementapp.data.dto.DepartmentDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 
 enum class EmployeeEditField { NAME, DEPARTMENT, GRADE, TITLE, PHONE, BIRTHDATE, HIREDATE }
 enum class SalaryField { YEAR, AMOUNT }
@@ -10,8 +11,8 @@ sealed interface EmployeeEditEvent {
     // 화면 초기화
     data object Init: EmployeeEditEvent
     data class InitWith(
-        val employeeInfo: HrDTO.EmployeeInfo,
-        val departments: List<HrDTO.DepartmentsInfo>
+        val employeeInfo: EmployeeDTO.EmployeeInfo,
+        val departments: List<DepartmentDTO.DepartmentsInfo>
     ): EmployeeEditEvent
 
     // 직원 정보 필드 값 변경 이벤트

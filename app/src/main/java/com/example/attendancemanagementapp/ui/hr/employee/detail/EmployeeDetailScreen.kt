@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.attendancemanagementapp.data.dto.HrDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTextButton
@@ -142,7 +142,7 @@ private fun EmployeeInfoCard(employeeDetailUiState: EmployeeDetailUiState) {
 
 /* 연봉 정보 출력 카드 */
 @Composable
-private fun SalaryInfoCard(salaries: List<HrDTO.SalaryInfo>) {
+private fun SalaryInfoCard(salaries: List<EmployeeDTO.SalaryInfo>) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp),

@@ -23,7 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.attendancemanagementapp.data.dto.HrDTO
+import com.example.attendancemanagementapp.data.dto.DepartmentDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import kotlin.collections.forEach
@@ -84,7 +85,7 @@ fun DropDownField(modifier: Modifier = Modifier, options: List<String>, selected
 /* 계층 드롭다운 필드 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DepthDropDownField(options: List<HrDTO.DepartmentsInfo>, selected: String, onSelected: (String) -> Unit) {
+fun DepthDropDownField(options: List<DepartmentDTO.DepartmentsInfo>, selected: String, onSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }  // 열림 여부
 
     ExposedDropdownMenuBox(

@@ -1,5 +1,9 @@
 package com.example.attendancemanagementapp.retrofit
 
+import com.example.attendancemanagementapp.retrofit.service.AuthorService
+import com.example.attendancemanagementapp.retrofit.service.CommonCodeService
+import com.example.attendancemanagementapp.retrofit.service.DepartmentService
+import com.example.attendancemanagementapp.retrofit.service.EmployeeService
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
 import retrofit2.Retrofit
@@ -17,5 +21,8 @@ object RetrofitInstance {
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .build()
 
-    val jsonService: JsonService = retrofit.create(JsonService::class.java)
+    val authorService: AuthorService by lazy { retrofit.create(AuthorService::class.java) }
+    val commonCodeService: CommonCodeService by lazy { retrofit.create(CommonCodeService::class.java) }
+    val departmentService: DepartmentService by lazy { retrofit.create(DepartmentService::class.java) }
+    val employeeService: EmployeeService by lazy { retrofit.create(EmployeeService::class.java) }
 }

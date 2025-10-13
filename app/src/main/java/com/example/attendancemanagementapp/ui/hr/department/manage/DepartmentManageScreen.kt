@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.attendancemanagementapp.data.dto.HrDTO
+import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.ui.util.rememberOnce
@@ -62,7 +62,7 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
 
 /* 부서 목록 아이템(임시) */
 @Composable
-private fun DepartmentItem(departmentInfo: HrDTO.DepartmentsInfo, onClick: (String) -> Unit) {
+private fun DepartmentItem(departmentInfo: DepartmentDTO.DepartmentsInfo, onClick: (String) -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),

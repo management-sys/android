@@ -1,7 +1,8 @@
 package com.example.attendancemanagementapp.ui.hr.employee.edit
 
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
-import com.example.attendancemanagementapp.data.dto.HrDTO
+import com.example.attendancemanagementapp.data.dto.DepartmentDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 
 object EmployeeEditReducer {
     fun reduce(s: EmployeeEditState, e: EmployeeEditEvent): EmployeeEditState = when (e) {
@@ -22,8 +23,8 @@ object EmployeeEditReducer {
 
     private fun handleInit(
         state: EmployeeEditState,
-        employeeInfo: HrDTO.EmployeeInfo,
-        departments: List<HrDTO.DepartmentsInfo>
+        employeeInfo: EmployeeDTO.EmployeeInfo,
+        departments: List<DepartmentDTO.DepartmentsInfo>
     ): EmployeeEditState {
         val data = state.copy(
             inputData = employeeInfo,
@@ -43,7 +44,7 @@ object EmployeeEditReducer {
         }
     }
 
-    private val employeeUpdaters: Map<EmployeeEditField, (HrDTO.EmployeeInfo, String) -> HrDTO.EmployeeInfo> =
+    private val employeeUpdaters: Map<EmployeeEditField, (EmployeeDTO.EmployeeInfo, String) -> EmployeeDTO.EmployeeInfo> =
         mapOf(
             EmployeeEditField.NAME          to { s, v -> s.copy(name = v) },
             EmployeeEditField.DEPARTMENT    to { s, v -> s.copy(department = v) },
@@ -89,7 +90,7 @@ object EmployeeEditReducer {
         state: EmployeeEditState
     ): EmployeeEditState {
         return state.copy(inputData = state.inputData.copy(
-            salaries = state.inputData.salaries + HrDTO.SalaryInfo(null, "", 0))
+            salaries = state.inputData.salaries + EmployeeDTO.SalaryInfo(null, "", 0))
         )
     }
 

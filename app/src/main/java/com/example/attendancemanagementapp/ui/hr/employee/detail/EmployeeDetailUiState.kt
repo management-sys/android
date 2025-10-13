@@ -1,7 +1,7 @@
 package com.example.attendancemanagementapp.ui.hr.employee.detail
 
-import com.example.attendancemanagementapp.data.dto.HrDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 
 data class EmployeeDetailUiState(
-    val employeeInfo: HrDTO.EmployeeInfo = HrDTO.EmployeeInfo() // 직원 정보
+    val employeeInfo: EmployeeDTO.EmployeeInfo = EmployeeDTO.EmployeeInfo() // 직원 정보
 )

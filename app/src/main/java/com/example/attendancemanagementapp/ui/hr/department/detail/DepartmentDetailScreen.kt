@@ -60,20 +60,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.attendancemanagementapp.data.dto.HrDTO
+import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicCheckbox
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.SubButton
-import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Yellow
 import com.example.attendancemanagementapp.ui.theme.DarkBlue
-import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 
@@ -312,7 +310,7 @@ private fun EmployeeInfoItem(name: String, deptGradeTitle: String, isContain: Bo
 
 /* 부서 정보 카드 */
 @Composable
-fun DepartmentInfoCard(departmentInfo: HrDTO.DepartmentInfo, openDepartmentInfo: Boolean, onClick: () -> Unit, onClickUpdate: () -> Unit, onFieldChange: (DepartmentField, String) -> Unit) {
+fun DepartmentInfoCard(departmentInfo: DepartmentDTO.DepartmentInfo, openDepartmentInfo: Boolean, onClick: () -> Unit, onClickUpdate: () -> Unit, onFieldChange: (DepartmentField, String) -> Unit) {
     val rotation by animateFloatAsState(targetValue = if (openDepartmentInfo) 90f else 0f)
 
     Card(
@@ -528,7 +526,7 @@ fun DepartmentUserInfoCard(
 /* 부서 사용자 목록 아이템 */
 @Composable
 fun DepartmentUserItem(
-    userInfo: HrDTO.DepartmentUserInfo,
+    userInfo: DepartmentDTO.DepartmentUserInfo,
     departmentName: String,
     isChecked: Boolean, isHead: Boolean,
     onChecked: (Boolean) -> Unit,

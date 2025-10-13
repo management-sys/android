@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.attendancemanagementapp.data.dto.HrDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.DepthDropDownField
@@ -160,7 +160,7 @@ fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel)
 
 /* 직원 목록 아이템 */
 @Composable
-private fun EmployeeInfoItem(employeeInfo: HrDTO.ManageEmployeesInfo, deptGradeTitle: String, onClick: () -> Unit) {
+private fun EmployeeInfoItem(employeeInfo: EmployeeDTO.ManageEmployeesInfo, deptGradeTitle: String, onClick: () -> Unit) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color.White),

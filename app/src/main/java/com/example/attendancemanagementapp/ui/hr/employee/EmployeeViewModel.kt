@@ -3,8 +3,10 @@ package com.example.attendancemanagementapp.ui.hr.employee
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.attendancemanagementapp.data.dto.HrDTO
-import com.example.attendancemanagementapp.data.repository.HrRepository
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
+import com.example.attendancemanagementapp.data.repository.AuthorRepository
+import com.example.attendancemanagementapp.data.repository.DepartmentRepository
+import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailUiState
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditEvent
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditReducer
@@ -32,7 +34,7 @@ sealed interface UiEffect {
 }
 
 @HiltViewModel
-class HrViewModel @Inject constructor(private val repository: HrRepository) : ViewModel() {
+class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRepository, private val departmentRepository: DepartmentRepository, private val authorRepository: AuthorRepository) : ViewModel() {
     companion object {
         private const val TAG = "HrViewModel"
     }
@@ -130,7 +132,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
     /* 직원 목록 조회 */
     fun getEmployees() {
         viewModelScope.launch {
-            repository.getEmployees(_employeeSearchState.value.searchText).collect { result ->
+            employeeRepository.getEmployees(_employeeSearchState.value.searchText).collect { result ->
                 result
                     .onSuccess { employees ->
                         _employeeSearchState.update { it.copy(employees = employees) }
@@ -146,7 +148,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
     /* 직원 상세 조회 */
     fun getEmployeeDetail(hrTarget: HrTarget, userId: String) {
         viewModelScope.launch {
-            repository.getEmployeeDetail(userId).collect { result ->
+            employeeRepository.getEmployeeDetail(userId).collect { result ->
                 result
                     .onSuccess { employeeInfo ->
                         when (hrTarget) {
@@ -169,7 +171,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
         viewModelScope.launch {
             _employeeManageState.update { it.copy(isLoading = true) }
 
-            repository.getManageEmployees(
+            employeeRepository.getManageEmployees(
                 department = state.dropDownState.department,
                 grade = state.dropDownState.grade,
                 title = state.dropDownState.title,
@@ -196,7 +198,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
     /* 직원 정보 수정 */
     fun updateEmployee() {
         val inputData = employeeEditUiState.value.inputData
-        val request = HrDTO.UpdateEmployeeRequest(
+        val request = EmployeeDTO.UpdateEmployeeRequest(
             userId = inputData.userId,
             name = inputData.name,
             departmentId = employeeEditUiState.value.selectDepartmentId, // 부서 아이디
@@ -211,7 +213,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
 
         Log.d(TAG, "직원 정보 수정 요청\n${request}")
         viewModelScope.launch {
-            repository.updateEmployee(request).collect { result ->
+            employeeRepository.updateEmployee(request).collect { result ->
                 result
                     .onSuccess { result ->
                         _employeeDetailUiState.update { it.copy(employeeInfo = result) }
@@ -229,7 +231,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
     /* 부서 목록 조회 */
     fun getDepartments() {
         viewModelScope.launch {
-            repository.getDepartments().collect { result ->
+            departmentRepository.getDepartments().collect { result ->
                 result
                     .onSuccess { departments ->
                         _employeeManageState.update { state -> state.copy(
@@ -254,7 +256,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
     /* 권한 목록 조회 */
     fun getAuthors() {
         viewModelScope.launch {
-            repository.getAuthors().collect { result ->
+            authorRepository.getAuthors().collect { result ->
                 result
                     .onSuccess { authors ->
                         _employeeEditState.update { it.copy(authors = authors) }
