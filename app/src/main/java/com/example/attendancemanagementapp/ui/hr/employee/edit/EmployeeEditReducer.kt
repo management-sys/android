@@ -15,7 +15,7 @@ object EmployeeEditReducer {
         EmployeeEditEvent.ClickedInitSearch -> handleClickedInitSearch(s)
         is EmployeeEditEvent.SelectedDepartment -> handleSelectedDepartment(s, e.departmentName, e.departmentId)
         is EmployeeEditEvent.ClickedEditAuth -> handleClickedEditAuth(s, e.selected)
-        EmployeeEditEvent.ClickedInitBrth -> handleClickedInitBrth(s)
+        EmployeeEditEvent.ClickedInitBirthDate -> handleClickedInitBirthDate(s)
         EmployeeEditEvent.ClickedSearch -> s
         EmployeeEditEvent.ClickedUpdate -> s
     }
@@ -45,13 +45,13 @@ object EmployeeEditReducer {
 
     private val inputUpdaters: Map<EmployeeEditField, (HrDTO.EmployeeInfo, String) -> HrDTO.EmployeeInfo> =
         mapOf(
-            EmployeeEditField.NAME          to { d, v -> d.copy(name = v) },
-            EmployeeEditField.DEPARTMENT    to { d, v -> d.copy(department = v) },
-            EmployeeEditField.GRADE         to { d, v -> d.copy(grade = v) },
-            EmployeeEditField.TITLE         to { d, v -> d.copy(title = v) },
-            EmployeeEditField.PHONE         to { d, v -> d.copy(phone = v.filter(Char::isDigit).take(11)) }, // 숫자만 입력 가능, 최대 11자로 제한
-            EmployeeEditField.BIRTHDATE     to { d, v -> d.copy(birthDate = v) },
-            EmployeeEditField.HIREDATE      to { d, v -> d.copy(hireDate = v) },
+            EmployeeEditField.NAME          to { s, v -> s.copy(name = v) },
+            EmployeeEditField.DEPARTMENT    to { s, v -> s.copy(department = v) },
+            EmployeeEditField.GRADE         to { s, v -> s.copy(grade = v) },
+            EmployeeEditField.TITLE         to { s, v -> s.copy(title = v) },
+            EmployeeEditField.PHONE         to { s, v -> s.copy(phone = v.filter(Char::isDigit).take(11)) }, // 숫자만 입력 가능, 최대 11자로 제한
+            EmployeeEditField.BIRTHDATE     to { s, v -> s.copy(birthDate = v) },
+            EmployeeEditField.HIREDATE      to { s, v -> s.copy(hireDate = v) },
         )
 
     private fun handleChangedValue(
@@ -131,7 +131,7 @@ object EmployeeEditReducer {
         return state.copy(selectAuthor = orderSelected)
     }
 
-    private fun handleClickedInitBrth(
+    private fun handleClickedInitBirthDate(
         state: EmployeeEditState
     ): EmployeeEditState {
         return state.copy(inputData = state.inputData.copy(birthDate = ""))

@@ -9,8 +9,12 @@ import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailU
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditEvent
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditReducer
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditState
-import com.example.attendancemanagementapp.ui.hr.employee.manage.EmployeeManageUiState
-import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchUiState
+import com.example.attendancemanagementapp.ui.hr.employee.manage.EmployeeManageEvent
+import com.example.attendancemanagementapp.ui.hr.employee.manage.EmployeeManageReducer
+import com.example.attendancemanagementapp.ui.hr.employee.manage.EmployeeManageState
+import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchEvent
+import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchReducer
+import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,8 +24,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class Target { MANAGE, SEARCH }
-enum class DropDownMenu { DEPARTMENT, GRADE, TITLE }
+enum class HrTarget { MANAGE, SEARCH }
 enum class DepartmentField { NAME, DESCRIPTION }
 
 sealed interface UiEffect {
@@ -43,10 +46,10 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
     val employeeDetailUiState = _employeeDetailUiState.asStateFlow()
     private val _employeeEditState = MutableStateFlow(EmployeeEditState())
     val employeeEditUiState = _employeeEditState.asStateFlow()
-    private val _employeeSearchUiState = MutableStateFlow(EmployeeSearchUiState())
-    val employeeSearchUiState = _employeeSearchUiState.asStateFlow()
-    private val _employeeManageUiState = MutableStateFlow(EmployeeManageUiState())
-    val employeeManageUiState = _employeeManageUiState.asStateFlow()
+    private val _employeeSearchState = MutableStateFlow(EmployeeSearchState())
+    val employeeSearchUiState = _employeeSearchState.asStateFlow()
+    private val _employeeManageState = MutableStateFlow(EmployeeManageState())
+    val employeeManageUiState = _employeeManageState.asStateFlow()
 
     init {
         getEmployees()
@@ -55,7 +58,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
         getAuthors()
     }
 
-    fun onEvent(e: EmployeeEditEvent) {
+    fun onEditEvent(e: EmployeeEditEvent) {
         when (e) {
             is EmployeeEditEvent.Init -> {
                 val employeeInfo = employeeDetailUiState.value.employeeInfo
@@ -74,7 +77,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
             }
             is EmployeeEditEvent.SelectedDepartment -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
             is EmployeeEditEvent.ClickedEditAuth -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
-            is EmployeeEditEvent.ClickedInitBrth -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
+            is EmployeeEditEvent.ClickedInitBirthDate -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
             is EmployeeEditEvent.ClickedSearch -> searchDepartment()
             is EmployeeEditEvent.ClickedUpdate -> updateEmployee()
             else -> {
@@ -82,6 +85,35 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
                     EmployeeEditReducer.reduce(s, e)
                 }
             }
+        }
+    }
+
+    fun onManageEvent(e: EmployeeManageEvent) {
+        when (e) {
+            is EmployeeManageEvent.Init -> _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
+            is EmployeeManageEvent.ChangedSearchWith -> _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
+            is EmployeeManageEvent.ClickedSearch -> getManageEmployees()
+            is EmployeeManageEvent.ClickedInitSearch -> {
+                _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
+                getManageEmployees()
+            }
+            is EmployeeManageEvent.SelectedEmployee -> getEmployeeDetail(e.target, e.userId)
+            is EmployeeManageEvent.SelectedDropDown -> {
+                _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
+                getManageEmployees()
+            }
+        }
+    }
+
+    fun onSearchEvent(e: EmployeeSearchEvent) {
+        when (e) {
+            is EmployeeSearchEvent.ChangedSearchWith -> _employeeSearchState.update { EmployeeSearchReducer.reduce(it, e) }
+            EmployeeSearchEvent.ClickedSearch -> getEmployees()
+            EmployeeSearchEvent.ClickedInitSearch -> {
+                _employeeSearchState.update { EmployeeSearchReducer.reduce(it, e) }
+                getEmployees()
+            }
+            is EmployeeSearchEvent.SelectedEmployee -> getEmployeeDetail(e.target, e.userId)
         }
     }
 
@@ -105,65 +137,14 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
         }
     }
 
-    /* 검색어 상태 초기화 */
-    fun initSearchState(target: Target) {
-        when (target) {
-            Target.MANAGE -> {
-                _employeeManageUiState.value = EmployeeManageUiState(dropDownMenu = _employeeManageUiState.value.dropDownMenu)
-                getManageEmployees()
-            }
-            Target.SEARCH -> {
-                _employeeSearchUiState.value = EmployeeSearchUiState()
-                getEmployees()
-            }
-        }
-    }
-
-    /* 검색어 입력 이벤트 */
-    fun onSearchTextChange(target: Target, input: String) {
-        when (target) {
-            Target.MANAGE -> { _employeeManageUiState.update { it.copy(searchText = input) } }
-            Target.SEARCH -> { _employeeSearchUiState.update { it.copy(searchText = input) } }
-        }
-    }
-
-    /* 드롭다운 선택 이벤트 */
-    fun onSelectDropDown(menu: DropDownMenu, selected: String) {
-        when(menu) {
-            DropDownMenu.DEPARTMENT -> _employeeManageUiState.update { state ->
-                state.copy(
-                    dropDownUiState = state.dropDownUiState.copy(
-                        department = selected
-                    ), currentPage = 0
-                )
-            }
-            DropDownMenu.GRADE -> _employeeManageUiState.update { state ->
-                state.copy(
-                    dropDownUiState = state.dropDownUiState.copy(
-                        grade = selected
-                    ), currentPage = 0
-                )
-            }
-            DropDownMenu.TITLE -> _employeeManageUiState.update { state ->
-                state.copy(
-                    dropDownUiState = state.dropDownUiState.copy(
-                        title = selected
-                    ), currentPage = 0
-                )
-            }
-        }
-
-        getManageEmployees()
-    }
-
     /* 직원 목록 조회 */
     fun getEmployees() {
         viewModelScope.launch {
-            repository.getEmployees(_employeeSearchUiState.value.searchText).collect { result ->
+            repository.getEmployees(_employeeSearchState.value.searchText).collect { result ->
                 result
                     .onSuccess { employees ->
-                        _employeeSearchUiState.update { it.copy(employees = employees) }
-                        Log.d(TAG, "직원 목록 조회 성공: 검색(${_employeeSearchUiState.value.searchText})\n${employees}")
+                        _employeeSearchState.update { it.copy(employees = employees) }
+                        Log.d(TAG, "직원 목록 조회 성공: 검색(${_employeeSearchState.value.searchText})\n${employees}")
                     }
                     .onFailure { e ->
                         e.printStackTrace()
@@ -173,14 +154,14 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
     }
 
     /* 직원 상세 조회 */
-    fun getEmployeeDetail(target: Target, userId: String) {
+    fun getEmployeeDetail(hrTarget: HrTarget, userId: String) {
         viewModelScope.launch {
             repository.getEmployeeDetail(userId).collect { result ->
                 result
                     .onSuccess { employeeInfo ->
-                        when (target) {
-                            Target.SEARCH -> { _employeeSearchUiState.update { it.copy(employeeInfo = employeeInfo) } }
-                            Target.MANAGE -> { _employeeDetailUiState.update { it.copy(employeeInfo = employeeInfo) } }
+                        when (hrTarget) {
+                            HrTarget.SEARCH -> { _employeeSearchState.update { it.copy(employeeInfo = employeeInfo) } }
+                            HrTarget.MANAGE -> { _employeeDetailUiState.update { it.copy(employeeInfo = employeeInfo) } }
                         }
                         Log.d(TAG, "직원 목록 상세 조회 성공: ${userId}\n${employeeInfo}")
                     }
@@ -196,24 +177,24 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
         val state = employeeManageUiState.value
 
         viewModelScope.launch {
-            _employeeManageUiState.update { it.copy(isLoading = true) }
+            _employeeManageState.update { it.copy(isLoading = true) }
 
             repository.getManageEmployees(
-                department = state.dropDownUiState.department,
-                grade = state.dropDownUiState.grade,
-                title = state.dropDownUiState.title,
+                department = state.dropDownState.department,
+                grade = state.dropDownState.grade,
+                title = state.dropDownState.title,
                 name = state.searchText,
                 page = state.currentPage
             ).collect { result ->
                 result
                     .onSuccess { data ->
                         if (state.currentPage == 0) {
-                            _employeeManageUiState.update { it.copy(employees = data.content, currentPage = it.currentPage + 1, totalPage = data.totalPages, isLoading = false) }
+                            _employeeManageState.update { it.copy(employees = data.content, currentPage = it.currentPage + 1, totalPage = data.totalPages, isLoading = false) }
                         }
                         else {
-                            _employeeManageUiState.update { it.copy(employees = it.employees + data.content, currentPage = it.currentPage + 1, isLoading = false) }
+                            _employeeManageState.update { it.copy(employees = it.employees + data.content, currentPage = it.currentPage + 1, isLoading = false) }
                         }
-                        Log.d(TAG, "직원 관리 목록 조회 성공: ${state.currentPage + 1}/${data.totalPages}, 검색(${state.dropDownUiState.department}, ${state.dropDownUiState.grade}, ${state.dropDownUiState.title}, ${state.searchText})\n${data.content}")
+                        Log.d(TAG, "직원 관리 목록 조회 성공: ${state.currentPage + 1}/${data.totalPages}, 검색(${state.dropDownState.department}, ${state.dropDownState.grade}, ${state.dropDownState.title}, ${state.searchText})\n${data.content}")
                     }
                     .onFailure { e ->
                         e.printStackTrace()
@@ -261,7 +242,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
             repository.getDepartments().collect { result ->
                 result
                     .onSuccess { departments ->
-                        _employeeManageUiState.update { state -> state.copy(
+                        _employeeManageState.update { state -> state.copy(
                             dropDownMenu = state.dropDownMenu.copy(
                                 departmentMenu = state.dropDownMenu.departmentMenu + departments
                             ))

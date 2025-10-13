@@ -3,7 +3,6 @@ package com.example.attendancemanagementapp.ui.hr.employee.search
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -37,13 +36,14 @@ import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
 import com.example.attendancemanagementapp.ui.hr.HrViewModel
-import com.example.attendancemanagementapp.ui.hr.Target
+import com.example.attendancemanagementapp.ui.hr.HrTarget
 import com.example.attendancemanagementapp.util.rememberOnce
 
 /* 직원 검색 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmployeeSearchScreen(navController: NavController, hrViewModel: HrViewModel) {
+    val onEvent = hrViewModel::onSearchEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
@@ -60,7 +60,7 @@ fun EmployeeSearchScreen(navController: NavController, hrViewModel: HrViewModel)
 
     DisposableEffect(Unit) {
         onDispose {
-            hrViewModel.initSearchState(Target.SEARCH)
+            onEvent(EmployeeSearchEvent.ClickedInitSearch)
         }
     }
 
@@ -79,14 +79,14 @@ fun EmployeeSearchScreen(navController: NavController, hrViewModel: HrViewModel)
             SearchBar(
                 searchUiState = SearchUiState(
                     value = employeeSearchUiState.searchText,
-                    onValueChange = { hrViewModel.onSearchTextChange(Target.SEARCH, it) },
+                    onValueChange = { onEvent(EmployeeSearchEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
                         // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        hrViewModel.getEmployees()
+                        onEvent(EmployeeSearchEvent.ClickedSearch)
                         keyboardController?.hide()
                         focusManager.clearFocus(force = true)
                     },
-                    onClickInit = { hrViewModel.initSearchState(Target.SEARCH) }
+                    onClickInit = { onEvent(EmployeeSearchEvent.ClickedInitSearch) }
                 ),
                 hint = "직원명"
             )
@@ -102,7 +102,7 @@ fun EmployeeSearchScreen(navController: NavController, hrViewModel: HrViewModel)
                             name = employeeInfo.name,
                             deptGradeTitle = hrViewModel.formatDeptGradeTitle(employeeInfo.department, employeeInfo.grade, employeeInfo.title),
                             onClick = {
-                                hrViewModel.getEmployeeDetail(Target.SEARCH, employeeInfo.id)
+                                onEvent(EmployeeSearchEvent.SelectedEmployee(HrTarget.SEARCH, employeeInfo.id))
                                 openBottomSheet = true
                             }
                         )

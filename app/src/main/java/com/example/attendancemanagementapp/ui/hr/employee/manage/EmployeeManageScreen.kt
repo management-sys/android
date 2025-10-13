@@ -13,23 +13,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.HrDTO
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
@@ -47,11 +36,8 @@ import com.example.attendancemanagementapp.ui.components.DropDownField
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
-import com.example.attendancemanagementapp.ui.hr.DropDownMenu
+import com.example.attendancemanagementapp.ui.hr.HrTarget
 import com.example.attendancemanagementapp.ui.hr.HrViewModel
-import com.example.attendancemanagementapp.ui.hr.Target
-import com.example.attendancemanagementapp.ui.theme.DarkGray
-import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -59,6 +45,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel) {
+    val onEvent = hrViewModel::onManageEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
@@ -81,7 +68,7 @@ fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel)
 
     DisposableEffect(Unit) {
         onDispose {
-            hrViewModel.initSearchState(Target.MANAGE)
+            onEvent(EmployeeManageEvent.Init)
         }
     }
 
@@ -109,20 +96,20 @@ fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel)
             ) {
                 DepthDropDownField( // 부서 선택 드롭다운
                     options = employeeManageUiState.dropDownMenu.departmentMenu,
-                    selected = employeeManageUiState.dropDownUiState.department,
-                    onSelected = { hrViewModel.onSelectDropDown(DropDownMenu.DEPARTMENT, it) }
+                    selected = employeeManageUiState.dropDownState.department,
+                    onSelected = { onEvent(EmployeeManageEvent.SelectedDropDown(DropDownField.DEPARTMENT, it)) }
                 )
                 DropDownField(  // 직급 선택 드롭다운
                     modifier = Modifier.width(110.dp),
                     options = employeeManageUiState.dropDownMenu.gradeMenu,
-                    selected = employeeManageUiState.dropDownUiState.grade,
-                    onSelected = { hrViewModel.onSelectDropDown(DropDownMenu.GRADE, it) }
+                    selected = employeeManageUiState.dropDownState.grade,
+                    onSelected = { onEvent(EmployeeManageEvent.SelectedDropDown(DropDownField.GRADE, it)) }
                 )
                 DropDownField(  // 직책 선택 드롭다운
                     modifier = Modifier.width(110.dp),
                     options = employeeManageUiState.dropDownMenu.titleMenu,
-                    selected = employeeManageUiState.dropDownUiState.title,
-                    onSelected = { hrViewModel.onSelectDropDown(DropDownMenu.TITLE, it) }
+                    selected = employeeManageUiState.dropDownState.title,
+                    onSelected = { onEvent(EmployeeManageEvent.SelectedDropDown(DropDownField.TITLE, it)) }
                 )
             }
 
@@ -130,14 +117,14 @@ fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel)
             SearchBar(
                 searchUiState = SearchUiState(
                     value = employeeManageUiState.searchText,
-                    onValueChange = { hrViewModel.onSearchTextChange(Target.MANAGE, it) },
+                    onValueChange = { onEvent(EmployeeManageEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
                         // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        hrViewModel.getManageEmployees()
+                        onEvent(EmployeeManageEvent.ClickedSearch)
                         keyboardController?.hide()
                         focusManager.clearFocus(force = true)
                     },
-                    onClickInit = { hrViewModel.initSearchState(Target.MANAGE) }
+                    onClickInit = { onEvent(EmployeeManageEvent.ClickedInitSearch) }
                 ),
                 hint = "직원명"
             )
@@ -154,7 +141,7 @@ fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel)
                             employeeInfo = employeeInfo,
                             deptGradeTitle = hrViewModel.formatDeptGradeTitle(employeeInfo.department, employeeInfo.grade, employeeInfo.title),
                             onClick = {
-                                hrViewModel.getEmployeeDetail(Target.MANAGE, employeeInfo.userId)
+                                onEvent(EmployeeManageEvent.SelectedEmployee(HrTarget.MANAGE, employeeInfo.userId))
                                 navController.navigate("employeeDetail")
                             }
                         )

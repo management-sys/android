@@ -7,7 +7,7 @@ enum class EmployeeEditField { NAME, DEPARTMENT, GRADE, TITLE, PHONE, BIRTHDATE,
 enum class SalaryField { YEAR, AMOUNT }
 
 sealed interface EmployeeEditEvent {
-    // 수정 데이터 가져오기 (화면 생성 시 실행)
+    // 화면 초기화
     data object Init: EmployeeEditEvent
     data class InitWith(
         val employeeInfo: HrDTO.EmployeeInfo,
@@ -55,7 +55,7 @@ sealed interface EmployeeEditEvent {
     ): EmployeeEditEvent
 
     // 생년월일 초기화 버튼 클릭 이벤트
-    data object ClickedInitBrth: EmployeeEditEvent
+    data object ClickedInitBirthDate: EmployeeEditEvent
 
     // 부서 검색 버튼 클릭 이벤트
     data object ClickedSearch: EmployeeEditEvent

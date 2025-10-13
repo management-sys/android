@@ -2,10 +2,10 @@ package com.example.attendancemanagementapp.ui.hr.employee.manage
 
 import com.example.attendancemanagementapp.data.dto.HrDTO
 
-data class EmployeeManageUiState(
+data class EmployeeManageState(
     val employees: List<HrDTO.ManageEmployeesInfo> = emptyList(),   // 직원 관리 목록
     val searchText: String = "",                                    // 검색어
-    val dropDownUiState: DropDownUiState = DropDownUiState(         // 선택한 드롭다운 필드 값
+    val dropDownState: DropDownState = DropDownState(         // 선택한 드롭다운 필드 값
         department = "부서",
         grade = "직급",
         title = "직책"
@@ -16,7 +16,7 @@ data class EmployeeManageUiState(
     val isLoading: Boolean = false                                  // 로딩 중 여부
 )
 
-data class DropDownUiState(
+data class DropDownState(
     val department: String, // 부서
     val grade: String,      // 직급
     val title: String       // 직책

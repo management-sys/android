@@ -72,7 +72,7 @@ import com.example.attendancemanagementapp.util.rememberOnce
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmployeeEditScreen(navController: NavController, hrViewModel: HrViewModel) {
-    val onEvent = hrViewModel::onEvent
+    val onEvent = hrViewModel::onEditEvent
     val employeeEditState by hrViewModel.employeeEditUiState.collectAsState()
     
     var openDeptDialog by remember { mutableStateOf(false) }    // 부서 선택 팝업창 열림 상태
@@ -201,7 +201,7 @@ fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEdi
             DateEditDeleteBar(
                 name = "생년월일",
                 value = employeeEditState.inputData.birthDate ?: "",
-                onClick = { onEvent(EmployeeEditEvent.ClickedInitBrth) },
+                onClick = { onEvent(EmployeeEditEvent.ClickedInitBirthDate) },
                 onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.BIRTHDATE, it)) }
             )
             DateEditBar(
