@@ -5,7 +5,7 @@ object EmployeeSearchReducer {
         is EmployeeSearchEvent.ChangedSearchWith -> handleChangedSearch(s, e.value)
         EmployeeSearchEvent.ClickedSearch -> s
         EmployeeSearchEvent.ClickedInitSearch -> handleClickedInitSearch()
-        is EmployeeSearchEvent.SelectedEmployee -> s
+        is EmployeeSearchEvent.SelectedEmployeeWith -> s
     }
 
     private fun handleChangedSearch(

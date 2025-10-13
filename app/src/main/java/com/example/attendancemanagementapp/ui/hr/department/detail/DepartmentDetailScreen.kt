@@ -9,6 +9,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -54,9 +56,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.attendancemanagementapp.data.dto.HrDTO
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicCheckbox
 import com.example.attendancemanagementapp.ui.components.BasicDialog
@@ -66,19 +70,21 @@ import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
-import com.example.attendancemanagementapp.ui.hr.DepartmentField
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Yellow
 import com.example.attendancemanagementapp.ui.theme.DarkBlue
-import com.example.attendancemanagementapp.util.rememberOnce
+import com.example.attendancemanagementapp.ui.theme.MainBlue
+import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
+import com.example.attendancemanagementapp.ui.util.rememberOnce
 
 /* 부서 상세 화면 */
 @Composable
 fun DepartmentDetailScreen(navController: NavController, departmentViewModel: DepartmentViewModel) {
+    val onEvent = departmentViewModel::onDetailEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
-    val departmentDetailUiState by departmentViewModel.departmentDetailUiState.collectAsState()
+    val departmentDetailState by departmentViewModel.departmentDetailState.collectAsState()
 
     var openDepartmentInfo by remember { mutableStateOf(true) }     // 부서 정보 카드 열림 여부
     var openDepartmentUserInfo by remember { mutableStateOf(true) } // 부서 사용자 정보 카드 열림 여부
@@ -91,31 +97,28 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
 
     if (openBottomSheet) {
         EmployeesBottomSheet(
-            departmentDetailUiState = departmentDetailUiState,
-            onValueChange = { departmentViewModel.onSearchTextChange(it) },
+            onEvent = onEvent,
+            departmentDetailState = departmentDetailState,
             onClickSearch = {
                 // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                departmentViewModel.getEmployees()
+                onEvent(DepartmentDetailEvent.ClickedSearch)
                 keyboardController?.hide()
                 focusManager.clearFocus(force = true)
             },
-            onClickInit = { departmentViewModel.initSearchState() },
             onDismiss = {
                 openBottomSheet = false
-                departmentViewModel.initAddEmployee()
+                onEvent(DepartmentDetailEvent.InitAddEmployeeList)
             },
-            onChecked = { isChecked, user -> departmentViewModel.onAddChecked(isChecked, user) },
             onSaveAdd = {
-                departmentViewModel.onSaveAddChecked()
+                onEvent(DepartmentDetailEvent.ClickedSaveAddEmployee)
                 openBottomSheet = false
-                departmentViewModel.initAddEmployee()
             }
         )
     }
 
     if (openDeleteDialog) {
         BasicDialog(
-            title = "${departmentDetailUiState.info.name} 부서를 삭제하시겠습니까?",
+            title = "${departmentDetailState.info.name} 부서를 삭제하시겠습니까?",
             onDismiss = { openDeleteDialog = false },
             onClickConfirm = { departmentViewModel.deleteDepartment() }
         )
@@ -124,9 +127,9 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
     if (openAddHeadDialog) {
         BasicDialog(
             title = "부서장을 추가하시겠습니까?",
-            text = "이미 부서에는 부서장이 있습니다. (${departmentDetailUiState.selectedHead.joinToString(", ") { it.second }})",
+            text = "이미 부서에는 부서장이 있습니다. (${departmentDetailState.selectedHead.joinToString(", ") { it.second }})",
             onDismiss = { openAddHeadDialog = false },
-            onClickConfirm = { departmentViewModel.onSelectHead(isHead = false, idName = addIdName) }
+            onClickConfirm = { onEvent(DepartmentDetailEvent.SelectedHeadWith(false, addIdName)) }
         )
     }
 
@@ -138,11 +141,11 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
                 actTint = Color.Red,
                 onClickNavIcon = rememberOnce { navController.popBackStack() },
                 onClickActIcon = {
-                    if (departmentDetailUiState.users.isEmpty()) {  // 부서에 사용자가 없으면 삭제 가능
+                    if (departmentDetailState.users.isEmpty()) {  // 부서에 사용자가 없으면 삭제 가능
                         openDeleteDialog = true
                     }
                     else {
-                        departmentViewModel.showSnackBar("${departmentDetailUiState.info.name} 부서에 ${departmentDetailUiState.users.size}명의 사용자가 있습니다. 부서를 삭제하기 전에 모든 사용자를 다른 부서로 이동시켜 주세요.")
+                        departmentViewModel.showSnackBar("${departmentDetailState.info.name} 부서에 ${departmentDetailState.users.size}명의 사용자가 있습니다. 부서를 삭제하기 전에 모든 사용자를 다른 부서로 이동시켜 주세요.")
                     }
                 }
             )
@@ -153,25 +156,25 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
             verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
             DepartmentInfoCard(
-                departmentInfo = departmentDetailUiState.updateInfo,
+                departmentInfo = departmentDetailState.updateInfo,
                 openDepartmentInfo = openDepartmentInfo,
                 onClick = { openDepartmentInfo = !openDepartmentInfo },
                 onClickUpdate = { departmentViewModel.updateDepartment() },
-                onFieldChange = { field, input -> departmentViewModel.onFieldChange(field, input) }
+                onFieldChange = { field, input -> onEvent(DepartmentDetailEvent.ChangedValueWith(field, input)) }
             )
             DepartmentUserInfoCard(
-                state = departmentDetailUiState,
+                state = departmentDetailState,
                 openDepartmentInfo = openDepartmentUserInfo,
                 onClick = { openDepartmentUserInfo = !openDepartmentUserInfo },
-                onChecked = { isChecked, id -> departmentViewModel.onSaveChecked(isChecked, id) },
+                onChecked = { isChecked, id -> onEvent(DepartmentDetailEvent.SelectedSaveEmployeeWith(isChecked, id)) },
                 onSelectHead = { isHead, idName ->
                     // 부서장이 이미 있는데 또 선택한 경우 팝업창 출력
-                    if (!isHead && departmentDetailUiState.selectedHead.isNotEmpty()) {
+                    if (!isHead && departmentDetailState.selectedHead.isNotEmpty()) {
                         addIdName = idName
                         openAddHeadDialog = true
                     }
                     else {
-                        departmentViewModel.onSelectHead(isHead, idName)
+                        onEvent(DepartmentDetailEvent.SelectedHeadWith(isHead, idName))
                     }
                 },
                 onClickAdd = { openBottomSheet = true },
@@ -185,12 +188,10 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EmployeesBottomSheet(
-    departmentDetailUiState: DepartmentDetailUiState,
-    onValueChange: (String) -> Unit,
+    onEvent: (DepartmentDetailEvent) -> Unit,
+    departmentDetailState: DepartmentDetailState,
     onClickSearch: () -> Unit,
-    onClickInit: () -> Unit,
     onDismiss: () -> Unit,
-    onChecked: (Boolean, DepartmentUserInfo) -> Unit,
     onSaveAdd: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -207,10 +208,10 @@ private fun EmployeesBottomSheet(
         ) {
             SearchBar(
                 searchUiState = SearchUiState(
-                    value = departmentDetailUiState.searchText,
-                    onValueChange = { onValueChange(it) },
+                    value = departmentDetailState.searchText,
+                    onValueChange = { onEvent(DepartmentDetailEvent.ChangedSearchWith(it)) },
                     onClickSearch = { onClickSearch() },
-                    onClickInit = { onClickInit() }
+                    onClickInit = { onEvent(DepartmentDetailEvent.ClickedInitSearch) }
                 ),
                 hint = "직원명"
             )
@@ -224,16 +225,16 @@ private fun EmployeesBottomSheet(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     contentPadding = PaddingValues(bottom = 70.dp)
                 ) {
-                    departmentDetailUiState.employees.forEach { employeeInfo ->
+                    departmentDetailState.employees.forEach { employeeInfo ->
                         item {
-                            val isContain = departmentDetailUiState.users.any { it.id == employeeInfo.id }
+                            val isContain = departmentDetailState.users.any { it.id == employeeInfo.id }
 
                             EmployeeInfoItem(
                                 name = employeeInfo.name,
-                                deptGradeTitle = employeeInfo.formatDeptGradeTitle(),
+                                deptGradeTitle = formatDeptGradeTitle(departmentDetailState.info.name, employeeInfo.grade, employeeInfo.title),
                                 isContain = isContain,  // 사용자가 부서에 포함되어 있는지
-                                isChecked = if (isContain) true else employeeInfo in departmentDetailUiState.selectedEmployees,
-                                onChecked = { onChecked(it, employeeInfo) }
+                                isChecked = if (isContain) true else employeeInfo in departmentDetailState.selectedEmployees,
+                                onChecked = { onEvent(DepartmentDetailEvent.SelectedAddEmployeeWith(it, employeeInfo)) }
                             )
                         }
                     }
@@ -277,14 +278,41 @@ private fun EmployeeInfoItem(name: String, deptGradeTitle: String, isContain: Bo
                 onChecked = { onChecked(!it) }
             )
 
-            TwoInfoBar(name, deptGradeTitle)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp).padding(end = 20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier.weight(0.3f),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = name,
+                        fontSize = 16.sp
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(0.7f)
+                        .horizontalScroll(rememberScrollState()),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = deptGradeTitle,
+                        fontSize = 16.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
         }
     }
 }
 
 /* 부서 정보 카드 */
 @Composable
-fun DepartmentInfoCard(departmentInfo: DepartmentInfo, openDepartmentInfo: Boolean, onClick: () -> Unit, onClickUpdate: () -> Unit, onFieldChange: (DepartmentField, String) -> Unit) {
+fun DepartmentInfoCard(departmentInfo: HrDTO.DepartmentInfo, openDepartmentInfo: Boolean, onClick: () -> Unit, onClickUpdate: () -> Unit, onFieldChange: (DepartmentField, String) -> Unit) {
     val rotation by animateFloatAsState(targetValue = if (openDepartmentInfo) 90f else 0f)
 
     Card(
@@ -342,7 +370,7 @@ fun DepartmentInfoCard(departmentInfo: DepartmentInfo, openDepartmentInfo: Boole
 
                     EditBar(
                         name = "상위부서",
-                        value = departmentInfo.upper,
+                        value = departmentInfo.upperName ?: "",
                         onValueChange = {},
                         enabled = false
                     )
@@ -356,7 +384,7 @@ fun DepartmentInfoCard(departmentInfo: DepartmentInfo, openDepartmentInfo: Boole
 
                     EditBar(
                         name = "부서설명",
-                        value = departmentInfo.description,
+                        value = departmentInfo.description ?: "",
                         onValueChange = { onFieldChange(DepartmentField.DESCRIPTION, it) }
                     )
 
@@ -380,7 +408,7 @@ fun DepartmentInfoCard(departmentInfo: DepartmentInfo, openDepartmentInfo: Boole
 /* 부서 사용자 카드 */
 @Composable
 fun DepartmentUserInfoCard(
-    state: DepartmentDetailUiState,
+    state: DepartmentDetailState,
     openDepartmentInfo: Boolean,
     onClick: () -> Unit,
     onChecked: (Boolean, String) -> Unit,
@@ -464,7 +492,8 @@ fun DepartmentUserInfoCard(
                                 val isHead = state.selectedHead.any { it.first == userInfo.id } // 부서장 여부
 
                                 DepartmentUserItem(
-                                    info = userInfo,
+                                    userInfo = userInfo,
+                                    departmentName = state.info.name,
                                     isChecked = isChecked,
                                     isHead = isHead,
                                     onChecked = { onChecked(it, userInfo.id) },
@@ -498,7 +527,13 @@ fun DepartmentUserInfoCard(
 
 /* 부서 사용자 목록 아이템 */
 @Composable
-fun DepartmentUserItem(info: DepartmentUserInfo, isChecked: Boolean, isHead: Boolean, onChecked: (Boolean) -> Unit, onSelectHead: (Boolean) -> Unit) {
+fun DepartmentUserItem(
+    userInfo: HrDTO.DepartmentUserInfo,
+    departmentName: String,
+    isChecked: Boolean, isHead: Boolean,
+    onChecked: (Boolean) -> Unit,
+    onSelectHead: (Boolean) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -532,12 +567,12 @@ fun DepartmentUserItem(info: DepartmentUserInfo, isChecked: Boolean, isHead: Boo
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = info.name,
+                text = userInfo.name,
                 fontSize = 15.sp
             )
 
             Text(
-                text = info.formatDeptGradeTitle(),
+                text = formatDeptGradeTitle(departmentName, userInfo.grade, userInfo.title),
                 fontSize = 15.sp
             )
         }

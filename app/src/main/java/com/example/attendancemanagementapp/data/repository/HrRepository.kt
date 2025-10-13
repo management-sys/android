@@ -32,7 +32,7 @@ class HrRepository @Inject constructor() {
         emit(Result.failure(e))
     }
 
-    // 직원 관리 목록 조회 및 검색
+    // 직원 관리 목록 조회 및 검색 (직원 목록 고급 조회)
     fun getManageEmployees(department: String, grade: String, title: String, name: String, page: Int): Flow<Result<HrDTO.GetManageEmployeesResponse>> = flow {
         val response = jsonService.getManageEmployees(
             department = if (department == "부서") "" else department,
@@ -59,6 +59,16 @@ class HrRepository @Inject constructor() {
     // 부서 목록 조회
     fun getDepartments(): Flow<Result<List<HrDTO.DepartmentsInfo>>> = flow {
         val response = jsonService.getDepartments()
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 부서 정보 상세 조회
+    fun getDepartmentDetail(departmentId: String): Flow<Result<HrDTO.DepartmentInfo>> = flow {
+        val response = jsonService.getDepartmentDetail(
+            departmentId = departmentId
+        )
         emit(Result.success(response))
     }.catch { e ->
         emit(Result.failure(e))

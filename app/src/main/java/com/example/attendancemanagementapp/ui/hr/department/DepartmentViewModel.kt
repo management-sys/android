@@ -3,11 +3,13 @@ package com.example.attendancemanagementapp.ui.hr.department
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.attendancemanagementapp.data.dto.HrDTO
 import com.example.attendancemanagementapp.data.repository.HrRepository
-import com.example.attendancemanagementapp.ui.hr.DepartmentField
-import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailUiState
-import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentUserInfo
-import com.example.attendancemanagementapp.ui.hr.department.manage.DepartmentManageUiState
+import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailEvent
+import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailReducer
+import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailState
+import com.example.attendancemanagementapp.ui.hr.department.manage.DepartmentManageEvent
+import com.example.attendancemanagementapp.ui.hr.department.manage.DepartmentManageState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +18,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.collections.plus
 
 @HiltViewModel
 class DepartmentViewModel @Inject constructor(private val repository: HrRepository) : ViewModel() {
@@ -26,86 +27,105 @@ class DepartmentViewModel @Inject constructor(private val repository: HrReposito
 
     private val _snackbar = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 1)
     val snackbar = _snackbar.asSharedFlow()
-    private val _departmentManageUiState = MutableStateFlow(DepartmentManageUiState())
-    val departmentManageUiState = _departmentManageUiState.asStateFlow()
-    private val _departmentDetailUiState = MutableStateFlow(DepartmentDetailUiState())
-    val departmentDetailUiState = _departmentDetailUiState.asStateFlow()
+    private val _departmentManageState = MutableStateFlow(DepartmentManageState())
+    val departmentManageState = _departmentManageState.asStateFlow()
+    private val _departmentDetailState = MutableStateFlow(DepartmentDetailState())
+    val departmentDetailState = _departmentDetailState.asStateFlow()
+
+    init {
+        getDepartments()
+        getEmployees()
+    }
+
+    fun onDetailEvent(e: DepartmentDetailEvent) {
+        when (e) {
+            is DepartmentDetailEvent.ChangedSearchWith -> _departmentDetailState.update { DepartmentDetailReducer.reduce(it, e) }
+            DepartmentDetailEvent.ClickedInitSearch -> {
+                _departmentDetailState.update { DepartmentDetailReducer.reduce(it, e) }
+                getEmployees()
+            }
+            DepartmentDetailEvent.ClickedSearch -> getEmployees()
+            DepartmentDetailEvent.InitAddEmployeeList -> _departmentDetailState.update { DepartmentDetailReducer.reduce(it, e) }
+            is DepartmentDetailEvent.SelectedAddEmployeeWith -> _departmentDetailState.update { DepartmentDetailReducer.reduce(it, e) }
+            DepartmentDetailEvent.ClickedSaveAddEmployee -> _departmentDetailState.update { DepartmentDetailReducer.reduce(it, e) }
+            is DepartmentDetailEvent.SelectedHeadWith -> _departmentDetailState.update { DepartmentDetailReducer.reduce(it, e) }
+            is DepartmentDetailEvent.ChangedValueWith -> _departmentDetailState.update { DepartmentDetailReducer.reduce(it, e) }
+            is DepartmentDetailEvent.SelectedSaveEmployeeWith -> _departmentDetailState.update { DepartmentDetailReducer.reduce(it, e) }
+        }
+    }
+
+    fun onManageEvent(e: DepartmentManageEvent) {
+        when (e) {
+            is DepartmentManageEvent.SelectedDepartmentWith -> {
+                getDepartmentDetail(e.departmentId)
+
+            }
+        }
+    }
 
     /* 스낵바 출력 */
     fun showSnackBar(message: String) {
         _snackbar.tryEmit(message)
     }
 
-    /* 검색어 입력 이벤트 */
-    fun onSearchTextChange(input: String) {
-        _departmentDetailUiState.update { it.copy(searchText = input) }
-    }
-
-    /* 부서 정보 입력 이벤트 */
-    fun onFieldChange(field: DepartmentField, input: String) {
-        when (field) {
-            DepartmentField.NAME -> {
-                _departmentDetailUiState.update { state ->
-                    state.copy(updateInfo = state.info.copy(name = input))
-                }
-            }
-            DepartmentField.DESCRIPTION -> {
-                _departmentDetailUiState.update { state ->
-                    state.copy(updateInfo = state.info.copy(description = input))
-                }
-            }
-        }
-    }
-
-    /* 검색어 상태 초기화 */
-    fun initSearchState() {
-        _departmentDetailUiState.update { it.copy(searchText = "", employees = emptyList()) }
-        getEmployees()
-    }
-
-    /* 직원 추가 목록 상태 초기화 */
-    fun initAddEmployee() {
-        _departmentDetailUiState.update { it.copy(searchText = "", selectedEmployees = emptyList()) }
-    }
-
-    /* 저장 목록 체크박스 선택 이벤트 */
-    fun onSaveChecked(isChecked: Boolean, id: String) {
-        _departmentDetailUiState.update { state ->
-            state.copy(selectedSave = if (isChecked) state.selectedSave - id else state.selectedSave + id)
-        }
-    }
-
-    /* 직원 추가 목록 체크박스 선택 이벤트 */
-    fun onAddChecked(isChecked: Boolean, user: DepartmentUserInfo) {
-        _departmentDetailUiState.update { it.copy(selectedEmployees = if (isChecked) it.selectedEmployees - user else it.selectedEmployees + user) }
-    }
-
-    /* 직원 추가 저장 */
-    fun onSaveAddChecked() {
-        _departmentDetailUiState.update { state ->
-            state.copy(users = (state.users + state.selectedEmployees), selectedEmployees = emptyList(), selectedSave = state.selectedEmployees.map { it.id }.toSet())
-        }
-        _departmentDetailUiState.update { it.copy(selectedEmployees = emptyList()) }
-    }
-
-    /* 부서장 선택 이벤트 */
-    fun onSelectHead(isHead: Boolean, idName: Pair<String, String>) {
-        _departmentDetailUiState.update { state ->
-            state.copy(selectedHead = if (isHead) state.selectedHead.filterNot { it.first == idName.first }.toSet() else state.selectedHead + idName)
-        }
-    }
-
     /* 직원 목록 조회 및 검색 */
     fun getEmployees() {
         viewModelScope.launch {
-            repository.getEmployees(_departmentDetailUiState.value.searchText).collect { result ->
+            repository.getEmployees(_departmentDetailState.value.searchText).collect { result ->
                 result
                     .onSuccess { employeesData ->
-                        val employees: List<DepartmentUserInfo> = employeesData.map {
-                            DepartmentUserInfo(it.id, it.name, it.department, it.grade, it.title ?: "")
+                        val employees: List<HrDTO.DepartmentUserInfo> = employeesData.map {
+                            HrDTO.DepartmentUserInfo(
+                                id = it.id,
+                                name = it.name,
+                                grade = it.department,
+                                title = it.grade,
+                                isHead = it.title ?: ""
+                            )
                         }
-                        _departmentDetailUiState.update { it.copy(employees = employees) }
-                        Log.d(TAG, "직원 목록 조회 성공: 검색(${_departmentDetailUiState.value.searchText})\n${employees}")
+                        _departmentDetailState.update { it.copy(employees = employees) }
+                        Log.d(TAG, "직원 목록 조회 성공: 검색(${_departmentDetailState.value.searchText})\n${employees}")
+                    }
+                    .onFailure { e ->
+                        e.printStackTrace()
+                    }
+            }
+        }
+    }
+
+    /* 부서 목록 조회 */
+    fun getDepartments() {
+        viewModelScope.launch {
+            repository.getDepartments().collect { result ->
+                result
+                    .onSuccess { departments ->
+                        _departmentManageState.update { it.copy(departments = departments) }
+                        Log.d(TAG, "부서 목록 조회 성공\n${departments}")
+                    }
+                    .onFailure { e ->
+                        e.printStackTrace()
+                    }
+            }
+        }
+    }
+
+    /* 부서 정보 상세 조회 */
+    fun getDepartmentDetail(departmentId: String) {
+        viewModelScope.launch {
+            repository.getDepartmentDetail(departmentId = departmentId).collect { result ->
+                result
+                    .onSuccess { departmentInfo ->
+                        val headUsers = departmentInfo.users    // 부서장인 사용자의 아이디, 이름 저장
+                            .filter { it.isHead == "Y" }
+                            .map { it.id to it.name }
+
+                        _departmentDetailState.update { it.copy(
+                            info = departmentInfo,
+                            updateInfo = departmentInfo,
+                            users = departmentInfo.users,
+                            selectedHead = headUsers.toSet()
+                        ) }
+                        Log.d(TAG, "부서 목록 상세 조회 성공\n${departmentInfo}")
                     }
                     .onFailure { e ->
                         e.printStackTrace()

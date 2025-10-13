@@ -40,8 +40,8 @@ import com.example.attendancemanagementapp.ui.components.BasicTextButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
-import com.example.attendancemanagementapp.ui.hr.HrViewModel
-import com.example.attendancemanagementapp.util.rememberOnce
+import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
+import com.example.attendancemanagementapp.ui.util.rememberOnce
 import java.util.Locale
 
 @Preview

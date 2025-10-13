@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.util
+package com.example.attendancemanagementapp.ui.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue

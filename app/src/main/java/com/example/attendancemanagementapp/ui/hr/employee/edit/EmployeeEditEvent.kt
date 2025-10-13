@@ -36,7 +36,7 @@ sealed interface EmployeeEditEvent {
     data object ClickedAddSalary: EmployeeEditEvent
 
     // 연봉 아이템 삭제 버튼 클릭 이벤트
-    data class ClickedDeleteSalary(
+    data class ClickedDeleteSalaryWith(
         val idx: Int
     ): EmployeeEditEvent
 
@@ -44,13 +44,13 @@ sealed interface EmployeeEditEvent {
     data object ClickedInitSearch: EmployeeEditEvent
 
     // 부서 선택 이벤트
-    data class SelectedDepartment(
+    data class SelectedDepartmentWith(
         val departmentName: String,
         val departmentId: String
     ): EmployeeEditEvent
 
     // 권한 수정 버튼 클릭 이벤트
-    data class ClickedEditAuth(
+    data class ClickedEditAuthWith(
         val selected: Set<AuthorDTO.GetAuthorsResponse>
     ): EmployeeEditEvent
 

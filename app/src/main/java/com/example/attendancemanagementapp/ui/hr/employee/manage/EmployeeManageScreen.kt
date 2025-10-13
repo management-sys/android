@@ -36,9 +36,10 @@ import com.example.attendancemanagementapp.ui.components.DropDownField
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
-import com.example.attendancemanagementapp.ui.hr.HrTarget
-import com.example.attendancemanagementapp.ui.hr.HrViewModel
-import com.example.attendancemanagementapp.util.rememberOnce
+import com.example.attendancemanagementapp.ui.hr.employee.HrTarget
+import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
+import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
+import com.example.attendancemanagementapp.ui.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 직원 관리 화면 */
@@ -97,19 +98,19 @@ fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel)
                 DepthDropDownField( // 부서 선택 드롭다운
                     options = employeeManageUiState.dropDownMenu.departmentMenu,
                     selected = employeeManageUiState.dropDownState.department,
-                    onSelected = { onEvent(EmployeeManageEvent.SelectedDropDown(DropDownField.DEPARTMENT, it)) }
+                    onSelected = { onEvent(EmployeeManageEvent.SelectedDropDownWith(DropDownField.DEPARTMENT, it)) }
                 )
                 DropDownField(  // 직급 선택 드롭다운
                     modifier = Modifier.width(110.dp),
                     options = employeeManageUiState.dropDownMenu.gradeMenu,
                     selected = employeeManageUiState.dropDownState.grade,
-                    onSelected = { onEvent(EmployeeManageEvent.SelectedDropDown(DropDownField.GRADE, it)) }
+                    onSelected = { onEvent(EmployeeManageEvent.SelectedDropDownWith(DropDownField.GRADE, it)) }
                 )
                 DropDownField(  // 직책 선택 드롭다운
                     modifier = Modifier.width(110.dp),
                     options = employeeManageUiState.dropDownMenu.titleMenu,
                     selected = employeeManageUiState.dropDownState.title,
-                    onSelected = { onEvent(EmployeeManageEvent.SelectedDropDown(DropDownField.TITLE, it)) }
+                    onSelected = { onEvent(EmployeeManageEvent.SelectedDropDownWith(DropDownField.TITLE, it)) }
                 )
             }
 
@@ -139,9 +140,9 @@ fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel)
                     item {
                         EmployeeInfoItem(
                             employeeInfo = employeeInfo,
-                            deptGradeTitle = hrViewModel.formatDeptGradeTitle(employeeInfo.department, employeeInfo.grade, employeeInfo.title),
+                            deptGradeTitle = formatDeptGradeTitle(employeeInfo.department, employeeInfo.grade, employeeInfo.title),
                             onClick = {
-                                onEvent(EmployeeManageEvent.SelectedEmployee(HrTarget.MANAGE, employeeInfo.userId))
+                                onEvent(EmployeeManageEvent.SelectedEmployeeWith(HrTarget.MANAGE, employeeInfo.userId))
                                 navController.navigate("employeeDetail")
                             }
                         )

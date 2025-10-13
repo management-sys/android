@@ -62,11 +62,11 @@ import com.example.attendancemanagementapp.ui.components.SearchEditBar
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
-import com.example.attendancemanagementapp.ui.hr.HrViewModel
-import com.example.attendancemanagementapp.ui.hr.UiEffect
+import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
+import com.example.attendancemanagementapp.ui.hr.employee.UiEffect
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
-import com.example.attendancemanagementapp.util.rememberOnce
+import com.example.attendancemanagementapp.ui.util.rememberOnce
 
 /* 직원 수정 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -316,7 +316,7 @@ private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (EmployeeE
                         )
 
                         IconButton(
-                            onClick = { onEvent(EmployeeEditEvent.ClickedDeleteSalary(idx)) },
+                            onClick = { onEvent(EmployeeEditEvent.ClickedDeleteSalaryWith(idx)) },
                             modifier = Modifier.weight(0.1f)
                         ) {
                             Icon(
@@ -374,7 +374,7 @@ private fun DepartmentDialog(
                         name = item.name,
                         head = "부서장",   // TODO: 부서장 이름 출력 필요 (부서 목록 받을 때 부서장도 받기? 아니면 부서 검색에서만 받기?)
                         onClick = {
-                            onEvent(EmployeeEditEvent.SelectedDepartment(item.name, item.id))
+                            onEvent(EmployeeEditEvent.SelectedDepartmentWith(item.name, item.id))
                             onDismiss()
                         }
                     )
@@ -459,7 +459,7 @@ private fun AuthDialog(
                 BasicButton(
                     name = "확인",
                     onClick = {
-                        onEvent(EmployeeEditEvent.ClickedEditAuth(selected))
+                        onEvent(EmployeeEditEvent.ClickedEditAuthWith(selected))
                         onDismiss()
                     }
                 )

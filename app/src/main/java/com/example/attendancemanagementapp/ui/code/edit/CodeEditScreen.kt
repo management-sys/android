@@ -35,7 +35,7 @@ import com.example.attendancemanagementapp.ui.code.Target
 import com.example.attendancemanagementapp.ui.components.search.CommonCodeDialog
 import com.example.attendancemanagementapp.ui.components.search.CodeSearchUiState
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
-import com.example.attendancemanagementapp.util.rememberOnce
+import com.example.attendancemanagementapp.ui.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 공통코드 수정 화면 */

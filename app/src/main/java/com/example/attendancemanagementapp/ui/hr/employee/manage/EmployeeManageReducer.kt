@@ -6,8 +6,8 @@ object EmployeeManageReducer {
         is EmployeeManageEvent.ChangedSearchWith -> handleChangedSearch(s, e.value)
         EmployeeManageEvent.ClickedSearch -> s
         EmployeeManageEvent.ClickedInitSearch -> handleClickedInitSearch(s)
-        is EmployeeManageEvent.SelectedEmployee -> s
-        is EmployeeManageEvent.SelectedDropDown -> handleSelectedDropDown(s, e.field, e.value)
+        is EmployeeManageEvent.SelectedEmployeeWith -> s
+        is EmployeeManageEvent.SelectedDropDownWith -> handleSelectedDropDown(s, e.field, e.value)
     }
 
     private fun handleInit(

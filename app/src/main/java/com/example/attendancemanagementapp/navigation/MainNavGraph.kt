@@ -29,7 +29,7 @@ import com.example.attendancemanagementapp.ui.components.BasicDrawer
 import com.example.attendancemanagementapp.ui.home.HomeScreen
 import com.example.attendancemanagementapp.ui.home.attendance.AttendanceViewModel
 import com.example.attendancemanagementapp.ui.home.calendar.CalendarViewModel
-import com.example.attendancemanagementapp.ui.hr.HrViewModel
+import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailScreen
 import com.example.attendancemanagementapp.ui.hr.department.manage.DepartmentManageScreen

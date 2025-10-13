@@ -35,9 +35,10 @@ import com.example.attendancemanagementapp.ui.components.ProfileImage
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
-import com.example.attendancemanagementapp.ui.hr.HrViewModel
-import com.example.attendancemanagementapp.ui.hr.HrTarget
-import com.example.attendancemanagementapp.util.rememberOnce
+import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
+import com.example.attendancemanagementapp.ui.hr.employee.HrTarget
+import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
+import com.example.attendancemanagementapp.ui.util.rememberOnce
 
 /* 직원 검색 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,9 +101,9 @@ fun EmployeeSearchScreen(navController: NavController, hrViewModel: HrViewModel)
                     item {
                         EmployeeInfoItem(
                             name = employeeInfo.name,
-                            deptGradeTitle = hrViewModel.formatDeptGradeTitle(employeeInfo.department, employeeInfo.grade, employeeInfo.title),
+                            deptGradeTitle = formatDeptGradeTitle(employeeInfo.department, employeeInfo.grade, employeeInfo.title),
                             onClick = {
-                                onEvent(EmployeeSearchEvent.SelectedEmployee(HrTarget.SEARCH, employeeInfo.id))
+                                onEvent(EmployeeSearchEvent.SelectedEmployeeWith(HrTarget.SEARCH, employeeInfo.id))
                                 openBottomSheet = true
                             }
                         )

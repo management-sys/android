@@ -11,10 +11,10 @@ object EmployeeEditReducer {
         is EmployeeEditEvent.ChangedSalaryWith -> handleChangedSalary(s, e.field, e.value, e.idx)
         is EmployeeEditEvent.ChangedSearchWith -> handleChangedSearch(s, e.value)
         EmployeeEditEvent.ClickedAddSalary -> handleClickedAddSalary(s)
-        is EmployeeEditEvent.ClickedDeleteSalary -> handleClickedDeleteSalary(s, e.idx)
+        is EmployeeEditEvent.ClickedDeleteSalaryWith -> handleClickedDeleteSalary(s, e.idx)
         EmployeeEditEvent.ClickedInitSearch -> handleClickedInitSearch(s)
-        is EmployeeEditEvent.SelectedDepartment -> handleSelectedDepartment(s, e.departmentName, e.departmentId)
-        is EmployeeEditEvent.ClickedEditAuth -> handleClickedEditAuth(s, e.selected)
+        is EmployeeEditEvent.SelectedDepartmentWith -> handleSelectedDepartment(s, e.departmentName, e.departmentId)
+        is EmployeeEditEvent.ClickedEditAuthWith -> handleClickedEditAuth(s, e.selected)
         EmployeeEditEvent.ClickedInitBirthDate -> handleClickedInitBirthDate(s)
         EmployeeEditEvent.ClickedSearch -> s
         EmployeeEditEvent.ClickedUpdate -> s
@@ -43,7 +43,7 @@ object EmployeeEditReducer {
         }
     }
 
-    private val inputUpdaters: Map<EmployeeEditField, (HrDTO.EmployeeInfo, String) -> HrDTO.EmployeeInfo> =
+    private val employeeUpdaters: Map<EmployeeEditField, (HrDTO.EmployeeInfo, String) -> HrDTO.EmployeeInfo> =
         mapOf(
             EmployeeEditField.NAME          to { s, v -> s.copy(name = v) },
             EmployeeEditField.DEPARTMENT    to { s, v -> s.copy(department = v) },
@@ -59,7 +59,7 @@ object EmployeeEditReducer {
         field: EmployeeEditField,
         value: String
     ): EmployeeEditState {
-        val updater = inputUpdaters[field] ?: return state
+        val updater = employeeUpdaters[field] ?: return state
         return state.copy(inputData = updater(state.inputData, value))
     }
 

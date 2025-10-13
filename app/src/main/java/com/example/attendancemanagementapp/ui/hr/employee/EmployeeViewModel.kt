@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.hr
+package com.example.attendancemanagementapp.ui.hr.employee
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class HrTarget { MANAGE, SEARCH }
-enum class DepartmentField { NAME, DESCRIPTION }
+//enum class DepartmentField { NAME, DESCRIPTION }
 
 sealed interface UiEffect {
     data object NavigateBack: UiEffect
@@ -70,13 +70,13 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
             is EmployeeEditEvent.ChangedSalaryWith -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
             is EmployeeEditEvent.ChangedSearchWith -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
             is EmployeeEditEvent.ClickedAddSalary -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
-            is EmployeeEditEvent.ClickedDeleteSalary -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
+            is EmployeeEditEvent.ClickedDeleteSalaryWith -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
             is EmployeeEditEvent.ClickedInitSearch -> {
                 _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
                 getDepartments()
             }
-            is EmployeeEditEvent.SelectedDepartment -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
-            is EmployeeEditEvent.ClickedEditAuth -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
+            is EmployeeEditEvent.SelectedDepartmentWith -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
+            is EmployeeEditEvent.ClickedEditAuthWith -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
             is EmployeeEditEvent.ClickedInitBirthDate -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
             is EmployeeEditEvent.ClickedSearch -> searchDepartment()
             is EmployeeEditEvent.ClickedUpdate -> updateEmployee()
@@ -97,8 +97,8 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
                 _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
                 getManageEmployees()
             }
-            is EmployeeManageEvent.SelectedEmployee -> getEmployeeDetail(e.target, e.userId)
-            is EmployeeManageEvent.SelectedDropDown -> {
+            is EmployeeManageEvent.SelectedEmployeeWith -> getEmployeeDetail(e.target, e.userId)
+            is EmployeeManageEvent.SelectedDropDownWith -> {
                 _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
                 getManageEmployees()
             }
@@ -113,7 +113,7 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
                 _employeeSearchState.update { EmployeeSearchReducer.reduce(it, e) }
                 getEmployees()
             }
-            is EmployeeSearchEvent.SelectedEmployee -> getEmployeeDetail(e.target, e.userId)
+            is EmployeeSearchEvent.SelectedEmployeeWith -> getEmployeeDetail(e.target, e.userId)
         }
     }
 
@@ -124,16 +124,6 @@ class HrViewModel @Inject constructor(private val repository: HrRepository) : Vi
             s.length <= 3 -> s
             s.length <= 7 -> "${s.substring(0,3)}-${s.substring(3)}"
             else -> "${s.substring(0,3)}-${s.substring(3,7)}-${s.substring(7)}"
-        }
-    }
-
-    /* 부서, 직급, 직책 출력 포맷팅: 부서/직급/직책 */
-    fun formatDeptGradeTitle(department: String, grade: String, title: String?): String {
-        if (title != "") {
-            return "${department}/${grade}/${title}"
-        }
-        else {
-            return "${department}/${grade}"
         }
     }
 

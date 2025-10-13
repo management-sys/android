@@ -75,8 +75,14 @@ interface JsonService {
     ): HrDTO.EmployeeInfo
 
     // 부서 목록 조회
-    @GET("api/depts")
+    @GET("/api/depts")
     suspend fun getDepartments(): List<HrDTO.DepartmentsInfo>
+
+    // 부서 정보 상세 조회
+    @GET("/api/depts/{deptId}")
+    suspend fun getDepartmentDetail(
+        @Path("deptId") departmentId: String
+    ): HrDTO.DepartmentInfo
 
     // 권한 목록 조회
     @GET("/api/authors")
