@@ -7,47 +7,59 @@ enum class EmployeeEditField { NAME, DEPARTMENT, GRADE, TITLE, PHONE, BIRTHDATE,
 enum class SalaryField { YEAR, AMOUNT }
 
 sealed interface EmployeeEditEvent {
-    data object Init: EmployeeEditEvent // 수정 데이터 가져오기 (화면 생성 시 실행)
-    data class InitWith( // 수정 데이터 가져오기 (화면 생성 시 실행)
+    // 수정 데이터 가져오기 (화면 생성 시 실행)
+    data object Init: EmployeeEditEvent
+    data class InitWith(
         val employeeInfo: HrDTO.EmployeeInfo,
         val departments: List<HrDTO.DepartmentsInfo>
     ): EmployeeEditEvent
 
-    data class ChangedValue( // 직원 수정 필드 값 변경 이벤트
+    // 직원 정보 필드 값 변경 이벤트
+    data class ChangedValueWith(
         val field: EmployeeEditField,
         val value: String
     ): EmployeeEditEvent
 
-    data class ChangedSalary( // 연봉 필드 값 변경 이벤트
+    // 연봉 필드 값 변경 이벤트
+    data class ChangedSalaryWith(
         val field: SalaryField,
         val value: String,
         val idx: Int
     ): EmployeeEditEvent
 
-    data class SearchChanged( // 부서 검색어 변경 이벤트
+    // 부서 검색 필드 값 변경 이벤트
+    data class ChangedSearchWith(
         val value: String
     ): EmployeeEditEvent
 
-    data class SelectDepartment( // 부서 선택 이벤트
+    // 연봉 아이템 추가 버튼 클릭 이벤트
+    data object ClickedAddSalary: EmployeeEditEvent
+
+    // 연봉 아이템 삭제 버튼 클릭 이벤트
+    data class ClickedDeleteSalary(
+        val idx: Int
+    ): EmployeeEditEvent
+
+    // 부서 검색어 초기화 버튼 클릭 이벤트
+    data object ClickedInitSearch: EmployeeEditEvent
+
+    // 부서 선택 이벤트
+    data class SelectedDepartment(
         val departmentName: String,
         val departmentId: String
     ): EmployeeEditEvent
 
-    data class ClickSelectAuth( // 권한 추가 확인 버튼 클릭 이벤트
+    // 권한 수정 버튼 클릭 이벤트
+    data class ClickedEditAuth(
         val selected: Set<AuthorDTO.GetAuthorsResponse>
     ): EmployeeEditEvent
 
-    data class ClickDeleteSalary( // 연봉 아이템 삭제 버튼 클릭 이벤트
-        val idx: Int
-    ): EmployeeEditEvent
+    // 생년월일 초기화 버튼 클릭 이벤트
+    data object ClickedInitBrth: EmployeeEditEvent
 
-    data object ClickSearch: EmployeeEditEvent // 부서 검색 버튼 클릭 이벤트
+    // 부서 검색 버튼 클릭 이벤트
+    data object ClickedSearch: EmployeeEditEvent
 
-    data object ClickInitSearch: EmployeeEditEvent // 검색어 초기화 버튼 클릭 이벤트
-
-    data object ClickAddSalary: EmployeeEditEvent // 연봉 아이템 추가 버튼 클릭 이벤트
-
-    data object ClickUpdate: EmployeeEditEvent // 직원 정보 수정 버튼 클릭 이벤트
-
-    data object ClickInitBrth: EmployeeEditEvent // 생년월일 초기화 버튼 클릭 이벤트
+    // 직원 정보 수정 버튼 클릭 이벤트
+    data object ClickedUpdate: EmployeeEditEvent
 }

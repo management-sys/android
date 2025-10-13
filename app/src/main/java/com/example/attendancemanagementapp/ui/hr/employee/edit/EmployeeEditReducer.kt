@@ -1,35 +1,36 @@
 package com.example.attendancemanagementapp.ui.hr.employee.edit
 
+import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.HrDTO
 
 object EmployeeEditReducer {
     fun reduce(s: EmployeeEditState, e: EmployeeEditEvent): EmployeeEditState = when (e) {
-        is EmployeeEditEvent.InitWith -> handleInit(s, e.employeeInfo, e.departments)
-        is EmployeeEditEvent.ChangedSalary -> s
-        is EmployeeEditEvent.ChangedValue -> s
-        EmployeeEditEvent.ClickAddSalary -> s
-        is EmployeeEditEvent.ClickDeleteSalary -> s
-        EmployeeEditEvent.ClickInitBrth -> s
-        EmployeeEditEvent.ClickInitSearch -> s
-        EmployeeEditEvent.ClickSearch -> s
-        is EmployeeEditEvent.ClickSelectAuth -> s
-        EmployeeEditEvent.ClickUpdate -> s
         EmployeeEditEvent.Init -> s
-        is EmployeeEditEvent.SearchChanged -> s
-        is EmployeeEditEvent.SelectDepartment -> s
+        is EmployeeEditEvent.InitWith -> handleInit(s, e.employeeInfo, e.departments)
+        is EmployeeEditEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
+        is EmployeeEditEvent.ChangedSalaryWith -> handleChangedSalary(s, e.field, e.value, e.idx)
+        is EmployeeEditEvent.ChangedSearchWith -> handleChangedSearch(s, e.value)
+        EmployeeEditEvent.ClickedAddSalary -> handleClickedAddSalary(s)
+        is EmployeeEditEvent.ClickedDeleteSalary -> handleClickedDeleteSalary(s, e.idx)
+        EmployeeEditEvent.ClickedInitSearch -> handleClickedInitSearch(s)
+        is EmployeeEditEvent.SelectedDepartment -> handleSelectedDepartment(s, e.departmentName, e.departmentId)
+        is EmployeeEditEvent.ClickedEditAuth -> handleClickedEditAuth(s, e.selected)
+        EmployeeEditEvent.ClickedInitBrth -> handleClickedInitBrth(s)
+        EmployeeEditEvent.ClickedSearch -> s
+        EmployeeEditEvent.ClickedUpdate -> s
     }
 
     private fun handleInit(
-        s: EmployeeEditState,
+        state: EmployeeEditState,
         employeeInfo: HrDTO.EmployeeInfo,
         departments: List<HrDTO.DepartmentsInfo>
     ): EmployeeEditState {
-        val data = s.copy(
+        val data = state.copy(
             inputData = employeeInfo,
-            selectAuthor = s.authors.filter { it.name in employeeInfo.authors.toHashSet() }, // 권한 이름으로 권한 코드 찾기
+            selectAuthor = state.authors.filter { it.name in employeeInfo.authors.toHashSet() }, // 권한 이름으로 권한 코드 찾기
             selectDepartmentId = departments.firstOrNull { it.name == employeeInfo.department }?.id.orEmpty(), // 부서 이름으로 부서 아이디 찾기
-            dropDownMenu = s.dropDownMenu.copy(
-                departmentMenu = s.dropDownMenu.departmentMenu + departments
+            dropDownMenu = state.dropDownMenu.copy(
+                departmentMenu = state.dropDownMenu.departmentMenu + departments
             )
         )
 
@@ -40,5 +41,99 @@ object EmployeeEditReducer {
         } else {
             data
         }
+    }
+
+    private val inputUpdaters: Map<EmployeeEditField, (HrDTO.EmployeeInfo, String) -> HrDTO.EmployeeInfo> =
+        mapOf(
+            EmployeeEditField.NAME          to { d, v -> d.copy(name = v) },
+            EmployeeEditField.DEPARTMENT    to { d, v -> d.copy(department = v) },
+            EmployeeEditField.GRADE         to { d, v -> d.copy(grade = v) },
+            EmployeeEditField.TITLE         to { d, v -> d.copy(title = v) },
+            EmployeeEditField.PHONE         to { d, v -> d.copy(phone = v.filter(Char::isDigit).take(11)) }, // 숫자만 입력 가능, 최대 11자로 제한
+            EmployeeEditField.BIRTHDATE     to { d, v -> d.copy(birthDate = v) },
+            EmployeeEditField.HIREDATE      to { d, v -> d.copy(hireDate = v) },
+        )
+
+    private fun handleChangedValue(
+        state: EmployeeEditState,
+        field: EmployeeEditField,
+        value: String
+    ): EmployeeEditState {
+        val updater = inputUpdaters[field] ?: return state
+        return state.copy(inputData = updater(state.inputData, value))
+    }
+
+    private fun handleChangedSalary(
+        state: EmployeeEditState,
+        field: SalaryField,
+        value: String,
+        idx: Int
+    ): EmployeeEditState {
+        val year = if (field == SalaryField.YEAR) value.filter(Char::isDigit) else state.inputData.salaries[idx].year
+        val amount = if (field == SalaryField.AMOUNT) value.filter(Char::isDigit).toInt() else state.inputData.salaries[idx].amount
+        val updated = state.inputData.salaries.mapIndexed { i, s -> // 수정한 인덱스의 값을 입력한 값으로 변경
+            if (i == idx) s.copy(year = year, amount = amount) else s
+        }
+
+        return state.copy(inputData = state.inputData.copy(salaries = updated))
+    }
+
+    private fun handleChangedSearch(
+        state: EmployeeEditState,
+        value: String
+    ): EmployeeEditState {
+        return state.copy(searchText = value)
+    }
+
+    private fun handleClickedAddSalary(
+        state: EmployeeEditState
+    ): EmployeeEditState {
+        return state.copy(inputData = state.inputData.copy(
+            salaries = state.inputData.salaries + HrDTO.SalaryInfo(null, "", 0))
+        )
+    }
+
+    private fun handleClickedDeleteSalary(
+        state: EmployeeEditState,
+        idx: Int
+    ): EmployeeEditState {
+        val salaries = state.inputData.salaries
+        val updated = salaries.toMutableList().apply { removeAt(idx) }
+
+        return state.copy(inputData = state.inputData.copy(salaries = updated))
+    }
+
+    private fun handleClickedInitSearch(
+        state: EmployeeEditState
+    ): EmployeeEditState {
+        return state.copy(
+            dropDownMenu = _root_ide_package_.com.example.attendancemanagementapp.ui.hr.employee.manage.DropDownMenu(),
+            searchText = ""
+        )
+    }
+
+    private fun handleSelectedDepartment(
+        state: EmployeeEditState,
+        departmentName: String,
+        departmentId: String
+    ): EmployeeEditState {
+        return state.copy(
+            inputData = state.inputData.copy(department = departmentName),
+            selectDepartmentId = departmentId
+        )
+    }
+
+    private fun handleClickedEditAuth(
+        state: EmployeeEditState,
+        selected: Set<AuthorDTO.GetAuthorsResponse>
+    ): EmployeeEditState {
+        val orderSelected = state.authors.filter { it in selected }
+        return state.copy(selectAuthor = orderSelected)
+    }
+
+    private fun handleClickedInitBrth(
+        state: EmployeeEditState
+    ): EmployeeEditState {
+        return state.copy(inputData = state.inputData.copy(birthDate = ""))
     }
 }

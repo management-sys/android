@@ -131,7 +131,7 @@ fun EmployeeEditScreen(navController: NavController, hrViewModel: HrViewModel) {
             )
             BasicLongButton(
                 name = "수정",
-                onClick = { onEvent(EmployeeEditEvent.ClickUpdate) }
+                onClick = { onEvent(EmployeeEditEvent.ClickedUpdate) }
             )
         }
     }
@@ -170,7 +170,7 @@ fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEdi
             EditBar(
                 name = "이름",
                 value = employeeEditState.inputData.name,
-                onValueChange = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.NAME, it)) },
+                onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.NAME, it)) },
                 isRequired = true
             )
             SearchEditBar(
@@ -184,30 +184,30 @@ fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEdi
                 name = "직급",
                 options = employeeEditState.dropDownMenu.gradeMenu,
                 selected = employeeEditState.inputData.grade,
-                onSelected = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.GRADE, it)) },
+                onSelected = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.GRADE, it)) },
                 isRequired = true
             )
             DropdownEditBar(
                 name = "직책",
                 options = employeeEditState.dropDownMenu.titleMenu,
                 selected = employeeEditState.inputData.title ?: "직책",
-                onSelected = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.TITLE, it)) }
+                onSelected = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.TITLE, it)) }
             )
             PhoneEditBar(
                 name = "연락처",
                 value = employeeEditState.inputData.phone ?: "",
-                onValueChange = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.PHONE, it)) }
+                onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.PHONE, it)) }
             )
             DateEditDeleteBar(
                 name = "생년월일",
                 value = employeeEditState.inputData.birthDate ?: "",
-                onClick = { onEvent(EmployeeEditEvent.ClickInitBrth) },
-                onValueChange = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.BIRTHDATE, it)) }
+                onClick = { onEvent(EmployeeEditEvent.ClickedInitBrth) },
+                onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.BIRTHDATE, it)) }
             )
             DateEditBar(
                 name = "입사일",
                 value = employeeEditState.inputData.hireDate,
-                onValueChange = { onEvent(EmployeeEditEvent.ChangedValue(EmployeeEditField.HIREDATE, it)) },
+                onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.HIREDATE, it)) },
                 isRequired = true
             )
         }
@@ -239,7 +239,7 @@ private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (EmployeeE
                 )
 
                 IconButton(
-                    onClick = { onEvent(EmployeeEditEvent.ClickAddSalary) }
+                    onClick = { onEvent(EmployeeEditEvent.ClickedAddSalary) }
                 ) {
                     Icon(
                         imageVector = Icons.Default.AddCircle,
@@ -267,8 +267,7 @@ private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (EmployeeE
                             modifier = Modifier.weight(0.3f),
                             value = salary.year,
                             onValueChange = {
-                                onEvent(EmployeeEditEvent.ChangedSalary(SalaryField.YEAR, it, idx)
-                                )
+                                onEvent(EmployeeEditEvent.ChangedSalaryWith(SalaryField.YEAR, it, idx))
                             },
                             singleLine = true,
                             shape = RoundedCornerShape(5.dp),
@@ -294,8 +293,7 @@ private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (EmployeeE
                             modifier = Modifier.weight(0.6f),
                             value = if (salary.amount == 0) "" else "${salary.amount}",
                             onValueChange = {
-                                onEvent(EmployeeEditEvent.ChangedSalary(SalaryField.AMOUNT, it, idx)
-                                )
+                                onEvent(EmployeeEditEvent.ChangedSalaryWith(SalaryField.AMOUNT, it, idx))
                             },
                             singleLine = true,
                             shape = RoundedCornerShape(5.dp),
@@ -318,7 +316,7 @@ private fun SalaryEditCard(salaries: List<HrDTO.SalaryInfo>, onEvent: (EmployeeE
                         )
 
                         IconButton(
-                            onClick = { onEvent(EmployeeEditEvent.ClickDeleteSalary(idx)) },
+                            onClick = { onEvent(EmployeeEditEvent.ClickedDeleteSalary(idx)) },
                             modifier = Modifier.weight(0.1f)
                         ) {
                             Icon(
@@ -354,14 +352,14 @@ private fun DepartmentDialog(
             SearchBar(
                 searchUiState = SearchUiState(
                     value = employeeEditState.searchText,
-                    onValueChange = { onEvent(EmployeeEditEvent.SearchChanged(it)) },
+                    onValueChange = { onEvent(EmployeeEditEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
                         // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        onEvent(EmployeeEditEvent.ClickSearch)
+                        onEvent(EmployeeEditEvent.ClickedSearch)
 //                        keyboardController?.hide()
 //                        focusManager.clearFocus(force = true)
                     },
-                    onClickInit = { EmployeeEditEvent.ClickInitSearch }
+                    onClickInit = { EmployeeEditEvent.ClickedInitSearch }
                 ),
                 hint = "부서명"
             )
@@ -374,9 +372,9 @@ private fun DepartmentDialog(
                 items(employeeEditState.dropDownMenu.departmentMenu) { item ->
                     DepartmentInfoItem(
                         name = item.name,
-                        head = "부서장",   // TODO: 부서장 이름 출력 (부서 목록 받을 때 부서장도 받기? 아니면 부서 검색에서만 받기?)
+                        head = "부서장",   // TODO: 부서장 이름 출력 필요 (부서 목록 받을 때 부서장도 받기? 아니면 부서 검색에서만 받기?)
                         onClick = {
-                            onEvent(EmployeeEditEvent.SelectDepartment(item.name, item.id))
+                            onEvent(EmployeeEditEvent.SelectedDepartment(item.name, item.id))
                             onDismiss()
                         }
                     )
@@ -461,7 +459,7 @@ private fun AuthDialog(
                 BasicButton(
                     name = "확인",
                     onClick = {
-                        onEvent(EmployeeEditEvent.ClickSelectAuth(selected))
+                        onEvent(EmployeeEditEvent.ClickedEditAuth(selected))
                         onDismiss()
                     }
                 )
