@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.protolite.well.known.types)
+    implementation(libs.androidx.foundation.layout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -87,4 +88,7 @@ dependencies {
 
     // 기본 자료형 응답 받기 위해 추가
     implementation("com.squareup.retrofit2:converter-scalars:2.11.0")
+
+    // 드래그 앤 드롭 정렬 기능 위해 추가
+    implementation("sh.calvin.reorderable:reorderable:3.0.0")
 }
