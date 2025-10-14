@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,12 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
@@ -41,48 +39,55 @@ import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
 import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
+import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 import java.util.Locale
-
-@Preview
-@Composable
-private fun Preview_EmployeeDetailScreen() {
-    val navController = rememberNavController()
-    val hrViewModel: HrViewModel = viewModel()
-    EmployeeDetailScreen(navController, hrViewModel)
-}
 
 /* 직원 상세 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmployeeDetailScreen(navController: NavController, hrViewModel: HrViewModel) {
+    val onEvent = hrViewModel::onDetailEvent
+
     var openDeleteDialog by remember { mutableStateOf(false) }    // 탈퇴 확인 디알로그 열림 상태
     var openChangeDialog by remember { mutableStateOf(false) }    // 비밀번호 초기화 확인 디알로그 열림 상태
 
-    val employeeDetailUiState by hrViewModel.employeeDetailUiState.collectAsState()
+    val employeeDetailState by hrViewModel.employeeDetailState.collectAsState()
 
     if (openDeleteDialog) {
-        BasicDialog(
-            title = "사용자를 탈퇴시키겠습니까?",
-            text = "이 작업은 되돌릴 수 없습니다.",
-            onDismiss = {
-                openDeleteDialog = false
-            },
-            onClickConfirm = {
-                /* TODO: [기능] 직원 탈퇴 */
-            }
-        )
+        if (employeeDetailState.employeeInfo.isUse == "Y") {
+            BasicDialog(
+                title = "사용자를 탈퇴시키겠습니까?",
+                text = "이 작업은 되돌릴 수 없습니다.",
+                onDismiss = {
+                    onEvent(EmployeeDetailEvent.ClickedDismissDeactivate)
+                    openDeleteDialog = false
+                },
+                onClickConfirm = {
+                    onEvent(EmployeeDetailEvent.ClickedDeactivate)
+                }
+            )
+        }
+        else {
+            BasicDialog(
+                title = "사용자를 복구시키겠습니까?",
+                text = "이 작업은 되돌릴 수 없습니다.",
+                onDismiss = {
+                    onEvent(EmployeeDetailEvent.ClickedDismissActivate)
+                    openDeleteDialog = false
+                },
+                onClickConfirm = {
+                    onEvent(EmployeeDetailEvent.ClickedActivate)
+                }
+            )
+        }
     }
 
     if (openChangeDialog) {
         BasicDialog(
             title = "비밀번호를 초기화하시겠습니까?",
-            onDismiss = {
-                openChangeDialog = false
-            },
-            onClickConfirm = {
-                /* TODO: [기능] 비밀번호 초기화 */
-            }
+            onDismiss = { openChangeDialog = false },
+            onClickConfirm = { onEvent(EmployeeDetailEvent.ClickedResetPassword) }
         )
     }
 
@@ -90,8 +95,9 @@ fun EmployeeDetailScreen(navController: NavController, hrViewModel: HrViewModel)
         topBar = {
             BasicTopBar(
                 title = "직원 상세",
-                actIcon = Icons.Default.Delete,
-                actTint = Color.Red,
+                actIcon = if (employeeDetailState.employeeInfo.isUse == "Y") Icons.Default.Delete else Icons.Default.RestoreFromTrash
+                ,
+                actTint = if (employeeDetailState.employeeInfo.isUse == "Y") Color.Red else MainBlue,
                 onClickNavIcon = rememberOnce { navController.popBackStack() },
                 onClickActIcon = { openDeleteDialog = true }
             )
@@ -102,9 +108,10 @@ fun EmployeeDetailScreen(navController: NavController, hrViewModel: HrViewModel)
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
-            EmployeeInfoCard(employeeDetailUiState)
-            SalaryInfoCard(employeeDetailUiState.employeeInfo.salaries)
+            EmployeeInfoCard(employeeDetailState)
+            SalaryInfoCard(employeeDetailState.employeeInfo.salaries)
             UpdateInitButtons(
+                isUse = employeeDetailState.employeeInfo.isUse,
                 onClickUpdate = { navController.navigate("employeeEdit") },
                 onClickInitPw = { openChangeDialog = true }
             )
@@ -114,7 +121,7 @@ fun EmployeeDetailScreen(navController: NavController, hrViewModel: HrViewModel)
 
 /* 직원 상세 정보 출력 카드 */
 @Composable
-private fun EmployeeInfoCard(employeeDetailUiState: EmployeeDetailUiState) {
+private fun EmployeeInfoCard(employeeDetailState: EmployeeDetailState) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp),
@@ -127,15 +134,15 @@ private fun EmployeeInfoCard(employeeDetailUiState: EmployeeDetailUiState) {
         ) {
             ProfileImage()
             Spacer(modifier = Modifier.height(20.dp))
-            InfoBar(name = "아이디", value = employeeDetailUiState.employeeInfo.id)
-            InfoBar(name = "권한", value = employeeDetailUiState.employeeInfo.authors.joinToString(", "))
-            InfoBar(name = "이름", value = employeeDetailUiState.employeeInfo.name)
-            InfoBar(name = "부서", value = employeeDetailUiState.employeeInfo.department)
-            InfoBar(name = "직급", value = employeeDetailUiState.employeeInfo.grade)
-            InfoBar(name = "직책", value = employeeDetailUiState.employeeInfo.title ?: "")
-            InfoBar(name = "연락처", value = employeeDetailUiState.employeeInfo.phone ?: "")
-            InfoBar(name = "생년월일", value = employeeDetailUiState.employeeInfo.birthDate ?: "")
-            InfoBar(name = "입사일", value = employeeDetailUiState.employeeInfo.hireDate)
+            InfoBar(name = "아이디", value = employeeDetailState.employeeInfo.id)
+            InfoBar(name = "권한", value = employeeDetailState.employeeInfo.authors.joinToString(", "))
+            InfoBar(name = "이름", value = employeeDetailState.employeeInfo.name)
+            InfoBar(name = "부서", value = employeeDetailState.employeeInfo.department)
+            InfoBar(name = "직급", value = employeeDetailState.employeeInfo.grade)
+            InfoBar(name = "직책", value = employeeDetailState.employeeInfo.title ?: "")
+            InfoBar(name = "연락처", value = employeeDetailState.employeeInfo.phone ?: "")
+            InfoBar(name = "생년월일", value = employeeDetailState.employeeInfo.birthDate ?: "")
+            InfoBar(name = "입사일", value = employeeDetailState.employeeInfo.hireDate)
         }
     }
 }
@@ -186,7 +193,7 @@ private fun SalaryInfoCard(salaries: List<EmployeeDTO.SalaryInfo>) {
 
 /* 수정 버튼, 비밀번호 초기화 버튼 */
 @Composable
-private fun UpdateInitButtons(onClickUpdate: () -> Unit, onClickInitPw: () -> Unit) {
+private fun UpdateInitButtons(isUse: String, onClickUpdate: () -> Unit, onClickInitPw: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -196,9 +203,11 @@ private fun UpdateInitButtons(onClickUpdate: () -> Unit, onClickInitPw: () -> Un
             onClick = { onClickInitPw() }
         )
 
-        BasicButton(
-            name = "수정",
-            onClick = { onClickUpdate() }
-        )
+        if (isUse == "Y") {
+            BasicButton(
+                name = "수정",
+                onClick = { onClickUpdate() }
+            )
+        }
     }
 }

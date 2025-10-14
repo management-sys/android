@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class CommonCodeRepository @Inject constructor() {
-    private val service: CommonCodeService = RetrofitInstance.retrofit.create(CommonCodeService::class.java)
+    private val service = RetrofitInstance.commonCodeService
 
     // 공통코드 목록 조회 및 검색
     fun getCommonCodes(searchType: SearchType, searchKeyword: String, page: Int): Flow<Result<CommonCodeDTO.GetCommonCodesResponse>> = flow {

@@ -38,6 +38,7 @@ import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
 import com.example.attendancemanagementapp.ui.hr.employee.HrTarget
 import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
+import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -50,7 +51,7 @@ fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel)
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
-    val employeeManageUiState by hrViewModel.employeeManageUiState.collectAsState()
+    val employeeManageUiState by hrViewModel.employeeManageState.collectAsState()
 
     val listState = rememberLazyListState()
 
@@ -168,9 +169,11 @@ private fun EmployeeInfoItem(employeeInfo: EmployeeDTO.ManageEmployeesInfo, dept
             elevation = CardDefaults.cardElevation(2.dp),
             onClick = onClick
         ) {
+            val textColor = if (employeeInfo.isUse == "Y") Color.Black else TextGray
+
             Spacer(modifier = Modifier.height(12.dp))
-            TwoInfoBar(deptGradeTitle, employeeInfo.name)
-            TwoInfoBar(employeeInfo.hireDate, employeeInfo.userId)
+            TwoInfoBar(deptGradeTitle, employeeInfo.name, textColor)
+            TwoInfoBar(employeeInfo.hireDate, employeeInfo.userId, textColor)
             Spacer(modifier = Modifier.height(14.dp))
         }
 }

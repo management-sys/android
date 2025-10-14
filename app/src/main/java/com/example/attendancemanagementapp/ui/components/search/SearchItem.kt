@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -77,19 +78,21 @@ fun SearchBar(searchUiState: SearchUiState, hint: String = "검색어를 입력�
             ),
             keyboardActions = KeyboardActions(
                 onSearch = { searchUiState.onClickSearch() }
-            )
+            ),
+            trailingIcon = {
+                if (searchUiState.value.isNotEmpty()) {
+                    IconButton(
+                        onClick = { searchUiState.onClickInit() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Cancel,
+                            contentDescription = "검색어 초기화 버튼",
+                            tint = DarkGray
+                        )
+                    }
+                }
+            }
         )
-
-        IconButton(
-            modifier = Modifier.weight(0.12f),
-            onClick = { searchUiState.onClickInit() }
-        ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "검색어 초기화 버튼",
-                tint = DarkGray
-            )
-        }
     }
 }
 

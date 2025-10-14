@@ -538,8 +538,9 @@ fun DepartmentUserItem(
         shape = RoundedCornerShape(10.dp),
         border = BorderStroke(width = 0.5.dp, color = DividerDefaults.color.copy(alpha = 0.8f))
     ) {
+        Spacer(modifier = Modifier.height(4.dp))
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -560,7 +561,7 @@ fun DepartmentUserItem(
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp).padding(bottom = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -574,5 +575,6 @@ fun DepartmentUserItem(
                 fontSize = 15.sp
             )
         }
+        Spacer(modifier = Modifier.height(15.dp))
     }
 }

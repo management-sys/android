@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class DepartmentRepository @Inject constructor() {
-    private val service: DepartmentService = RetrofitInstance.retrofit.create(DepartmentService::class.java)
+    private val service = RetrofitInstance.departmentService
 
     // 부서 목록 조회
     fun getDepartments(): Flow<Result<List<DepartmentDTO.DepartmentsInfo>>> = flow {

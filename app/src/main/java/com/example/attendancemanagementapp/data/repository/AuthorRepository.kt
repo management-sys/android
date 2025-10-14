@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class AuthorRepository @Inject constructor() {
-    private val service: AuthorService = RetrofitInstance.retrofit.create(AuthorService::class.java)
+    private val service = RetrofitInstance.authorService
 
     // 권한 목록 조회
     fun getAuthors(): Flow<Result<List<AuthorDTO.GetAuthorsResponse>>> = flow {

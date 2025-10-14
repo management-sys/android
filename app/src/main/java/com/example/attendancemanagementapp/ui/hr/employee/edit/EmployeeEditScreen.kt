@@ -73,7 +73,7 @@ import com.example.attendancemanagementapp.ui.util.rememberOnce
 @Composable
 fun EmployeeEditScreen(navController: NavController, hrViewModel: HrViewModel) {
     val onEvent = hrViewModel::onEditEvent
-    val employeeEditState by hrViewModel.employeeEditUiState.collectAsState()
+    val employeeEditState by hrViewModel.employeeEditState.collectAsState()
     
     var openDeptDialog by remember { mutableStateOf(false) }    // 부서 선택 팝업창 열림 상태
     var openAuthDialog by remember { mutableStateOf(false) }    // 권한 선택 팝업창 열림 상태

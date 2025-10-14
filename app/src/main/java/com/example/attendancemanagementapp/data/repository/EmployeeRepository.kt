@@ -9,12 +9,32 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class EmployeeRepository @Inject constructor() {
-    private val service: EmployeeService = RetrofitInstance.retrofit.create(EmployeeService::class.java)
+    private val service = RetrofitInstance.employeeService
 
     // 직원 목록 조회 및 검색
     fun getEmployees(searchKeyword: String): Flow<Result<List<EmployeeDTO.EmployeesInfo>>> = flow {
         val response = service.getEmployees(
             name = searchKeyword
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 새로운 직원 등록
+    fun addEmployee(request: EmployeeDTO.AddEmployeeRequest): Flow<Result<EmployeeDTO.EmployeeInfo>> = flow {
+        val response = service.addEmployee(
+            request = request
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 직원 정보 수정
+    fun updateEmployee(request: EmployeeDTO.UpdateEmployeeRequest): Flow<Result<EmployeeDTO.EmployeeInfo>> = flow {
+        val response = service.updateEmployee(
+            request = request
         )
         emit(Result.success(response))
     }.catch { e ->
@@ -31,6 +51,36 @@ class EmployeeRepository @Inject constructor() {
         emit(Result.failure(e))
     }
 
+    // 직원 복구 (활성화)
+    fun setActivate(userId: String): Flow<Result<EmployeeDTO.EmployeeInfo>> = flow {
+        val response = service.setActivate(
+            userId = userId
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 직원 탈퇴 (비활성화)
+    fun setDeactivate(userId: String): Flow<Result<EmployeeDTO.EmployeeInfo>> = flow {
+        val response = service.setDeactivate(
+            userId = userId
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 비밀번호 초기화
+    fun resetPassword(request: EmployeeDTO.ResetPasswordRequest): Flow<Result<String>> = flow {
+        val response = service.resetPassword(
+            request = request
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
     // 직원 관리 목록 조회 및 검색 (직원 목록 고급 조회)
     fun getManageEmployees(department: String, grade: String, title: String, name: String, page: Int): Flow<Result<EmployeeDTO.GetManageEmployeesResponse>> = flow {
         val response = service.getManageEmployees(
@@ -39,16 +89,6 @@ class EmployeeRepository @Inject constructor() {
             title = if (title == "직책") "" else title,
             name = name,
             page = page
-        )
-        emit(Result.success(response))
-    }.catch { e ->
-        emit(Result.failure(e))
-    }
-
-    // 직원 정보 수정
-    fun updateEmployee(request: EmployeeDTO.UpdateEmployeeRequest): Flow<Result<EmployeeDTO.EmployeeInfo>> = flow {
-        val response = service.updateEmployee(
-            request = request
         )
         emit(Result.success(response))
     }.catch { e ->

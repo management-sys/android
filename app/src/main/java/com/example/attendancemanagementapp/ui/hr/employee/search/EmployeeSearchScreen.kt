@@ -48,7 +48,7 @@ fun EmployeeSearchScreen(navController: NavController, hrViewModel: HrViewModel)
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
-    val employeeSearchUiState by hrViewModel.employeeSearchUiState.collectAsState()
+    val employeeSearchUiState by hrViewModel.employeeSearchState.collectAsState()
 
     var openBottomSheet by remember { mutableStateOf(false) }   // 직원 정보 바텀 시트 열림 상태
 

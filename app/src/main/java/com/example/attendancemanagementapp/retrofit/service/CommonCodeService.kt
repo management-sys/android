@@ -19,12 +19,6 @@ interface CommonCodeService {
         @Query("size") size: Int? = null   // 페이지 당 데이터 개수
     ): CommonCodeDTO.GetCommonCodesResponse
 
-    // 공통코드 상세 조회
-    @GET("/api/codes/{code}")
-    suspend fun getCommonCodeDetail(
-        @Path("code") code: String
-    ): CommonCodeDTO.CommonCodeInfo
-
     // 공통코드 등록
     @POST("/api/codes")
     suspend fun addCommonCode(
@@ -36,6 +30,12 @@ interface CommonCodeService {
     suspend fun updateCommonCode(
         @Body request: CommonCodeDTO.AddUpdateCommonCodeRequest
     ): CommonCodeDTO.AddUpdateCommonCodeResponse
+
+    // 공통코드 상세 조회
+    @GET("/api/codes/{code}")
+    suspend fun getCommonCodeDetail(
+        @Path("code") code: String
+    ): CommonCodeDTO.CommonCodeInfo
 
     // 공통코드 삭제
     @DELETE("/api/codes/{code}")

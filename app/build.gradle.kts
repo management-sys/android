@@ -84,4 +84,7 @@ dependencies {
     // JSON 파싱 위해 Moshi 추가
     implementation("com.squareup.moshi:moshi:1.15.1")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
+
+    // 기본 자료형 응답 받기 위해 추가
+    implementation("com.squareup.retrofit2:converter-scalars:2.11.0")
 }

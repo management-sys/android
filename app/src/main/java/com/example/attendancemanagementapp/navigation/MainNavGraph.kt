@@ -9,11 +9,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -29,10 +26,10 @@ import com.example.attendancemanagementapp.ui.components.BasicDrawer
 import com.example.attendancemanagementapp.ui.home.HomeScreen
 import com.example.attendancemanagementapp.ui.home.attendance.AttendanceViewModel
 import com.example.attendancemanagementapp.ui.home.calendar.CalendarViewModel
-import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailScreen
 import com.example.attendancemanagementapp.ui.hr.department.manage.DepartmentManageScreen
+import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddScreen
 import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailScreen
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditScreen
@@ -44,17 +41,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MainNavGraph(navController: NavHostController = rememberNavController()) {
-    var allowOpen by remember { mutableStateOf(false) }  // 코드로 열 때만 true
-    val drawerState = rememberDrawerState(
-        initialValue = DrawerValue.Closed,
-        confirmStateChange = { target ->
-            when (target) {
-                DrawerValue.Open   -> allowOpen      // 스와이프/사용자 동작으로 열기 차단
-                DrawerValue.Closed -> true           // 스크림 탭/스와이프로 닫기 허용
-            }
-        }
-    )
-
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     
     val codeViewModel: CodeViewModel = hiltViewModel()

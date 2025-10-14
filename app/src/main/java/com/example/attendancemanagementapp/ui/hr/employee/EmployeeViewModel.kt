@@ -7,7 +7,8 @@ import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.repository.AuthorRepository
 import com.example.attendancemanagementapp.data.repository.DepartmentRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
-import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailUiState
+import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailEvent
+import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailState
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditEvent
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditReducer
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditState
@@ -17,6 +18,7 @@ import com.example.attendancemanagementapp.ui.hr.employee.manage.EmployeeManageS
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchEvent
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchReducer
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchState
+import com.example.attendancemanagementapp.ui.util.formatPhone
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +29,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class HrTarget { MANAGE, SEARCH }
-//enum class DepartmentField { NAME, DESCRIPTION }
 
 sealed interface UiEffect {
     data object NavigateBack: UiEffect
@@ -44,14 +45,14 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
     private val _uiEffects = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
     val uiEffects = _uiEffects.asSharedFlow()
 
-    private val _employeeDetailUiState = MutableStateFlow(EmployeeDetailUiState())
-    val employeeDetailUiState = _employeeDetailUiState.asStateFlow()
+    private val _employeeDetailState = MutableStateFlow(EmployeeDetailState())
+    val employeeDetailState = _employeeDetailState.asStateFlow()
     private val _employeeEditState = MutableStateFlow(EmployeeEditState())
-    val employeeEditUiState = _employeeEditState.asStateFlow()
+    val employeeEditState = _employeeEditState.asStateFlow()
     private val _employeeSearchState = MutableStateFlow(EmployeeSearchState())
-    val employeeSearchUiState = _employeeSearchState.asStateFlow()
+    val employeeSearchState = _employeeSearchState.asStateFlow()
     private val _employeeManageState = MutableStateFlow(EmployeeManageState())
-    val employeeManageUiState = _employeeManageState.asStateFlow()
+    val employeeManageState = _employeeManageState.asStateFlow()
 
     init {
         getEmployees()
@@ -60,11 +61,21 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
         getAuthors()
     }
 
+    fun onDetailEvent(e: EmployeeDetailEvent) {
+        when (e) {
+            is EmployeeDetailEvent.ClickedResetPassword -> resetPassword()
+            EmployeeDetailEvent.ClickedDeactivate -> setDeactivate()
+            EmployeeDetailEvent.ClickedDismissDeactivate -> _snackbar.tryEmit("사용자 탈퇴가 취소되었습니다.")
+            EmployeeDetailEvent.ClickedActivate -> setActivate()
+            EmployeeDetailEvent.ClickedDismissActivate -> _snackbar.tryEmit("사용자 복구가 취소되었습니다.")
+        }
+    }
+
     fun onEditEvent(e: EmployeeEditEvent) {
         when (e) {
             is EmployeeEditEvent.Init -> {
-                val employeeInfo = employeeDetailUiState.value.employeeInfo
-                val departments = employeeManageUiState.value.dropDownMenu.departmentMenu
+                val employeeInfo = employeeDetailState.value.employeeInfo
+                val departments = employeeManageState.value.dropDownMenu.departmentMenu
 
                 _employeeEditState.update { EmployeeEditReducer.reduce(it, EmployeeEditEvent.InitWith(employeeInfo, departments)) }
             }
@@ -119,16 +130,6 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
         }
     }
 
-    /* 전화번호 형식 포맷팅 */
-    private fun formatPhone(d: String): String {
-        val s = d.filter(Char::isDigit).take(11)
-        return when {
-            s.length <= 3 -> s
-            s.length <= 7 -> "${s.substring(0,3)}-${s.substring(3)}"
-            else -> "${s.substring(0,3)}-${s.substring(3,7)}-${s.substring(7)}"
-        }
-    }
-
     /* 직원 목록 조회 */
     fun getEmployees() {
         viewModelScope.launch {
@@ -153,7 +154,7 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
                     .onSuccess { employeeInfo ->
                         when (hrTarget) {
                             HrTarget.SEARCH -> { _employeeSearchState.update { it.copy(employeeInfo = employeeInfo) } }
-                            HrTarget.MANAGE -> { _employeeDetailUiState.update { it.copy(employeeInfo = employeeInfo) } }
+                            HrTarget.MANAGE -> { _employeeDetailState.update { it.copy(employeeInfo = employeeInfo) } }
                         }
                         Log.d(TAG, "직원 목록 상세 조회 성공: ${userId}\n${employeeInfo}")
                     }
@@ -166,7 +167,7 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
 
     /* 직원 관리 목록 조회 */
     fun getManageEmployees() {
-        val state = employeeManageUiState.value
+        val state = employeeManageState.value
 
         viewModelScope.launch {
             _employeeManageState.update { it.copy(isLoading = true) }
@@ -197,17 +198,17 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
 
     /* 직원 정보 수정 */
     fun updateEmployee() {
-        val inputData = employeeEditUiState.value.inputData
+        val inputData = employeeEditState.value.inputData
         val request = EmployeeDTO.UpdateEmployeeRequest(
             userId = inputData.userId,
             name = inputData.name,
-            departmentId = employeeEditUiState.value.selectDepartmentId, // 부서 아이디
+            departmentId = employeeEditState.value.selectDepartmentId, // 부서 아이디
             grade = inputData.grade,
             title = if (inputData.title == "직책") "" else inputData.title!!,
             phone = formatPhone(inputData.phone ?: ""), // 전화번호 형식으로 포맷팅 (000-0000-0000)
             birthDate = if (inputData.birthDate.isNullOrBlank()) "" else inputData.birthDate + "T00:00:00",
             hireDate = inputData.hireDate + "T00:00:00",
-            authors = employeeEditUiState.value.selectAuthor.map { it.code },
+            authors = employeeEditState.value.selectAuthor.map { it.code },
             salaries = inputData.salaries.filter { it.year != "" && it.amount != 0 } // 연봉 정보를 입력하지 않았으면 제거
         )
 
@@ -215,9 +216,9 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
         viewModelScope.launch {
             employeeRepository.updateEmployee(request).collect { result ->
                 result
-                    .onSuccess { result ->
-                        _employeeDetailUiState.update { it.copy(employeeInfo = result) }
-                        Log.d(TAG, "직원 정보 수정 성공: ${result}")
+                    .onSuccess { data ->
+                        _employeeDetailState.update { it.copy(employeeInfo = data) }
+                        Log.d(TAG, "직원 정보 수정 성공: ${data}")
                         _snackbar.emit("수정이 완료되었습니다")
                         _uiEffects.emit(UiEffect.NavigateBack)
                     }
@@ -261,6 +262,58 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
                     .onSuccess { authors ->
                         _employeeEditState.update { it.copy(authors = authors) }
                         Log.d(TAG, "권한 목록 조회 성공\n${authors}")
+                    }
+                    .onFailure { e ->
+                        e.printStackTrace()
+                    }
+            }
+        }
+    }
+
+    /* 비밀번호 초기화 */
+    fun resetPassword() {
+        viewModelScope.launch {
+            val request = EmployeeDTO.ResetPasswordRequest(id = employeeDetailState.value.employeeInfo.userId)
+            employeeRepository.resetPassword(request).collect { result ->
+                result
+                    .onSuccess { message ->
+                        // TODO: 스낵바 출력
+                        _snackbar.emit("비밀번호가 초기화되었습니다.")
+                        Log.d(TAG, "비밀번호 초기화 성공\n${message}")
+                    }
+                    .onFailure { e ->
+                        e.printStackTrace()
+                    }
+            }
+        }
+    }
+
+    /* 직원 탈퇴 */
+    fun setDeactivate() {
+        viewModelScope.launch {
+            employeeRepository.setDeactivate(employeeDetailState.value.employeeInfo.userId).collect { result ->
+                result
+                    .onSuccess { data ->
+                        _employeeDetailState.update { it.copy(employeeInfo = data) }
+                        _snackbar.emit("사용자 탈퇴가 성공적으로 저장되었습니다!")
+                        Log.d(TAG, "직원 탈퇴 성공\n${data}")
+                    }
+                    .onFailure { e ->
+                        e.printStackTrace()
+                    }
+            }
+        }
+    }
+
+    /* 직원 복구 */
+    fun setActivate() {
+        viewModelScope.launch {
+            employeeRepository.setActivate(employeeDetailState.value.employeeInfo.userId).collect { result ->
+                result
+                    .onSuccess { data ->
+                        _employeeDetailState.update { it.copy(employeeInfo = data) }
+                        _snackbar.emit("사용자 복구가 성공적으로 저장되었습니다!")
+                        Log.d(TAG, "직원 복구 성공\n${data}")
                     }
                     .onFailure { e ->
                         e.printStackTrace()
