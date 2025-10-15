@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.retrofit.param.SearchType
-import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -50,7 +49,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
-    val codeManageUiState by codeViewModel.codeManageUiState.collectAsState()
+    val codeManageState by codeViewModel.codeManageUiState.collectAsState()
 
     val listState = rememberLazyListState()
 
@@ -61,7 +60,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
             val total = info.totalItemsCount
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !codeManageUiState.isLoading && codeManageUiState.currentPage < codeManageUiState.totalPage) {
+            if (shouldLoad && !codeManageState.isLoading && codeManageState.currentPage < codeManageState.totalPage) {
                 codeViewModel.getCodes()
             }
         }
@@ -93,7 +92,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
             CategorySearchBar(
                 codeSearchUiState = CodeSearchUiState(
                     searchUiState = SearchUiState(
-                        value = codeManageUiState.searchText,
+                        value = codeManageState.searchText,
                         onValueChange = { codeViewModel.onSearchTextChange(it) },
                         onClickSearch = {
                             // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
@@ -106,7 +105,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                             codeViewModel.getCodes()
                         }
                     ),
-                    selectedCategory = codeManageUiState.selectedCategory,
+                    selectedCategory = codeManageState.selectedCategory,
                     categories = SearchType.entries,
                     onClickCategory = { codeViewModel.onSearchTypeChange(it) }
                 )
@@ -118,7 +117,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 state = listState
             ) {
-                items(codeManageUiState.codes) { item ->
+                items(codeManageState.codes) { item ->
                     CodeInfoItem(
                         upperCodeInfo = item,
                         onClick = {
@@ -128,7 +127,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                     )
                 }
 
-                if (codeManageUiState.isLoading) {
+                if (codeManageState.isLoading) {
                     item {
                         Box(
                             Modifier.fillMaxWidth().padding(16.dp),

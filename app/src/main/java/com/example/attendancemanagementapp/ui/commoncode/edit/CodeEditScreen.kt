@@ -23,7 +23,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.retrofit.param.SearchType
-import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.BigEditBar
@@ -45,8 +44,8 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
-    val codeEditUiState by codeViewModel.codeEditUiState.collectAsState()
-    val codeListUiState by codeViewModel.codeManageUiState.collectAsState()
+    val codeEditState by codeViewModel.codeEditState.collectAsState()
+    val codeListState by codeViewModel.codeManageUiState.collectAsState()
 
     var openDialog by remember { mutableStateOf(false) }    // 공통코드 검색 디알로그 열림 상태
 
@@ -59,7 +58,7 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
             val total = info.totalItemsCount
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !codeListUiState.isLoading && codeListUiState.currentPage < codeListUiState.totalPage) {
+            if (shouldLoad && !codeListState.isLoading && codeListState.currentPage < codeListState.totalPage) {
                 codeViewModel.getCodes()
             }
         }
@@ -74,10 +73,10 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
     if (openDialog) {
         CommonCodeDialog(
             listState = listState,
-            isLoading = codeListUiState.isLoading,
+            isLoading = codeListState.isLoading,
             codeSearchUiState = CodeSearchUiState(
                 searchUiState = SearchUiState(
-                    value = codeListUiState.searchText,
+                    value = codeListState.searchText,
                     onValueChange = { codeViewModel.onSearchTextChange(it) },
                     onClickSearch = {
                         // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
@@ -90,11 +89,11 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
                         codeViewModel.getCodes()
                     }
                 ),
-                selectedCategory = codeListUiState.selectedCategory,
+                selectedCategory = codeListState.selectedCategory,
                 categories = SearchType.entries,
                 onClickCategory = { codeViewModel.onSearchTypeChange(it) }
             ),
-            commonCodes = codeListUiState.codes,
+            commonCodes = codeListState.codes,
             onDismiss = {
                 openDialog = false
                 codeViewModel.initSearchState() // 검색 관련 초기화
@@ -118,26 +117,26 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                SearchEditBar(name = "상위코드", value = codeEditUiState.inputData.upperCode ?: "", onClick = { openDialog = true } )
+                SearchEditBar(name = "상위코드", value = codeEditState.inputData.upperCode ?: "", onClick = { openDialog = true } )
 
-                EditBar(name = "상위코드명", value = codeEditUiState.inputData.upperCodeName ?: "", enabled = false)
+                EditBar(name = "상위코드명", value = codeEditState.inputData.upperCodeName ?: "", enabled = false)
 
-                EditBar(name = "코드", value = codeEditUiState.inputData.code, enabled = false, isRequired = true)
+                EditBar(name = "코드", value = codeEditState.inputData.code, enabled = false, isRequired = true)
                 EditBar(
                     name = "코드명",
-                    value = codeEditUiState.inputData.codeName,
+                    value = codeEditState.inputData.codeName,
                     onValueChange = { codeViewModel.onFieldChange(target = Target.EDIT, field = CodeInfoField.CODENAME, input = it) },
                     isRequired = true
                 )
                 EditBar(
                     name = "코드 설정값",
-                    value = codeEditUiState.inputData.codeValue ?: "",
+                    value = codeEditState.inputData.codeValue ?: "",
                     onValueChange = { codeViewModel.onFieldChange(target = Target.EDIT, field = CodeInfoField.CODEVALUE, input = it) }
                 )
                 RadioEditBar(name = "사용여부", selected = "사용", isRequired = true)
                 BigEditBar(
                     name = "설명",
-                    value = codeEditUiState.inputData.description ?: "",
+                    value = codeEditState.inputData.description ?: "",
                     onValueChange = { codeViewModel.onFieldChange(target = Target.EDIT, field = CodeInfoField.DESCRIPTION, input = it) }
                 )
             }

@@ -8,9 +8,9 @@ import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.commoncode.add.CodeAddUiState
-import com.example.attendancemanagementapp.ui.commoncode.detail.CodeDetailUiState
-import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditUiState
-import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageUiState
+import com.example.attendancemanagementapp.ui.commoncode.detail.CodeDetailState
+import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditState
+import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,14 +32,14 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
     private val _uiEffect = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
     val uiEffect = _uiEffect.asSharedFlow()
 
-    private val _codeManageUiState = MutableStateFlow(CodeManageUiState())
-    val codeManageUiState = _codeManageUiState.asStateFlow()
-    private val _codeDetailUiState = MutableStateFlow(CodeDetailUiState())
-    val codeDetailUiState = _codeDetailUiState.asStateFlow()
-    private val _codeEditUiState = MutableStateFlow(CodeEditUiState())
-    val codeEditUiState = _codeEditUiState.asStateFlow()
-    private val _codeAddUiState = MutableStateFlow(CodeAddUiState())
-    val codeAddUiState = _codeAddUiState.asStateFlow()
+    private val _codeManageState = MutableStateFlow(CodeManageState())
+    val codeManageUiState = _codeManageState.asStateFlow()
+    private val _codeDetailState = MutableStateFlow(CodeDetailState())
+    val codeDetailState = _codeDetailState.asStateFlow()
+    private val _codeEditState = MutableStateFlow(CodeEditState())
+    val codeEditState = _codeEditState.asStateFlow()
+    private val _codeAddState = MutableStateFlow(CodeAddUiState())
+    val codeAddState = _codeAddState.asStateFlow()
 
     init {
         getCodes()
@@ -47,29 +47,29 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
 
     /* 공통코드 등록 UI 상태 초기화 */
     fun initCodeAddUiState() {
-        _codeAddUiState.value = CodeAddUiState()
+        _codeAddState.value = CodeAddUiState()
     }
 
     /* 공통코드 수정 UI 상태 초기화 */
     fun initCodeEditUiState() {
-        _codeEditUiState.update { it.copy(inputData = _codeDetailUiState.value.codeInfo) }
+        _codeEditState.update { it.copy(inputData = _codeDetailState.value.codeInfo) }
     }
 
     /* 검색어, 카테고리 상태 초기화 */
     fun initSearchState() {
-        _codeManageUiState.value = CodeManageUiState()
+        _codeManageState.value = CodeManageState()
         getCodes()  // 전체 코드 목록 가져옴
     }
 
     /* 검색어 입력 필드 값 변경 */
     fun onSearchTextChange(input: String) {
-        _codeManageUiState.update { it.copy(searchText = input, currentPage = 0) }
+        _codeManageState.update { it.copy(searchText = input, currentPage = 0) }
     }
 
     /* 검색 카테고리 값 변경 */
     fun onSearchTypeChange(selected: SearchType) {
-        _codeManageUiState.update { it.copy(selectedCategory = selected, currentPage = 0) }
-        if (_codeManageUiState.value.searchText != "") {  // 검색어가 빈 값이면 목록 조회 안 함
+        _codeManageState.update { it.copy(selectedCategory = selected, currentPage = 0) }
+        if (_codeManageState.value.searchText != "") {  // 검색어가 빈 값이면 목록 조회 안 함
             getCodes()
         }
     }
@@ -77,12 +77,12 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
     /* 입력 필드 값 변경 헬퍼 */
     private inline fun updateForm(target: Target, crossinline transform: (CommonCodeDTO.CommonCodeInfo) -> CommonCodeDTO.CommonCodeInfo) {
         when (target) {
-            Target.ADD -> _codeAddUiState.update { state ->
+            Target.ADD -> _codeAddState.update { state ->
                 state.copy(
                     inputData = transform(state.inputData)
                 )
             }
-            Target.EDIT -> _codeEditUiState.update { state ->
+            Target.EDIT -> _codeEditState.update { state ->
                 state.copy(
                     inputData = transform(state.inputData)
                 )
@@ -110,7 +110,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
         val upperCodeName = selectedItem.upperCodeName.orEmpty()
 
         when (target) {
-            Target.ADD -> _codeAddUiState.update { state ->
+            Target.ADD -> _codeAddState.update { state ->
                 state.copy(
                     inputData = state.inputData.copy(
                         upperCode = upperCode,
@@ -118,7 +118,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                     )
                 )
             }
-            Target.EDIT -> _codeEditUiState.update { state ->
+            Target.EDIT -> _codeEditState.update { state ->
                 state.copy(
                     inputData = state.inputData.copy(
                         upperCode = upperCode,
@@ -128,15 +128,15 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
             }
         }
 
-        Log.d(TAG, "상위코드 선택: ${_codeAddUiState.value}")
+        Log.d(TAG, "상위코드 선택: ${_codeAddState.value}")
     }
 
     /* 공통코드 목록 조회 */
     fun getCodes() {
-        val state = _codeManageUiState.value
+        val state = _codeManageState.value
 
         viewModelScope.launch {
-            _codeManageUiState.update { it.copy(isLoading = true) }
+            _codeManageState.update { it.copy(isLoading = true) }
 
             repository.getCommonCodes(
                 state.selectedCategory,
@@ -146,10 +146,10 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                 result
                     .onSuccess { data ->
                         if (state.currentPage == 0) {
-                            _codeManageUiState.update { it.copy(codes = data.content, currentPage = it.currentPage + 1, totalPage = data.totalPages, isLoading = false) }
+                            _codeManageState.update { it.copy(codes = data.content, currentPage = it.currentPage + 1, totalPage = data.totalPages, isLoading = false) }
                         }
                         else {
-                            _codeManageUiState.update { it.copy(codes = it.codes + data.content, currentPage = it.currentPage + 1, isLoading = false) }
+                            _codeManageState.update { it.copy(codes = it.codes + data.content, currentPage = it.currentPage + 1, isLoading = false) }
                         }
                         Log.d(TAG, "공통코드 목록 조회 성공: ${state.currentPage + 1}/${data.totalPages}, 검색(${state.selectedCategory}, ${state.searchText})\n${data.content}")
                     }
@@ -166,8 +166,8 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
             repository.getCommonCodeDetail(code).collect { result ->
                 result
                     .onSuccess { codeInfo ->
-                        _codeDetailUiState.update { it.copy(codeInfo = codeInfo) }
-                        _codeEditUiState.update { it.copy(inputData = codeInfo) }
+                        _codeDetailState.update { it.copy(codeInfo = codeInfo) }
+                        _codeEditState.update { it.copy(inputData = codeInfo) }
                         Log.d(TAG, "공통코드 상세 조회 완료: ${code}\n${codeInfo}")
                     }
                     .onFailure { e ->
@@ -179,7 +179,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
 
     /* 공통코드 등록 */
     fun addCode() {
-        val inputData = _codeAddUiState.value.inputData
+        val inputData = _codeAddState.value.inputData
         val commonCodeData = CommonCodeDTO.AddUpdateCommonCodeRequest(
             code = inputData.code,
             codeName = inputData.codeName,
@@ -210,7 +210,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
 
     /* 공통코드 수정 */
     fun updateCode() {
-        val inputData = _codeEditUiState.value.inputData
+        val inputData = _codeEditState.value.inputData
         val commoCodeData = CommonCodeDTO.AddUpdateCommonCodeRequest(
             code = inputData.code,
             codeName = inputData.codeName,
@@ -240,7 +240,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
 
     /* 공통코드 삭제 */
     fun deleteCode() {
-        val code = _codeDetailUiState.value.codeInfo.code
+        val code = _codeDetailState.value.codeInfo.code
 
         viewModelScope.launch {
             repository.deleteCommonCode(code).collect { result ->
