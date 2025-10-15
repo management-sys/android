@@ -68,7 +68,7 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
 
     /* 스낵바 출력 */
     fun showSnackBar(message: String) {
-        _uiEffect.tryEmit(UiEffect.ShowSnackbar(message))
+        _uiEffect.tryEmit(UiEffect.ShowToast(message))
     }
 
     /* 직원 목록 조회 및 검색 */
@@ -140,7 +140,7 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
     /* TODO: 부서 수정 */
     fun updateDepartment() {
 
-        _uiEffect.tryEmit(UiEffect.ShowSnackbar("부서가 성공적으로 수정되었습니다."))  // 수정 성공 시 출력
+        _uiEffect.tryEmit(UiEffect.ShowToast("부서가 성공적으로 수정되었습니다."))  // 수정 성공 시 출력
     }
 
     /* TODO: 부서 삭제 */

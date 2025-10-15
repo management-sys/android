@@ -97,11 +97,6 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
     LaunchedEffect(Unit) {
         onEvent(EmployeeEditEvent.Init)
     }
-
-    CollectUiEffect(
-        uiEffect = employeeViewModel.uiEffect,
-        navController = navController
-    )
     
     Scaffold(
         topBar = {

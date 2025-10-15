@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.R
+import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.AnnualLeaveImage
 import com.example.attendancemanagementapp.ui.components.FinishWorkImage
 import com.example.attendancemanagementapp.ui.components.ProfileImage

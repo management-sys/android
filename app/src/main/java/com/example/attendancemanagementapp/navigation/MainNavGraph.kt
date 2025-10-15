@@ -17,6 +17,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.attendancemanagementapp.ui.base.CollectUiEffect
+import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.commoncode.add.CodeAddScreen
 import com.example.attendancemanagementapp.ui.commoncode.detail.CodeDetailScreen
@@ -50,21 +52,14 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
     val calendarViewModel: CalendarViewModel = hiltViewModel()
     val attendanceViewModel: AttendanceViewModel = hiltViewModel()
 
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(codeViewModel, employeeViewModel, departmentViewModel, attendanceViewModel) {
-        merge(
-            codeViewModel.snackbar,
-            departmentViewModel.snackbar,
-            attendanceViewModel.snackbar
-        ).collectLatest { msg ->
-            snackbarHostState.showSnackbar(
-                message = msg,
-                withDismissAction = true,
-                duration = SnackbarDuration.Short
-            )
-        }
-    }
+    CollectUiEffect(
+        navController = navController,
+        codeViewModel.uiEffect,
+        employeeViewModel.uiEffect,
+        departmentViewModel.uiEffect,
+        calendarViewModel.uiEffect,
+        attendanceViewModel.uiEffect
+    )
 
     BasicDrawer(
         drawerState = drawerState,
@@ -74,9 +69,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
         },
         onLogoutClick = { /* TODO: [기능] 로그아웃 */ }
     ) {
-        Scaffold(
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-        ) { paddingValues ->
+        Scaffold()
+        { paddingValues ->
             NavHost(
                 navController = navController,
     //            startDestination = RootRoute.HR.route,

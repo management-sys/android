@@ -2,6 +2,7 @@ package com.example.attendancemanagementapp.ui.base
 
 import android.widget.Toast
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,19 +15,17 @@ import kotlinx.coroutines.flow.merge
 
 @Composable
 fun CollectUiEffect(
-    uiEffect: SharedFlow<UiEffect>,
     navController: NavController,
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    vararg uiEffect: SharedFlow<UiEffect>
 ) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        uiEffect.collect { effect ->
+        merge(*uiEffect).collectLatest { effect ->
             when (effect) {
                 UiEffect.NavigateBack -> navController.popBackStack()
                 is UiEffect.Navigate -> navController.navigate(effect.route)
-                is UiEffect.ShowToast -> Toast.makeText(context, effect.message, Toast.LENGTH_SHORT)
-                is UiEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                is UiEffect.ShowToast -> Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
             }
         }
     }

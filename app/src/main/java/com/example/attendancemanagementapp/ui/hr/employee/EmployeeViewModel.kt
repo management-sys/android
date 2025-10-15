@@ -96,9 +96,9 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
         when (e) {
             is EmployeeDetailEvent.ClickedResetPassword -> resetPassword()
             EmployeeDetailEvent.ClickedDeactivate -> setDeactivate()
-            EmployeeDetailEvent.ClickedDismissDeactivate -> _uiEffect.tryEmit(UiEffect.ShowSnackbar("사용자 탈퇴가 취소되었습니다."))
+            EmployeeDetailEvent.ClickedDismissDeactivate -> _uiEffect.tryEmit(UiEffect.ShowToast("사용자 탈퇴가 취소되었습니다."))
             EmployeeDetailEvent.ClickedActivate -> setActivate()
-            EmployeeDetailEvent.ClickedDismissActivate -> _uiEffect.tryEmit(UiEffect.ShowSnackbar("사용자 복구가 취소되었습니다."))
+            EmployeeDetailEvent.ClickedDismissActivate -> _uiEffect.tryEmit(UiEffect.ShowToast("사용자 복구가 취소되었습니다."))
         }
     }
 
@@ -251,7 +251,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
                         .onSuccess { data ->
                             _employeeDetailState.update { it.copy(employeeInfo = data) }
                             Log.d(TAG, "직원 등록 성공: ${data}")
-                            _uiEffect.emit(UiEffect.ShowSnackbar("등록이 완료되었습니다."))
+                            _uiEffect.emit(UiEffect.ShowToast("등록이 완료되었습니다."))
                             _uiEffect.emit(UiEffect.NavigateBack)
                             _uiEffect.emit(UiEffect.Navigate("employeeDetail")) // 등록한 직원 상세 조회 화면으로 이동
                         }
@@ -362,7 +362,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
                 result
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
-                        _uiEffect.emit(UiEffect.ShowToast("사용자 탈퇴가 성공적으로 저장되었습니다!"))
+                        _uiEffect.emit(UiEffect.ShowToast("사용자가 탈퇴되었습니다."))
                         Log.d(TAG, "직원 탈퇴 성공\n${data}")
                     }
                     .onFailure { e ->
@@ -379,7 +379,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
                 result
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
-                        _uiEffect.emit(UiEffect.ShowToast("사용자 복구가 성공적으로 저장되었습니다!"))
+                        _uiEffect.emit(UiEffect.ShowToast("사용자가 복구되었습니다."))
                         Log.d(TAG, "직원 복구 성공\n${data}")
                     }
                     .onFailure { e ->

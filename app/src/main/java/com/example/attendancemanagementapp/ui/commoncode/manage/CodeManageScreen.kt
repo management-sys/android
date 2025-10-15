@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.retrofit.param.SearchType
+import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar

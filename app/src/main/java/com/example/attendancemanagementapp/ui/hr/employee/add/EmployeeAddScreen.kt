@@ -96,11 +96,6 @@ fun EmployeeAddScreen(navController: NavController, employeeViewModel: EmployeeV
         onEvent(EmployeeAddEvent.Init)
     }
 
-    CollectUiEffect(
-        uiEffect = employeeViewModel.uiEffect,
-        navController = navController
-    )
-
     Scaffold(
         topBar = {
             BasicTopBar(

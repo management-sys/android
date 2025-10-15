@@ -66,11 +66,6 @@ fun EmployeeSearchScreen(navController: NavController, employeeViewModel: Employ
         }
     }
 
-    CollectUiEffect(
-        uiEffect = employeeViewModel.uiEffect,
-        navController = navController
-    )
-
     Scaffold(
         topBar = {
             BasicTopBar(

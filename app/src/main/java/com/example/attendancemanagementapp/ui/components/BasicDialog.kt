@@ -15,7 +15,8 @@ fun BasicDialog(
     title: String,              // 제목
     text: String = "",          // 내용
     onDismiss: () -> Unit,
-    onClickConfirm: () -> Unit
+    onClickConfirm: () -> Unit,
+    onClickDismiss: () -> Unit = onDismiss
 ) {
     AlertDialog(
         title = {
@@ -52,7 +53,7 @@ fun BasicDialog(
         dismissButton = {
             TextButton(
                 onClick = {
-                    onDismiss()
+                    onClickDismiss()
                 }
             ) {
                 Text(

@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -53,10 +54,7 @@ fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel)
                 openDialog = false
             },
             onClickConfirm = {
-                codeViewModel.deleteCode(isSuccess = {
-                    codeViewModel.initSearchState()
-                    navController.popBackStack()
-                })
+                codeViewModel.deleteCode()
             }
         )
     }

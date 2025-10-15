@@ -66,12 +66,6 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
             }
         )
     }
-
-    CollectUiEffect(
-        uiEffect = departmentViewModel.uiEffect,
-        navController = navController
-    )
-
     Scaffold(
         topBar = {
             BasicTopBar(

@@ -61,11 +61,14 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                 title = "사용자를 탈퇴시키겠습니까?",
                 text = "이 작업은 되돌릴 수 없습니다.",
                 onDismiss = {
-                    onEvent(EmployeeDetailEvent.ClickedDismissDeactivate)
                     openDeleteDialog = false
                 },
                 onClickConfirm = {
                     onEvent(EmployeeDetailEvent.ClickedDeactivate)
+                },
+                onClickDismiss = {
+                    onEvent(EmployeeDetailEvent.ClickedDismissDeactivate)
+                    openDeleteDialog = false
                 }
             )
         }
@@ -74,11 +77,14 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                 title = "사용자를 복구시키겠습니까?",
                 text = "이 작업은 되돌릴 수 없습니다.",
                 onDismiss = {
-                    onEvent(EmployeeDetailEvent.ClickedDismissActivate)
                     openDeleteDialog = false
                 },
                 onClickConfirm = {
                     onEvent(EmployeeDetailEvent.ClickedActivate)
+                },
+                onClickDismiss = {
+                    onEvent(EmployeeDetailEvent.ClickedDismissActivate)
+                    openDeleteDialog = false
                 }
             )
         }
@@ -91,11 +97,6 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
             onClickConfirm = { onEvent(EmployeeDetailEvent.ClickedResetPassword) }
         )
     }
-
-    CollectUiEffect(
-        uiEffect = employeeViewModel.uiEffect,
-        navController = navController
-    )
 
     Scaffold(
         topBar = {

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.retrofit.param.SearchType
+import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.commoncode.add.CodeAddUiState
 import com.example.attendancemanagementapp.ui.commoncode.detail.CodeDetailUiState
 import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditUiState
@@ -28,8 +29,8 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
         private const val TAG = "CodeViewModel"
     }
 
-    private val _snackbar = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 1)
-    val snackbar = _snackbar.asSharedFlow()
+    private val _uiEffect = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
+    val uiEffect = _uiEffect.asSharedFlow()
 
     private val _codeManageUiState = MutableStateFlow(CodeManageUiState())
     val codeManageUiState = _codeManageUiState.asStateFlow()
@@ -177,7 +178,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
     }
 
     /* 공통코드 등록 */
-    fun addCode(isSuccess: () -> Unit) {
+    fun addCode() {
         val inputData = _codeAddUiState.value.inputData
         val commonCodeData = CommonCodeDTO.AddUpdateCommonCodeRequest(
             code = inputData.code,
@@ -192,9 +193,13 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                 result
                     .onSuccess { code ->
                         getCodeInfo(code)
+                        initSearchState()
+
+                        _uiEffect.emit(UiEffect.NavigateBack)
+                        _uiEffect.emit(UiEffect.Navigate("codeDetail"))
+                        _uiEffect.emit(UiEffect.ShowToast("등록이 완료되었습니다"))
+
                         Log.d(TAG, "공통코드 등록 완료: ${code}\n${commonCodeData}")
-                        _snackbar.emit("등록이 완료되었습니다")
-                        isSuccess()
                     }
                     .onFailure { e ->
                         e.printStackTrace()
@@ -204,7 +209,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
     }
 
     /* 공통코드 수정 */
-    fun updateCode(isSuccess: () -> Unit) {
+    fun updateCode() {
         val inputData = _codeEditUiState.value.inputData
         val commoCodeData = CommonCodeDTO.AddUpdateCommonCodeRequest(
             code = inputData.code,
@@ -219,9 +224,12 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                 result
                     .onSuccess { code ->
                         getCodeInfo(code)
+                        initSearchState()
+
+                        _uiEffect.emit(UiEffect.NavigateBack)
+                        _uiEffect.emit(UiEffect.ShowToast("수정이 완료되었습니다"))
+
                         Log.d(TAG, "공통코드 수정 완료: ${code}\n${commoCodeData}")
-                        _snackbar.emit("수정이 완료되었습니다")
-                        isSuccess()
                     }
                     .onFailure { e ->
                         e.printStackTrace()
@@ -231,16 +239,19 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
     }
 
     /* 공통코드 삭제 */
-    fun deleteCode(isSuccess: () -> Unit) {
+    fun deleteCode() {
         val code = _codeDetailUiState.value.codeInfo.code
 
         viewModelScope.launch {
             repository.deleteCommonCode(code).collect { result ->
                 result
                     .onSuccess { count ->
+                        initSearchState()
+
+                        _uiEffect.emit(UiEffect.NavigateBack)
+                        _uiEffect.emit(UiEffect.ShowToast("삭제가 완료되었습니다"))
+
                         Log.d(TAG, "공통코드 삭제 완료: ${code} ${count}")
-                        _snackbar.emit("삭제가 완료되었습니다")
-                        isSuccess()
                     }
                     .onFailure { e ->
                         e.printStackTrace()

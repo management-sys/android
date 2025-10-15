@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.retrofit.param.SearchType
+import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.BigEditBar
@@ -151,11 +152,7 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 BasicLongButton(name = "등록", onClick = {
-                    codeViewModel.addCode(isSuccess = {
-                        codeViewModel.initSearchState()
-                        navController.popBackStack()
-                        navController.navigate("codeDetail")
-                    })
+                    codeViewModel.addCode()
                 })
             }
         }
