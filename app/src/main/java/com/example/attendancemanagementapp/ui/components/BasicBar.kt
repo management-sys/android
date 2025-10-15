@@ -239,7 +239,8 @@ fun EditBar(
     value: String,                          // 값
     onValueChange: (String) -> Unit = {},   // 값 변경 시 실행 함수
     enabled: Boolean = true,                // 이용 가능 여부
-    isRequired: Boolean = false             // 필수 여부
+    isRequired: Boolean = false,            // 필수 여부
+    hint: String = ""                       // 값이 없을 때 보이는 값
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
@@ -277,7 +278,7 @@ fun EditBar(
             ),
             placeholder = {
                 Text(
-                    text = value,
+                    text = value.ifBlank { hint },
                     fontSize = 16.sp
                 )
             },
@@ -531,7 +532,7 @@ fun PhoneEditBar(
             ),
             placeholder = {
                 Text(
-                    text = value,
+                    text = value.ifBlank { "01012345678" },
                     fontSize = 16.sp
                 )
             },
@@ -608,7 +609,7 @@ fun DateEditBar(
                 ),
                 placeholder = {
                     Text(
-                        text = value,
+                        text = value.ifBlank { "연도-월-일" },
                         fontSize = 16.sp
                     )
                 },
@@ -700,7 +701,7 @@ fun DateEditDeleteBar(
                 ),
                 placeholder = {
                     Text(
-                        text = value,
+                        text = value.ifBlank { "연도-월-일" },
                         fontSize = 16.sp
                     )
                 },

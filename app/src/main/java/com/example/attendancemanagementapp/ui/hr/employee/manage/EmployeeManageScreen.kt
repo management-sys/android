@@ -37,7 +37,7 @@ import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
 import com.example.attendancemanagementapp.ui.hr.employee.HrTarget
-import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
+import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.ui.util.rememberOnce
@@ -46,12 +46,12 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 /* 직원 관리 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel) {
-    val onEvent = hrViewModel::onManageEvent
+fun EmployeeManageScreen(navController: NavController, employeeViewModel: EmployeeViewModel) {
+    val onEvent = employeeViewModel::onManageEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
-    val employeeManageUiState by hrViewModel.employeeManageState.collectAsState()
+    val employeeManageUiState by employeeViewModel.employeeManageState.collectAsState()
 
     val listState = rememberLazyListState()
 
@@ -63,7 +63,7 @@ fun EmployeeManageScreen(navController: NavController, hrViewModel: HrViewModel)
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
             if (shouldLoad && !employeeManageUiState.isLoading && employeeManageUiState.currentPage < employeeManageUiState.totalPage) {
-                hrViewModel.getManageEmployees()
+                employeeViewModel.getManageEmployees()
             }
         }
     }

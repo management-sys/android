@@ -28,4 +28,15 @@ class DepartmentRepository @Inject constructor() {
     }.catch { e ->
         emit(Result.failure(e))
     }
+
+    // 부서 정보 수정
+    fun updateDepartment(departmentId: String, request: DepartmentDTO.UpdateDepartmentRequest): Flow<Result<DepartmentDTO.DepartmentInfo>> = flow {
+        val response = service.updateDepartment(
+            departmentId = departmentId,
+            request = request
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
 }

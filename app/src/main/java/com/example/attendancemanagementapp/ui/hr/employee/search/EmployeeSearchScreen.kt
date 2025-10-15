@@ -35,7 +35,7 @@ import com.example.attendancemanagementapp.ui.components.ProfileImage
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
-import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
+import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.hr.employee.HrTarget
 import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.ui.util.rememberOnce
@@ -43,12 +43,12 @@ import com.example.attendancemanagementapp.ui.util.rememberOnce
 /* 직원 검색 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EmployeeSearchScreen(navController: NavController, hrViewModel: HrViewModel) {
-    val onEvent = hrViewModel::onSearchEvent
+fun EmployeeSearchScreen(navController: NavController, employeeViewModel: EmployeeViewModel) {
+    val onEvent = employeeViewModel::onSearchEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
-    val employeeSearchUiState by hrViewModel.employeeSearchState.collectAsState()
+    val employeeSearchUiState by employeeViewModel.employeeSearchState.collectAsState()
 
     var openBottomSheet by remember { mutableStateOf(false) }   // 직원 정보 바텀 시트 열림 상태
 

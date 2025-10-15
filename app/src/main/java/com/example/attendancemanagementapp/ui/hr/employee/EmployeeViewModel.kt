@@ -7,6 +7,9 @@ import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.repository.AuthorRepository
 import com.example.attendancemanagementapp.data.repository.DepartmentRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
+import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddEvent
+import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddReducer
+import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddState
 import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailEvent
 import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailState
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditEvent
@@ -32,10 +35,11 @@ enum class HrTarget { MANAGE, SEARCH }
 
 sealed interface UiEffect {
     data object NavigateBack: UiEffect
+    data class Navigate(val route: String): UiEffect
 }
 
 @HiltViewModel
-class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRepository, private val departmentRepository: DepartmentRepository, private val authorRepository: AuthorRepository) : ViewModel() {
+class EmployeeViewModel @Inject constructor(private val employeeRepository: EmployeeRepository, private val departmentRepository: DepartmentRepository, private val authorRepository: AuthorRepository) : ViewModel() {
     companion object {
         private const val TAG = "HrViewModel"
     }
@@ -45,6 +49,8 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
     private val _uiEffects = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
     val uiEffects = _uiEffects.asSharedFlow()
 
+    private val _employeeAddState = MutableStateFlow(EmployeeAddState())
+    val employeeAddState = _employeeAddState.asStateFlow()
     private val _employeeDetailState = MutableStateFlow(EmployeeDetailState())
     val employeeDetailState = _employeeDetailState.asStateFlow()
     private val _employeeEditState = MutableStateFlow(EmployeeEditState())
@@ -59,6 +65,38 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
         getManageEmployees()
         getDepartments()
         getAuthors()
+    }
+
+    fun onAddEvent(e: EmployeeAddEvent) {
+        when (e) {
+            is EmployeeAddEvent.Init -> {
+                val departments = employeeManageState.value.dropDownMenu.departmentMenu
+
+                _employeeAddState.update { EmployeeAddReducer.reduce(it, EmployeeAddEvent.InitWith(departments)) }
+            }
+            is EmployeeAddEvent.ChangedValueWith -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
+            is EmployeeAddEvent.ChangedSalaryWith -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
+            is EmployeeAddEvent.ChangedSearchWith -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
+            is EmployeeAddEvent.ClickedAddSalary -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
+            is EmployeeAddEvent.ClickedDeleteSalaryWith -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
+            is EmployeeAddEvent.ClickedInitSearch -> {
+                _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
+                getDepartments()
+            }
+            is EmployeeAddEvent.SelectedDepartmentWith -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
+            is EmployeeAddEvent.ClickedEditAuthWith -> {
+                _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
+                Log.d("직원 추가 상태", "${_employeeAddState.value.toString()}")
+            }
+            is EmployeeAddEvent.ClickedInitBirthDate -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
+            is EmployeeAddEvent.ClickedSearch -> searchDepartment()
+            is EmployeeAddEvent.ClickedAdd -> addEmployee()
+            else -> {
+                _employeeAddState.update { s ->
+                    EmployeeAddReducer.reduce(s, e)
+                }
+            }
+        }
     }
 
     fun onDetailEvent(e: EmployeeDetailEvent) {
@@ -196,6 +234,42 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
         }
     }
 
+    /* 새로운 직원 등록 */
+    fun addEmployee() {
+        viewModelScope.launch {
+            val inputData = employeeAddState.value.inputData
+            val request = EmployeeDTO.AddEmployeeRequest(
+                id = inputData.loginId,
+                name = inputData.name,
+                departmentId = employeeAddState.value.selectDepartmentId, // 부서 아이디
+                grade = inputData.grade,
+                title = if (inputData.title == "직책") "" else inputData.title!!,
+                phone = formatPhone(inputData.phone ?: ""), // 전화번호 형식으로 포맷팅 (000-0000-0000)
+                birthDate = if (inputData.birthDate.isNullOrBlank()) "" else inputData.birthDate + "T00:00:00",
+                hireDate = inputData.hireDate + "T00:00:00",
+                authors = employeeAddState.value.selectAuthor.map { it.code }, // 권한 코드
+                salaries = inputData.salaries.filter { it.year != "" && it.amount != 0 } // 연봉 정보를 입력하지 않았으면 제거
+            )
+
+            Log.d(TAG, "직원 등록 요청\n${request}")
+            viewModelScope.launch {
+                employeeRepository.addEmployee(request).collect { result ->
+                    result
+                        .onSuccess { data ->
+                            _employeeDetailState.update { it.copy(employeeInfo = data) }
+                            Log.d(TAG, "직원 정보 수정 성공: ${data}")
+                            _snackbar.emit("등록이 완료되었습니다")
+                            _uiEffects.emit(UiEffect.NavigateBack)
+                            _uiEffects.emit(UiEffect.Navigate("employeeDetail")) // 등록한 직원 상세 조회 화면으로 이동
+                        }
+                        .onFailure { e ->
+                            e.printStackTrace()
+                        }
+                }
+            }
+        }
+    }
+
     /* 직원 정보 수정 */
     fun updateEmployee() {
         val inputData = employeeEditState.value.inputData
@@ -261,6 +335,7 @@ class HrViewModel @Inject constructor(private val employeeRepository: EmployeeRe
                 result
                     .onSuccess { authors ->
                         _employeeEditState.update { it.copy(authors = authors) }
+                        _employeeAddState.update { it.copy(authors = authors) }
                         Log.d(TAG, "권한 목록 조회 성공\n${authors}")
                     }
                     .onFailure { e ->

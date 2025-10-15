@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.SubdirectoryArrowRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -38,6 +39,7 @@ import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailEvent
+import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -98,42 +100,57 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
             ) {
                 items(deptList, key = { it.id }) { dept ->
                     ReorderableItem(state = state, key = dept.id) { isDragging ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .then(
-                                    if (isDragging)
-                                        Modifier.shadow(10.dp, RoundedCornerShape(10.dp))
-                                    else Modifier
-                                ),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White),
-                            elevation = CardDefaults.cardElevation(defaultElevation = if (isDragging) 6.dp else 2.dp),
-                            onClick = {
-                                onEvent(DepartmentManageEvent.SelectedDepartmentWith(dept.id))
-                                navController.navigate("departmentDetail")
-                            }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = dept.name,
-                                    modifier = Modifier.padding(start = 10.dp)
+                            repeat(dept.depth) {
+                                Icon(
+                                    imageVector = Icons.Default.SubdirectoryArrowRight,
+                                    contentDescription = "부서 깊이",
+                                    tint = DarkGray,
+                                    modifier = Modifier.size(18.dp)
                                 )
+                            }
 
-                                IconButton(
-                                    modifier = Modifier.draggableHandle(),
-                                    onClick = {}
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .then(
+                                        if (isDragging)
+                                            Modifier.shadow(10.dp, RoundedCornerShape(10.dp))
+                                        else Modifier
+                                    ),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(defaultElevation = if (isDragging) 6.dp else 2.dp),
+                                onClick = {
+                                    onEvent(DepartmentManageEvent.SelectedDepartmentWith(dept.id))
+                                    navController.navigate("departmentDetail")
+                                }
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.DragHandle,
-                                        contentDescription = "드래그 아이콘",
-                                        modifier = Modifier.size(24.dp)
+                                    Text(
+                                        text = dept.name,
+                                        modifier = Modifier.padding(start = 10.dp)
                                     )
+
+                                    IconButton(
+                                        modifier = Modifier.draggableHandle(),
+                                        onClick = {}
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.DragHandle,
+                                            contentDescription = "드래그 아이콘",
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

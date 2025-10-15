@@ -62,7 +62,7 @@ import com.example.attendancemanagementapp.ui.components.SearchEditBar
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
-import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
+import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.hr.employee.UiEffect
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
@@ -71,9 +71,9 @@ import com.example.attendancemanagementapp.ui.util.rememberOnce
 /* 직원 수정 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EmployeeEditScreen(navController: NavController, hrViewModel: HrViewModel) {
-    val onEvent = hrViewModel::onEditEvent
-    val employeeEditState by hrViewModel.employeeEditState.collectAsState()
+fun EmployeeEditScreen(navController: NavController, employeeViewModel: EmployeeViewModel) {
+    val onEvent = employeeViewModel::onEditEvent
+    val employeeEditState by employeeViewModel.employeeEditState.collectAsState()
     
     var openDeptDialog by remember { mutableStateOf(false) }    // 부서 선택 팝업창 열림 상태
     var openAuthDialog by remember { mutableStateOf(false) }    // 권한 선택 팝업창 열림 상태
@@ -99,9 +99,10 @@ fun EmployeeEditScreen(navController: NavController, hrViewModel: HrViewModel) {
     }
 
     LaunchedEffect(Unit) {
-        hrViewModel.uiEffects.collect { effect ->
+        employeeViewModel.uiEffects.collect { effect ->
             when (effect) {
                 UiEffect.NavigateBack -> navController.popBackStack()
+                is UiEffect.Navigate -> navController.navigate(effect.route)
             }
         }
     }
@@ -139,7 +140,7 @@ fun EmployeeEditScreen(navController: NavController, hrViewModel: HrViewModel) {
 
 /* 직원 상세 정보 수정 카드 */
 @Composable
-fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEditEvent) -> Unit, onOpenAuth: () -> Unit, onOpenDept: () -> Unit) {
+private fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEditEvent) -> Unit, onOpenAuth: () -> Unit, onOpenDept: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp),
@@ -390,7 +391,7 @@ private fun DepartmentDialog(
 
 /* 부서 목록 아이템 */
 @Composable
-private fun DepartmentInfoItem(name: String, head: String, onClick: () -> Unit) {
+fun DepartmentInfoItem(name: String, head: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -470,7 +471,7 @@ private fun AuthDialog(
 
 /* 권한 목록 아이템 */
 @Composable
-private fun AuthItem(
+fun AuthItem(
     info: AuthorDTO.GetAuthorsResponse,
     isChecked: Boolean,
     onChecked: (Boolean) -> Unit,

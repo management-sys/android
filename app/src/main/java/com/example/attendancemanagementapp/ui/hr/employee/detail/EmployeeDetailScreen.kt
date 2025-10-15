@@ -38,7 +38,7 @@ import com.example.attendancemanagementapp.ui.components.BasicTextButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
-import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
+import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 import java.util.Locale
@@ -46,13 +46,13 @@ import java.util.Locale
 /* 직원 상세 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EmployeeDetailScreen(navController: NavController, hrViewModel: HrViewModel) {
-    val onEvent = hrViewModel::onDetailEvent
+fun EmployeeDetailScreen(navController: NavController, employeeViewModel: EmployeeViewModel) {
+    val onEvent = employeeViewModel::onDetailEvent
 
     var openDeleteDialog by remember { mutableStateOf(false) }    // 탈퇴 확인 디알로그 열림 상태
     var openChangeDialog by remember { mutableStateOf(false) }    // 비밀번호 초기화 확인 디알로그 열림 상태
 
-    val employeeDetailState by hrViewModel.employeeDetailState.collectAsState()
+    val employeeDetailState by employeeViewModel.employeeDetailState.collectAsState()
 
     if (openDeleteDialog) {
         if (employeeDetailState.employeeInfo.isUse == "Y") {

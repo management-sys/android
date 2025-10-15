@@ -29,7 +29,7 @@ import com.example.attendancemanagementapp.ui.home.calendar.CalendarViewModel
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailScreen
 import com.example.attendancemanagementapp.ui.hr.department.manage.DepartmentManageScreen
-import com.example.attendancemanagementapp.ui.hr.employee.HrViewModel
+import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddScreen
 import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailScreen
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditScreen
@@ -45,17 +45,17 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
     val scope = rememberCoroutineScope()
     
     val codeViewModel: CodeViewModel = hiltViewModel()
-    val hrViewModel: HrViewModel = hiltViewModel()
+    val employeeViewModel: EmployeeViewModel = hiltViewModel()
     val departmentViewModel: DepartmentViewModel = hiltViewModel()
     val calendarViewModel: CalendarViewModel = hiltViewModel()
     val attendanceViewModel: AttendanceViewModel = hiltViewModel()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(codeViewModel, hrViewModel, departmentViewModel, attendanceViewModel) {
+    LaunchedEffect(codeViewModel, employeeViewModel, departmentViewModel, attendanceViewModel) {
         merge(
             codeViewModel.snackbar,
-            hrViewModel.snackbar,
+            employeeViewModel.snackbar,
             departmentViewModel.snackbar,
             attendanceViewModel.snackbar
         ).collectLatest { msg ->
@@ -91,11 +91,11 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
                 composable("codeEdit") { CodeEditScreen(navController, codeViewModel) }     // 공통코드 수정 화면
                 composable("codeAdd") { CodeAddScreen(navController, codeViewModel) }       // 공통코드 등록 화면
 
-                composable("employeeManage") { EmployeeManageScreen(navController, hrViewModel) }   // 직원 관리 화면
-                composable("employeeSearch") { EmployeeSearchScreen(navController, hrViewModel) }   // 직원 검색 화면
-                composable("employeeDetail") { EmployeeDetailScreen(navController, hrViewModel) }   // 직원 상세 화면
-                composable("employeeEdit") { EmployeeEditScreen(navController, hrViewModel) }       // 직원 수정 화면
-                composable("employeeAdd") { EmployeeAddScreen(navController, hrViewModel) }         // 직원 등록 화면
+                composable("employeeManage") { EmployeeManageScreen(navController, employeeViewModel) }   // 직원 관리 화면
+                composable("employeeSearch") { EmployeeSearchScreen(navController, employeeViewModel) }   // 직원 검색 화면
+                composable("employeeDetail") { EmployeeDetailScreen(navController, employeeViewModel) }   // 직원 상세 화면
+                composable("employeeEdit") { EmployeeEditScreen(navController, employeeViewModel) }       // 직원 수정 화면
+                composable("employeeAdd") { EmployeeAddScreen(navController, employeeViewModel) }         // 직원 등록 화면
 
                 composable("departmentManage") { DepartmentManageScreen(navController, departmentViewModel) }   // 부서 관리 화면
                 composable("departmentDetail") { DepartmentDetailScreen(navController, departmentViewModel) }   // 부서 상세 화면
