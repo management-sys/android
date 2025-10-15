@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.code.add
+package com.example.attendancemanagementapp.ui.commoncode.add
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,9 +29,9 @@ import com.example.attendancemanagementapp.ui.components.BigEditBar
 import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.RadioEditBar
 import com.example.attendancemanagementapp.ui.components.SearchEditBar
-import com.example.attendancemanagementapp.ui.code.CodeInfoField
-import com.example.attendancemanagementapp.ui.code.CodeViewModel
-import com.example.attendancemanagementapp.ui.code.Target
+import com.example.attendancemanagementapp.ui.commoncode.CodeInfoField
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
+import com.example.attendancemanagementapp.ui.commoncode.Target
 import com.example.attendancemanagementapp.ui.components.search.CommonCodeDialog
 import com.example.attendancemanagementapp.ui.components.search.CodeSearchUiState
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState

@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.code.manage
+package com.example.attendancemanagementapp.ui.commoncode.manage
 
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.retrofit.param.SearchType

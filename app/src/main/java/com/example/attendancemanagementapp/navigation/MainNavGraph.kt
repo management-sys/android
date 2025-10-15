@@ -17,11 +17,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.attendancemanagementapp.ui.code.CodeViewModel
-import com.example.attendancemanagementapp.ui.code.add.CodeAddScreen
-import com.example.attendancemanagementapp.ui.code.detail.CodeDetailScreen
-import com.example.attendancemanagementapp.ui.code.edit.CodeEditScreen
-import com.example.attendancemanagementapp.ui.code.manage.CodeManageScreen
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
+import com.example.attendancemanagementapp.ui.commoncode.add.CodeAddScreen
+import com.example.attendancemanagementapp.ui.commoncode.detail.CodeDetailScreen
+import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditScreen
+import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageScreen
 import com.example.attendancemanagementapp.ui.components.BasicDrawer
 import com.example.attendancemanagementapp.ui.home.HomeScreen
 import com.example.attendancemanagementapp.ui.home.attendance.AttendanceViewModel

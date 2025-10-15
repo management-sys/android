@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.code.detail
+package com.example.attendancemanagementapp.ui.commoncode.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,7 +24,7 @@ import androidx.navigation.NavController
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
-import com.example.attendancemanagementapp.ui.code.CodeViewModel
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 
