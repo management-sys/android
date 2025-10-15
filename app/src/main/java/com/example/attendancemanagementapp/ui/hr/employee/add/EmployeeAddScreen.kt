@@ -29,7 +29,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
+import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -60,7 +60,6 @@ import com.example.attendancemanagementapp.ui.components.SearchEditBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
-import com.example.attendancemanagementapp.ui.hr.employee.UiEffect
 import com.example.attendancemanagementapp.ui.hr.employee.edit.AuthItem
 import com.example.attendancemanagementapp.ui.hr.employee.edit.DepartmentInfoItem
 import com.example.attendancemanagementapp.ui.theme.DarkGray
@@ -97,14 +96,10 @@ fun EmployeeAddScreen(navController: NavController, employeeViewModel: EmployeeV
         onEvent(EmployeeAddEvent.Init)
     }
 
-    LaunchedEffect(Unit) {
-        employeeViewModel.uiEffects.collect { effect ->
-            when (effect) {
-                UiEffect.NavigateBack -> navController.popBackStack()
-                is UiEffect.Navigate -> navController.navigate(effect.route)
-            }
-        }
-    }
+    CollectUiEffect(
+        uiEffect = employeeViewModel.uiEffect,
+        navController = navController
+    )
 
     Scaffold(
         topBar = {
@@ -402,8 +397,6 @@ private fun AuthDialog( // TODO: 체크한 권한이 체크표시가 안되어�
         allAuthor.filter { it.name in myAuthorName.toHashSet() }
             .toCollection(LinkedHashSet()))
     }
-
-    Log.d("권한 선택 디알로그", "${myAuthorName}\n${allAuthor}\n${selected}")
 
     Dialog(
         onDismissRequest = onDismiss

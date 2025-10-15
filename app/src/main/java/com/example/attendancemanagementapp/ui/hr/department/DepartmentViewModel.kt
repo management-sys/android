@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.repository.DepartmentRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
+import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailEvent
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailReducer
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailState
@@ -26,8 +27,9 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
         private const val TAG = "DepartmentViewModel"
     }
 
-    private val _snackbar = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 1)
-    val snackbar = _snackbar.asSharedFlow()
+    private val _uiEffect = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
+    val uiEffect = _uiEffect.asSharedFlow()
+
     private val _departmentManageState = MutableStateFlow(DepartmentManageState())
     val departmentManageState = _departmentManageState.asStateFlow()
     private val _departmentDetailState = MutableStateFlow(DepartmentDetailState())
@@ -66,7 +68,7 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
 
     /* 스낵바 출력 */
     fun showSnackBar(message: String) {
-        _snackbar.tryEmit(message)
+        _uiEffect.tryEmit(UiEffect.ShowSnackbar(message))
     }
 
     /* 직원 목록 조회 및 검색 */
@@ -138,7 +140,7 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
     /* TODO: 부서 수정 */
     fun updateDepartment() {
 
-        _snackbar.tryEmit("부서가 성공적으로 수정되었습니다.") // 수정 성공 시 출력
+        _uiEffect.tryEmit(UiEffect.ShowSnackbar("부서가 성공적으로 수정되었습니다."))  // 수정 성공 시 출력
     }
 
     /* TODO: 부서 삭제 */

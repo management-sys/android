@@ -48,6 +48,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
+import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicCheckbox
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
@@ -63,7 +64,6 @@ import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
-import com.example.attendancemanagementapp.ui.hr.employee.UiEffect
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.util.rememberOnce
@@ -98,20 +98,16 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
         onEvent(EmployeeEditEvent.Init)
     }
 
-    LaunchedEffect(Unit) {
-        employeeViewModel.uiEffects.collect { effect ->
-            when (effect) {
-                UiEffect.NavigateBack -> navController.popBackStack()
-                is UiEffect.Navigate -> navController.navigate(effect.route)
-            }
-        }
-    }
+    CollectUiEffect(
+        uiEffect = employeeViewModel.uiEffect,
+        navController = navController
+    )
     
     Scaffold(
         topBar = {
             BasicTopBar(
                 title = "직원 수정",
-                onClickNavIcon = rememberOnce { navController.popBackStack() }
+                onClickNavIcon = rememberOnce {  }
             )
         }
     ) { paddingValues ->

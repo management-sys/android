@@ -1,6 +1,6 @@
 package com.example.attendancemanagementapp.ui.hr.employee.search
 
-import com.example.attendancemanagementapp.ui.hr.employee.HrTarget
+import com.example.attendancemanagementapp.ui.hr.employee.EmployeeTarget
 
 sealed interface EmployeeSearchEvent {
     // 직원 검색 필드 값 변경 이벤트
@@ -16,7 +16,7 @@ sealed interface EmployeeSearchEvent {
 
     // 정보 조회할 직원 선택 이벤트
     data class SelectedEmployeeWith(
-        val target: HrTarget,
+        val target: EmployeeTarget,
         val userId: String
     ): EmployeeSearchEvent
 }

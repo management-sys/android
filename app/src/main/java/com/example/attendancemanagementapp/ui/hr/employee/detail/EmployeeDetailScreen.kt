@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
+import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTextButton
@@ -90,6 +91,11 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
             onClickConfirm = { onEvent(EmployeeDetailEvent.ClickedResetPassword) }
         )
     }
+
+    CollectUiEffect(
+        uiEffect = employeeViewModel.uiEffect,
+        navController = navController
+    )
 
     Scaffold(
         topBar = {

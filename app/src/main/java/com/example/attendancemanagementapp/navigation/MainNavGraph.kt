@@ -55,7 +55,6 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
     LaunchedEffect(codeViewModel, employeeViewModel, departmentViewModel, attendanceViewModel) {
         merge(
             codeViewModel.snackbar,
-            employeeViewModel.snackbar,
             departmentViewModel.snackbar,
             attendanceViewModel.snackbar
         ).collectLatest { msg ->

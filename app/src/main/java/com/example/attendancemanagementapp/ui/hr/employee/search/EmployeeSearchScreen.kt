@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
+import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
@@ -36,7 +37,7 @@ import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
-import com.example.attendancemanagementapp.ui.hr.employee.HrTarget
+import com.example.attendancemanagementapp.ui.hr.employee.EmployeeTarget
 import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 
@@ -64,6 +65,11 @@ fun EmployeeSearchScreen(navController: NavController, employeeViewModel: Employ
             onEvent(EmployeeSearchEvent.ClickedInitSearch)
         }
     }
+
+    CollectUiEffect(
+        uiEffect = employeeViewModel.uiEffect,
+        navController = navController
+    )
 
     Scaffold(
         topBar = {
@@ -103,7 +109,7 @@ fun EmployeeSearchScreen(navController: NavController, employeeViewModel: Employ
                             name = employeeInfo.name,
                             deptGradeTitle = formatDeptGradeTitle(employeeInfo.department, employeeInfo.grade, employeeInfo.title),
                             onClick = {
-                                onEvent(EmployeeSearchEvent.SelectedEmployeeWith(HrTarget.SEARCH, employeeInfo.id))
+                                onEvent(EmployeeSearchEvent.SelectedEmployeeWith(EmployeeTarget.SEARCH, employeeInfo.id))
                                 openBottomSheet = true
                             }
                         )

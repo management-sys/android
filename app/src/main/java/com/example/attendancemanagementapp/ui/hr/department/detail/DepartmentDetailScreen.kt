@@ -41,6 +41,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -61,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
+import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicCheckbox
 import com.example.attendancemanagementapp.ui.components.BasicDialog
@@ -130,6 +132,11 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
             onClickConfirm = { onEvent(DepartmentDetailEvent.SelectedHeadWith(false, addIdName)) }
         )
     }
+
+    CollectUiEffect(
+        uiEffect = departmentViewModel.uiEffect,
+        navController = navController
+    )
 
     Scaffold(
         topBar = {

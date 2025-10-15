@@ -7,6 +7,7 @@ import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.repository.AuthorRepository
 import com.example.attendancemanagementapp.data.repository.DepartmentRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
+import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddEvent
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddReducer
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddState
@@ -31,12 +32,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class HrTarget { MANAGE, SEARCH }
-
-sealed interface UiEffect {
-    data object NavigateBack: UiEffect
-    data class Navigate(val route: String): UiEffect
-}
+enum class EmployeeTarget { MANAGE, SEARCH }
 
 @HiltViewModel
 class EmployeeViewModel @Inject constructor(private val employeeRepository: EmployeeRepository, private val departmentRepository: DepartmentRepository, private val authorRepository: AuthorRepository) : ViewModel() {
@@ -44,10 +40,8 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
         private const val TAG = "HrViewModel"
     }
 
-    private val _snackbar = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 1)
-    val snackbar = _snackbar.asSharedFlow()
-    private val _uiEffects = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
-    val uiEffects = _uiEffects.asSharedFlow()
+    private val _uiEffect = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
+    val uiEffect = _uiEffect.asSharedFlow()
 
     private val _employeeAddState = MutableStateFlow(EmployeeAddState())
     val employeeAddState = _employeeAddState.asStateFlow()
@@ -86,7 +80,6 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
             is EmployeeAddEvent.SelectedDepartmentWith -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
             is EmployeeAddEvent.ClickedEditAuthWith -> {
                 _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
-                Log.d("직원 추가 상태", "${_employeeAddState.value.toString()}")
             }
             is EmployeeAddEvent.ClickedInitBirthDate -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
             is EmployeeAddEvent.ClickedSearch -> searchDepartment()
@@ -103,9 +96,9 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
         when (e) {
             is EmployeeDetailEvent.ClickedResetPassword -> resetPassword()
             EmployeeDetailEvent.ClickedDeactivate -> setDeactivate()
-            EmployeeDetailEvent.ClickedDismissDeactivate -> _snackbar.tryEmit("사용자 탈퇴가 취소되었습니다.")
+            EmployeeDetailEvent.ClickedDismissDeactivate -> _uiEffect.tryEmit(UiEffect.ShowSnackbar("사용자 탈퇴가 취소되었습니다."))
             EmployeeDetailEvent.ClickedActivate -> setActivate()
-            EmployeeDetailEvent.ClickedDismissActivate -> _snackbar.tryEmit("사용자 복구가 취소되었습니다.")
+            EmployeeDetailEvent.ClickedDismissActivate -> _uiEffect.tryEmit(UiEffect.ShowSnackbar("사용자 복구가 취소되었습니다."))
         }
     }
 
@@ -185,14 +178,14 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
     }
 
     /* 직원 상세 조회 */
-    fun getEmployeeDetail(hrTarget: HrTarget, userId: String) {
+    fun getEmployeeDetail(employeeTarget: EmployeeTarget, userId: String) {
         viewModelScope.launch {
             employeeRepository.getEmployeeDetail(userId).collect { result ->
                 result
                     .onSuccess { employeeInfo ->
-                        when (hrTarget) {
-                            HrTarget.SEARCH -> { _employeeSearchState.update { it.copy(employeeInfo = employeeInfo) } }
-                            HrTarget.MANAGE -> { _employeeDetailState.update { it.copy(employeeInfo = employeeInfo) } }
+                        when (employeeTarget) {
+                            EmployeeTarget.SEARCH -> { _employeeSearchState.update { it.copy(employeeInfo = employeeInfo) } }
+                            EmployeeTarget.MANAGE -> { _employeeDetailState.update { it.copy(employeeInfo = employeeInfo) } }
                         }
                         Log.d(TAG, "직원 목록 상세 조회 성공: ${userId}\n${employeeInfo}")
                     }
@@ -257,10 +250,10 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
                     result
                         .onSuccess { data ->
                             _employeeDetailState.update { it.copy(employeeInfo = data) }
-                            Log.d(TAG, "직원 정보 수정 성공: ${data}")
-                            _snackbar.emit("등록이 완료되었습니다")
-                            _uiEffects.emit(UiEffect.NavigateBack)
-                            _uiEffects.emit(UiEffect.Navigate("employeeDetail")) // 등록한 직원 상세 조회 화면으로 이동
+                            Log.d(TAG, "직원 등록 성공: ${data}")
+                            _uiEffect.emit(UiEffect.ShowSnackbar("등록이 완료되었습니다."))
+                            _uiEffect.emit(UiEffect.NavigateBack)
+                            _uiEffect.emit(UiEffect.Navigate("employeeDetail")) // 등록한 직원 상세 조회 화면으로 이동
                         }
                         .onFailure { e ->
                             e.printStackTrace()
@@ -293,8 +286,8 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
                         Log.d(TAG, "직원 정보 수정 성공: ${data}")
-                        _snackbar.emit("수정이 완료되었습니다")
-                        _uiEffects.emit(UiEffect.NavigateBack)
+                        _uiEffect.emit(UiEffect.ShowToast("수정이 완료되었습니다"))
+                        _uiEffect.emit(UiEffect.NavigateBack)
                     }
                     .onFailure { e ->
                         e.printStackTrace()
@@ -352,8 +345,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
             employeeRepository.resetPassword(request).collect { result ->
                 result
                     .onSuccess { message ->
-                        // TODO: 스낵바 출력
-                        _snackbar.emit("비밀번호가 초기화되었습니다.")
+                        _uiEffect.emit(UiEffect.ShowToast("비밀번호가 초기화되었습니다."))
                         Log.d(TAG, "비밀번호 초기화 성공\n${message}")
                     }
                     .onFailure { e ->
@@ -370,7 +362,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
                 result
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
-                        _snackbar.emit("사용자 탈퇴가 성공적으로 저장되었습니다!")
+                        _uiEffect.emit(UiEffect.ShowToast("사용자 탈퇴가 성공적으로 저장되었습니다!"))
                         Log.d(TAG, "직원 탈퇴 성공\n${data}")
                     }
                     .onFailure { e ->
@@ -387,7 +379,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
                 result
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
-                        _snackbar.emit("사용자 복구가 성공적으로 저장되었습니다!")
+                        _uiEffect.emit(UiEffect.ShowToast("사용자 복구가 성공적으로 저장되었습니다!"))
                         Log.d(TAG, "직원 복구 성공\n${data}")
                     }
                     .onFailure { e ->

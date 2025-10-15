@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
@@ -65,6 +66,11 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
             }
         )
     }
+
+    CollectUiEffect(
+        uiEffect = departmentViewModel.uiEffect,
+        navController = navController
+    )
 
     Scaffold(
         topBar = {

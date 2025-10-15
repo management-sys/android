@@ -1,6 +1,6 @@
 package com.example.attendancemanagementapp.ui.hr.employee.manage
 
-import com.example.attendancemanagementapp.ui.hr.employee.HrTarget
+import com.example.attendancemanagementapp.ui.hr.employee.EmployeeTarget
 
 enum class DropDownField { DEPARTMENT, GRADE, TITLE }
 
@@ -21,7 +21,7 @@ sealed interface EmployeeManageEvent {
 
     // 정보 조회할 직원 선택 이벤트
     data class SelectedEmployeeWith(
-        val target: HrTarget,
+        val target: EmployeeTarget,
         val userId: String
     ): EmployeeManageEvent
 

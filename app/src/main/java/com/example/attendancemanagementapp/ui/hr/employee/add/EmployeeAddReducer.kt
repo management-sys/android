@@ -122,7 +122,6 @@ object EmployeeAddReducer {
         selected: Set<AuthorDTO.GetAuthorsResponse>
     ): EmployeeAddState {
         val orderSelected = state.authors.filter { it in selected }
-        Log.d("권한 선택 리듀서", "${orderSelected}")
         return state.copy(
             inputData = state.inputData.copy(authors = orderSelected.map { it.name }),
             selectAuthor = orderSelected
