@@ -20,7 +20,7 @@ object EmployeeManageReducer {
         state: EmployeeManageState,
         value: String
     ): EmployeeManageState {
-        return state.copy(searchText = value)
+        return state.copy(searchText = value, currentPage = 0)
     }
 
     private fun handleClickedInitSearch(

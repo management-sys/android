@@ -134,7 +134,7 @@ private fun EmployeeInfoCard(employeeDetailState: EmployeeDetailState) {
         ) {
             ProfileImage()
             Spacer(modifier = Modifier.height(20.dp))
-            InfoBar(name = "아이디", value = employeeDetailState.employeeInfo.id)
+            InfoBar(name = "아이디", value = employeeDetailState.employeeInfo.loginId)
             InfoBar(name = "권한", value = employeeDetailState.employeeInfo.authors.joinToString(", "))
             InfoBar(name = "이름", value = employeeDetailState.employeeInfo.name)
             InfoBar(name = "부서", value = employeeDetailState.employeeInfo.department)

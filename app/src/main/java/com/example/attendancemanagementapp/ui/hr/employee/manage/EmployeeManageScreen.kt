@@ -173,7 +173,7 @@ private fun EmployeeInfoItem(employeeInfo: EmployeeDTO.ManageEmployeesInfo, dept
 
             Spacer(modifier = Modifier.height(12.dp))
             TwoInfoBar(deptGradeTitle, employeeInfo.name, textColor)
-            TwoInfoBar(employeeInfo.hireDate, employeeInfo.userId, textColor)
+            TwoInfoBar(employeeInfo.hireDate, employeeInfo.loginId, textColor)
             Spacer(modifier = Modifier.height(14.dp))
         }
 }

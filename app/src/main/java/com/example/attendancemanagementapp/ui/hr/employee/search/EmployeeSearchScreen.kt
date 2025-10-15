@@ -152,7 +152,7 @@ private fun EmployeeInfoBottomSheet(employeeInfo: EmployeeDTO.EmployeeInfo, onDi
         ) {
             ProfileImage()
             Spacer(modifier = Modifier.height(30.dp))
-            InfoBar(name = "아이디", value = employeeInfo.id)
+            InfoBar(name = "아이디", value = employeeInfo.loginId)
             InfoBar(name = "이름", value = employeeInfo.name)
             InfoBar(name = "부서", value = employeeInfo.department)
             InfoBar(name = "직급", value = employeeInfo.grade)

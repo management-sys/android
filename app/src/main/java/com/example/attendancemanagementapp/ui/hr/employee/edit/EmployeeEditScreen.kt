@@ -154,7 +154,7 @@ fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEdi
             Spacer(modifier = Modifier.height(20.dp))
             EditBar(
                 name = "아이디",
-                value = employeeEditState.inputData.id,
+                value = employeeEditState.inputData.loginId,
                 onValueChange = {},
                 enabled = false,
                 isRequired = true
