@@ -7,7 +7,7 @@ import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.base.UiEffect
-import com.example.attendancemanagementapp.ui.commoncode.add.CodeAddUiState
+import com.example.attendancemanagementapp.ui.commoncode.add.CodeAddState
 import com.example.attendancemanagementapp.ui.commoncode.detail.CodeDetailState
 import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditState
 import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageState
@@ -38,7 +38,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
     val codeDetailState = _codeDetailState.asStateFlow()
     private val _codeEditState = MutableStateFlow(CodeEditState())
     val codeEditState = _codeEditState.asStateFlow()
-    private val _codeAddState = MutableStateFlow(CodeAddUiState())
+    private val _codeAddState = MutableStateFlow(CodeAddState())
     val codeAddState = _codeAddState.asStateFlow()
 
     init {
@@ -47,7 +47,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
 
     /* 공통코드 등록 UI 상태 초기화 */
     fun initCodeAddUiState() {
-        _codeAddState.value = CodeAddUiState()
+        _codeAddState.value = CodeAddState()
     }
 
     /* 공통코드 수정 UI 상태 초기화 */

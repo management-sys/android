@@ -1,6 +1,7 @@
 package com.example.attendancemanagementapp.ui.components.search
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,7 @@ import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.LightBlue
 import com.example.attendancemanagementapp.ui.theme.LightGray
+import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.MiddleBlue
 
 /* 검색바 */
@@ -55,14 +57,15 @@ fun SearchBar(searchUiState: SearchUiState, hint: String = "검색어를 입력�
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
-            modifier = Modifier.weight(0.88f),
+            modifier = Modifier.weight(0.88f).border(1.dp, MainBlue, RoundedCornerShape(90.dp)),
             value = searchUiState.value,
             onValueChange = { searchUiState.onValueChange(it) },
             singleLine = true,
             shape = RoundedCornerShape(90.dp),
             colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = LightGray,
-                focusedContainerColor = LightGray,
+                cursorColor = MainBlue,
+                unfocusedContainerColor = Color.White,
+                focusedContainerColor = Color.White,
                 unfocusedIndicatorColor = Color.Transparent,    // 테두리 색상
                 focusedIndicatorColor = Color.Transparent
             ),

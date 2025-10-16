@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.attendancemanagementapp.navigation.MainNavGraph
+import com.example.attendancemanagementapp.ui.theme.AttendanceManagementAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
 
@@ -15,7 +16,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MainNavGraph()
+            AttendanceManagementAppTheme {
+                MainNavGraph()
+            }
         }
     }
 }

@@ -279,15 +279,14 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
             salaries = inputData.salaries.filter { it.year != "" && it.amount != 0 } // 연봉 정보를 입력하지 않았으면 제거
         )
 
-        Log.d(TAG, "직원 정보 수정 요청\n${request}")
         viewModelScope.launch {
             employeeRepository.updateEmployee(request).collect { result ->
                 result
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
-                        Log.d(TAG, "직원 정보 수정 성공: ${data}")
                         _uiEffect.emit(UiEffect.ShowToast("수정이 완료되었습니다"))
                         _uiEffect.emit(UiEffect.NavigateBack)
+                        Log.d(TAG, "직원 정보 수정 성공: ${data}")
                     }
                     .onFailure { e ->
                         e.printStackTrace()

@@ -66,6 +66,7 @@ import com.example.attendancemanagementapp.ui.components.search.SearchUiState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
+import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 
 /* 직원 수정 화면 */
@@ -102,7 +103,7 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
         topBar = {
             BasicTopBar(
                 title = "직원 수정",
-                onClickNavIcon = rememberOnce {  }
+                onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         }
     ) { paddingValues ->
@@ -134,8 +135,7 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
 private fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEditEvent) -> Unit, onOpenAuth: () -> Unit, onOpenDept: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -211,8 +211,7 @@ private fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (Emp
 private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (EmployeeEditEvent) -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -235,7 +234,8 @@ private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (Emp
                 ) {
                     Icon(
                         imageVector = Icons.Default.AddCircle,
-                        contentDescription = "연봉 아이템 추가 버튼"
+                        contentDescription = "연봉 아이템 추가 버튼",
+                        tint = MainBlue
                     )
                 }
             }
@@ -387,7 +387,7 @@ fun DepartmentInfoItem(name: String, head: String, onClick: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(2.dp),
+        elevation = CardDefaults.cardElevation(1.dp),
         onClick = onClick
     ) {
         Spacer(modifier = Modifier.height(12.dp))

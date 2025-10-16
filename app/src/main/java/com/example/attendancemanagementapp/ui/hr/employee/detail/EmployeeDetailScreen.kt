@@ -1,12 +1,15 @@
 package com.example.attendancemanagementapp.ui.hr.employee.detail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -16,13 +19,22 @@ import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +54,7 @@ import com.example.attendancemanagementapp.ui.components.ProfileImage
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.util.rememberOnce
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 /* 직원 상세 화면 */
@@ -49,11 +62,14 @@ import java.util.Locale
 @Composable
 fun EmployeeDetailScreen(navController: NavController, employeeViewModel: EmployeeViewModel) {
     val onEvent = employeeViewModel::onDetailEvent
+    val employeeDetailState by employeeViewModel.employeeDetailState.collectAsState()
+
+    val tabs = listOf("기본정보", "연차정보", "경력정보", "연봉정보")
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    val coroutineScope = rememberCoroutineScope()
 
     var openDeleteDialog by remember { mutableStateOf(false) }    // 탈퇴 확인 디알로그 열림 상태
     var openChangeDialog by remember { mutableStateOf(false) }    // 비밀번호 초기화 확인 디알로그 열림 상태
-
-    val employeeDetailState by employeeViewModel.employeeDetailState.collectAsState()
 
     if (openDeleteDialog) {
         if (employeeDetailState.employeeInfo.isUse == "Y") {
@@ -111,18 +127,80 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(paddingValues).verticalScroll(rememberScrollState()).padding(horizontal = 26.dp, vertical = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(15.dp)
+            modifier = Modifier.padding(paddingValues)
         ) {
-            EmployeeInfoCard(employeeDetailState)
-            SalaryInfoCard(employeeDetailState.employeeInfo.salaries)
-            UpdateInitButtons(
-                isUse = employeeDetailState.employeeInfo.isUse,
-                onClickUpdate = { navController.navigate("employeeEdit") },
-                onClickInitPw = { openChangeDialog = true }
-            )
+            TabRow(
+                selectedTabIndex = pagerState.currentPage,
+                containerColor = MaterialTheme.colorScheme.background,
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                        color = MainBlue
+                    )
+                }
+            ) {
+                tabs.forEachIndexed { idx, title ->
+                    Tab(
+                        selected = pagerState.currentPage == idx,
+                        onClick = {
+                            coroutineScope.launch { pagerState.animateScrollToPage(idx) }
+                        },
+                        text = { Text(title) },
+                        selectedContentColor = MainBlue,
+                        unselectedContentColor = Color.Black
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+                    .padding(horizontal = 26.dp, vertical = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(15.dp)
+            ) {
+//            TabRow(selectedTabIndex = pagerState.currentPage) {
+//                tabs.forEachIndexed { idx, title ->
+//                    Tab(
+//                        selected = pagerState.currentPage == idx,
+//                        onClick = {
+//                            coroutineScope.launch { pagerState.animateScrollToPage(idx) }
+//                        },
+//                        text = { Text(title) }
+//                    )
+//                }
+//            }
+
+                HorizontalPager(state = pagerState) { page ->
+                    when (page) {
+                        0 -> EmployeeInfoCard(employeeDetailState)  // 기본정보
+                        1 -> {} // 연차정보
+                        2 -> {} // 경력정보
+                        3 -> SalaryInfoCard(employeeDetailState.employeeInfo.salaries)  // 연봉정보
+                    }
+                }
+
+                UpdateInitButtons(
+                    isUse = employeeDetailState.employeeInfo.isUse,
+                    showInit = pagerState.currentPage == 0,
+                    onClickUpdate = { navController.navigate("employeeEdit") },
+                    onClickInitPw = { openChangeDialog = true }
+                )
+            }
         }
+
+//        Column(
+//            modifier = Modifier.padding(paddingValues).verticalScroll(rememberScrollState()).padding(horizontal = 26.dp, vertical = 10.dp),
+//            horizontalAlignment = Alignment.CenterHorizontally,
+//            verticalArrangement = Arrangement.spacedBy(15.dp)
+//        ) {
+//            EmployeeInfoCard(employeeDetailState)
+//            SalaryInfoCard(employeeDetailState.employeeInfo.salaries)
+//            UpdateInitButtons(
+//                isUse = employeeDetailState.employeeInfo.isUse,
+//                onClickUpdate = { navController.navigate("employeeEdit") },
+//                onClickInitPw = { openChangeDialog = true }
+//            )
+//        }
     }
 }
 
@@ -131,8 +209,7 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
 private fun EmployeeInfoCard(employeeDetailState: EmployeeDetailState) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -159,8 +236,7 @@ private fun EmployeeInfoCard(employeeDetailState: EmployeeDetailState) {
 private fun SalaryInfoCard(salaries: List<EmployeeDTO.SalaryInfo>) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -178,20 +254,31 @@ private fun SalaryInfoCard(salaries: List<EmployeeDTO.SalaryInfo>) {
                     fontWeight = FontWeight.SemiBold
                 )
             }
-            for (salary in salaries) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "•   ${salary.year}년",
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        text = String.format(Locale.getDefault(), "%,d", salary.amount),
-                        fontSize = 16.sp
-                    )
+
+            if (salaries.isEmpty()) {
+                Text(
+                    text = "연봉 정보가 없습니다.",
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)
+                )
+            }
+            else {
+                for (salary in salaries) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "•   ${salary.year}년",
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = "${String.format(Locale.getDefault(), "%,d", salary.amount)}원",
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
         }
@@ -200,15 +287,19 @@ private fun SalaryInfoCard(salaries: List<EmployeeDTO.SalaryInfo>) {
 
 /* 수정 버튼, 비밀번호 초기화 버튼 */
 @Composable
-private fun UpdateInitButtons(isUse: String, onClickUpdate: () -> Unit, onClickInitPw: () -> Unit) {
+private fun UpdateInitButtons(isUse: String, showInit: Boolean, onClickUpdate: () -> Unit, onClickInitPw: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        BasicTextButton(
-            name = "비밀번호 초기화",
-            onClick = { onClickInitPw() }
-        )
+        Box {
+            if (showInit) {
+                BasicTextButton(
+                    name = "비밀번호 초기화",
+                    onClick = { onClickInitPw() }
+                )
+            }
+        }
 
         if (isUse == "Y") {
             BasicButton(

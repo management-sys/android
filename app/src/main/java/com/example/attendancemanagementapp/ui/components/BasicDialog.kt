@@ -62,6 +62,7 @@ fun BasicDialog(
                     color = MainBlue
                 )
             }
-        }
+        },
+        containerColor = Color.White
     )
 }

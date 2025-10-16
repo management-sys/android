@@ -127,7 +127,7 @@ private fun EmployeeInfoItem(name: String, deptGradeTitle: String, onClick: () -
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(2.dp),
+        elevation = CardDefaults.cardElevation(1.dp),
         onClick = onClick
     ) {
         Spacer(modifier = Modifier.height(12.dp))
@@ -145,7 +145,8 @@ private fun EmployeeInfoBottomSheet(employeeInfo: EmployeeDTO.EmployeeInfo, onDi
     ModalBottomSheet(
         onDismissRequest = { onDismiss() },
         sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
+        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+        containerColor = Color.White
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),

@@ -39,6 +39,7 @@ import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeTarget
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
+import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.ui.util.rememberOnce
@@ -167,7 +168,7 @@ private fun EmployeeInfoItem(employeeInfo: EmployeeDTO.ManageEmployeesInfo, dept
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             shape = RoundedCornerShape(10.dp),
-            elevation = CardDefaults.cardElevation(2.dp),
+            elevation = CardDefaults.cardElevation(1.dp),
             onClick = onClick
         ) {
             val textColor = if (employeeInfo.isUse == "Y") Color.Black else TextGray

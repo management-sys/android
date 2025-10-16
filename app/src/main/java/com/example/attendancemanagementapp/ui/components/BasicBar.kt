@@ -24,18 +24,20 @@ import androidx.compose.material.icons.outlined.LaptopWindows
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,8 +59,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.attendancemanagementapp.ui.theme.DarkBlue
 import com.example.attendancemanagementapp.ui.theme.DarkGray
-import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
+import com.example.attendancemanagementapp.ui.theme.TextGray
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -110,7 +112,10 @@ fun BasicTopBar(
                     )
                 }
             }
-        }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
     )
 }
 
@@ -147,7 +152,10 @@ fun DrawerTopBar(
                     contentDescription = "마이페이지 버튼"
                 )
             }
-        }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
     )
 }
 
@@ -163,7 +171,8 @@ fun BasicBottomBar(
     )
 
     NavigationBar(
-        windowInsets = WindowInsets(0)
+        windowInsets = WindowInsets(0),
+        containerColor = MaterialTheme.colorScheme.background
     ) {
         NavigationBarItem(
             selected = selected == 0,
@@ -267,15 +276,7 @@ fun EditBar(
             onValueChange = { onValueChange(it) },
             singleLine = true,
             shape = RoundedCornerShape(5.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White,
-                unfocusedBorderColor = DarkGray,
-                focusedBorderColor = DarkGray,
-                disabledContainerColor = DisableGray,
-                disabledBorderColor = DarkGray,
-                disabledTextColor = DarkGray
-            ),
+            colors = BasicOutlinedTextFieldColors(),
             placeholder = {
                 Text(
                     text = value.ifBlank { hint },
@@ -316,15 +317,7 @@ fun BigEditBar(
             onValueChange = { onValueChange(it) },
             singleLine = false,
             shape = RoundedCornerShape(5.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White,
-                unfocusedBorderColor = DarkGray,
-                focusedBorderColor = DarkGray,
-                disabledContainerColor = DisableGray,
-                disabledBorderColor = DarkGray,
-                disabledTextColor = DarkGray
-            ),
+            colors = BasicOutlinedTextFieldColors(),
             placeholder = {
                 Text(
                     text = value,
@@ -424,11 +417,7 @@ fun SearchEditBar(
             singleLine = true,
             readOnly = true,
             shape = RoundedCornerShape(5.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledContainerColor = DisableGray,
-                disabledBorderColor = DarkGray,
-                disabledTextColor = DarkGray
-            ),
+            colors = BasicOutlinedTextFieldColors(),
             placeholder = {
                 Text(
                     text = value,
@@ -521,15 +510,7 @@ fun PhoneEditBar(
             onValueChange = { onValueChange(it) },
             singleLine = true,
             shape = RoundedCornerShape(5.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White,
-                unfocusedBorderColor = DarkGray,
-                focusedBorderColor = DarkGray,
-                disabledContainerColor = DisableGray,
-                disabledBorderColor = DarkGray,
-                disabledTextColor = DarkGray
-            ),
+            colors = BasicOutlinedTextFieldColors(),
             placeholder = {
                 Text(
                     text = value.ifBlank { "01012345678" },
@@ -560,6 +541,9 @@ fun DateEditBar(
 
     if (open) {
         DatePickerDialog(
+            colors = DatePickerDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.background
+            ),
             onDismissRequest = { open = false },
             confirmButton = {
                 TextButton(onClick = {
@@ -568,11 +552,25 @@ fun DateEditBar(
                         onValueChange(picked.format(fmt))
                     }
                     open = false
-                }) { Text("확인") }
+                }) {
+                    Text(
+                        text = "확인",
+                        color = MainBlue
+                    )
+                }
             },
-            dismissButton = { TextButton({ open = false }) { Text("취소") } }
+            dismissButton = { TextButton({ open = false }) { Text(text = "취소", color = TextGray) } }
         ) {
-            DatePicker(state = pickerState, showModeToggle = true)
+            DatePicker(
+                state = pickerState,
+                showModeToggle = true,
+                colors = DatePickerDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    selectedDayContainerColor = MainBlue,
+                    todayDateBorderColor = MainBlue,
+                    todayContentColor = MainBlue
+                )
+            )
         }
     }
 
@@ -602,11 +600,7 @@ fun DateEditBar(
                 singleLine = true,
                 readOnly = true,
                 shape = RoundedCornerShape(5.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledContainerColor = DisableGray,
-                    disabledBorderColor = DarkGray,
-                    disabledTextColor = DarkGray
-                ),
+                colors = BasicOutlinedTextFieldColors(),
                 placeholder = {
                     Text(
                         text = value.ifBlank { "연도-월-일" },
@@ -617,17 +611,13 @@ fun DateEditBar(
                     Icon(
                         imageVector = Icons.Default.CalendarToday,
                         contentDescription = "캘린더 열기",
+                        modifier = Modifier
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ) { open = true }
                     )
                 }
-            )
-
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) { open = true }
             )
         }
     }
@@ -652,6 +642,9 @@ fun DateEditDeleteBar(
 
     if (open) {
         DatePickerDialog(
+            colors = DatePickerDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.background
+            ),
             onDismissRequest = { open = false },
             confirmButton = {
                 TextButton(onClick = {
@@ -660,11 +653,25 @@ fun DateEditDeleteBar(
                         onValueChange(picked.format(fmt))
                     }
                     open = false
-                }) { Text("확인") }
+                }) {
+                    Text(
+                        text = "확인",
+                        color = MainBlue
+                    )
+                }
             },
-            dismissButton = { TextButton({ open = false }) { Text("취소") } }
+            dismissButton = { TextButton({ open = false }) { Text(text = "취소", color = TextGray) } }
         ) {
-            DatePicker(state = pickerState, showModeToggle = true)
+            DatePicker(
+                state = pickerState,
+                showModeToggle = true,
+                colors = DatePickerDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    selectedDayContainerColor = MainBlue,
+                    todayDateBorderColor = MainBlue,
+                    todayContentColor = MainBlue
+                )
+            )
         }
     }
 
@@ -694,11 +701,7 @@ fun DateEditDeleteBar(
                 singleLine = true,
                 readOnly = true,
                 shape = RoundedCornerShape(5.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledContainerColor = DisableGray,
-                    disabledBorderColor = DarkGray,
-                    disabledTextColor = DarkGray
-                ),
+                colors = BasicOutlinedTextFieldColors(),
                 placeholder = {
                     Text(
                         text = value.ifBlank { "연도-월-일" },
@@ -709,17 +712,13 @@ fun DateEditDeleteBar(
                     Icon(
                         imageVector = Icons.Default.CalendarToday,
                         contentDescription = "캘린더 열기",
+                        modifier = Modifier
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ) { open = true }
                     )
                 }
-            )
-
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) { open = true }
             )
         }
 

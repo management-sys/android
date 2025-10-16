@@ -64,6 +64,7 @@ import com.example.attendancemanagementapp.ui.hr.employee.edit.AuthItem
 import com.example.attendancemanagementapp.ui.hr.employee.edit.DepartmentInfoItem
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
+import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 
 /* 직원 등록 화면 */
@@ -132,8 +133,7 @@ fun EmployeeAddScreen(navController: NavController, employeeViewModel: EmployeeV
 private fun EmployeeEditCard(employeeAddState: EmployeeAddState, onEvent: (EmployeeAddEvent) -> Unit, onOpenAuth: () -> Unit, onOpenDept: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -210,8 +210,7 @@ private fun EmployeeEditCard(employeeAddState: EmployeeAddState, onEvent: (Emplo
 private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (EmployeeAddEvent) -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -234,7 +233,8 @@ private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (Emp
                 ) {
                     Icon(
                         imageVector = Icons.Default.AddCircle,
-                        contentDescription = "연봉 아이템 추가 버튼"
+                        contentDescription = "연봉 아이템 추가 버튼",
+                        tint = MainBlue
                     )
                 }
             }

@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -17,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -26,6 +30,8 @@ import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.components.InfoBar
+import com.example.attendancemanagementapp.ui.components.TwoInfoBar
+import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 
 /* 공통코드 상세 화면 */
@@ -72,6 +78,25 @@ fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel)
         Column(
             modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp)
         ) {
+            CodeInfoCard(
+                infos = infos,
+                onClick = { navController.navigate("codeEdit") }
+            )
+        }
+    }
+}
+
+/* 공통코드 정보 카드 */
+@Composable
+private fun CodeInfoCard(infos: List<Pair<String, String?>>, onClick: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             for (info in infos) {
                 InfoBar(name = info.first, value = info.second ?: "")
                 Spacer(modifier = Modifier.height(10.dp))
@@ -81,7 +106,7 @@ fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel)
                 modifier = Modifier.fillMaxWidth().padding(top = 90.dp),
                 horizontalArrangement = Arrangement.End
             ) {
-                BasicButton(name = "수정", onClick = { navController.navigate("codeEdit") })
+                BasicButton(name = "수정", onClick = { onClick() })
             }
         }
     }

@@ -11,9 +11,12 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +30,7 @@ import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
+import com.example.attendancemanagementapp.ui.theme.MainBlue
 import kotlin.collections.forEach
 
 /* 드롭다운 필드 */
@@ -52,17 +56,20 @@ fun DropDownField(modifier: Modifier = Modifier, options: List<String>, selected
                 unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White,
                 unfocusedBorderColor = DarkGray,
-                focusedBorderColor = DarkGray,
+                focusedBorderColor = MainBlue,
                 disabledContainerColor = DisableGray,
                 disabledBorderColor = DarkGray,
-                disabledTextColor = DarkGray
+                disabledTextColor = DarkGray,
+                focusedTrailingIconColor = DarkGray,
+                unfocusedTrailingIconColor = DarkGray
             )
         )
 
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.exposedDropdownSize().heightIn(max = 260.dp)
+            modifier = Modifier.exposedDropdownSize().heightIn(max = 260.dp),
+            containerColor = MaterialTheme.colorScheme.background
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
@@ -104,16 +111,19 @@ fun DepthDropDownField(options: List<DepartmentDTO.DepartmentsInfo>, selected: S
                 unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White,
                 unfocusedBorderColor = DarkGray,
-                focusedBorderColor = DarkGray,
+                focusedBorderColor = MainBlue,
                 disabledContainerColor = DisableGray,
                 disabledBorderColor = DarkGray,
-                disabledTextColor = DarkGray
+                disabledTextColor = DarkGray,
+                focusedTrailingIconColor = DarkGray,
+                unfocusedTrailingIconColor = DarkGray
             )
         )
 
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            containerColor = MaterialTheme.colorScheme.background
         ) {
             options.forEach { option ->
                 DropdownMenuItem(

@@ -1,7 +1,5 @@
 package com.example.attendancemanagementapp.ui.theme
 
-import androidx.compose.material3.DividerDefaults
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 val MainBlue = Color(0xFF3C7CED)

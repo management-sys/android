@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -18,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
@@ -114,41 +118,59 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
             modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp).padding(bottom = 40.dp),
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                SearchEditBar(name = "상위코드", value = codeEditState.inputData.upperCode ?: "", onClick = { openDialog = true } )
+            CodeEditCard(
+                codeEditState = codeEditState,
+                onClickOpenDialog = { openDialog = true },
+                onFieldChange = { target, field, input ->
+                    codeViewModel.onFieldChange(target, field, input)
+                },
+                onClickUpdate = { codeViewModel.updateCode() }
+            )
+        }
+    }
+}
 
-                EditBar(name = "상위코드명", value = codeEditState.inputData.upperCodeName ?: "", enabled = false)
+/* 공통카드 수정 카드 */
+@Composable
+private fun CodeEditCard(codeEditState: CodeEditState, onClickOpenDialog: () -> Unit, onFieldChange: (Target, CodeInfoField, String) -> Unit, onClickUpdate: () -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            SearchEditBar(name = "상위코드", value = codeEditState.inputData.upperCode ?: "", onClick = { onClickOpenDialog() } )
 
-                EditBar(name = "코드", value = codeEditState.inputData.code, enabled = false, isRequired = true)
-                EditBar(
-                    name = "코드명",
-                    value = codeEditState.inputData.codeName,
-                    onValueChange = { codeViewModel.onFieldChange(target = Target.EDIT, field = CodeInfoField.CODENAME, input = it) },
-                    isRequired = true
-                )
-                EditBar(
-                    name = "코드 설정값",
-                    value = codeEditState.inputData.codeValue ?: "",
-                    onValueChange = { codeViewModel.onFieldChange(target = Target.EDIT, field = CodeInfoField.CODEVALUE, input = it) }
-                )
-                RadioEditBar(name = "사용여부", selected = "사용", isRequired = true)
-                BigEditBar(
-                    name = "설명",
-                    value = codeEditState.inputData.description ?: "",
-                    onValueChange = { codeViewModel.onFieldChange(target = Target.EDIT, field = CodeInfoField.DESCRIPTION, input = it) }
-                )
-            }
+            EditBar(name = "상위코드명", value = codeEditState.inputData.upperCodeName ?: "", enabled = false)
 
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                BasicLongButton(name = "수정", onClick = {
-                    codeViewModel.updateCode()
-                })
-            }
+            EditBar(name = "코드", value = codeEditState.inputData.code, enabled = false, isRequired = true)
+            EditBar(
+                name = "코드명",
+                value = codeEditState.inputData.codeName,
+                onValueChange = { onFieldChange(Target.EDIT, CodeInfoField.CODENAME, it) },
+                isRequired = true
+            )
+            EditBar(
+                name = "코드 설정값",
+                value = codeEditState.inputData.codeValue ?: "",
+                onValueChange = { onFieldChange(Target.EDIT, CodeInfoField.CODEVALUE, it) }
+            )
+            RadioEditBar(name = "사용여부", selected = "사용", isRequired = true)
+            BigEditBar(
+                name = "설명",
+                value = codeEditState.inputData.description ?: "",
+                onValueChange = { onFieldChange(Target.EDIT, CodeInfoField.DESCRIPTION, it) }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BasicLongButton(name = "수정", onClick = { onClickUpdate() })
         }
     }
 }
