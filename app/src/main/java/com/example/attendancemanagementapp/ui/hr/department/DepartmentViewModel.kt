@@ -61,7 +61,7 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
         when (e) {
             is DepartmentManageEvent.SelectedDepartmentWith -> {
                 getDepartmentDetail(e.departmentId)
-
+                _uiEffect.tryEmit(UiEffect.Navigate("departmentDetail"))
             }
         }
     }
@@ -137,10 +137,26 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
         }
     }
 
-    /* TODO: 부서 수정 */
+    /* 부서 수정 */
     fun updateDepartment() {
+        val data = departmentDetailState.value.updateInfo
+        val request = DepartmentDTO.UpdateDepartmentRequest(
+            name = data.name,
+            description = data.description ?: ""
+        )
 
-        _uiEffect.tryEmit(UiEffect.ShowToast("부서가 성공적으로 수정되었습니다."))  // 수정 성공 시 출력
+        viewModelScope.launch {
+            departmentRepository.updateDepartment(departmentId = data.id, request = request).collect { result ->
+                result.onSuccess { data ->
+                    _departmentDetailState.update { it.copy(info = data) }
+                    _uiEffect.emit(UiEffect.ShowToast("수정이 완료되었습니다"))
+                    Log.d(TAG, "부서 수정 성공\n${data}")
+                }
+                result.onFailure { e ->
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 
     /* TODO: 부서 삭제 */

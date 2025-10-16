@@ -39,6 +39,7 @@ import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -200,7 +201,8 @@ private fun EmployeesBottomSheet(
         modifier = Modifier.fillMaxSize(),
         onDismissRequest = { onDismiss() },
         sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
+        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+        containerColor = Color.White
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),
@@ -265,7 +267,7 @@ private fun EmployeeInfoItem(name: String, deptGradeTitle: String, isContain: Bo
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+        elevation = CardDefaults.cardElevation(1.dp)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -317,8 +319,7 @@ fun DepartmentInfoCard(departmentInfo: DepartmentDTO.DepartmentInfo, openDepartm
 
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -420,8 +421,7 @@ fun DepartmentUserInfoCard(
 
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(14.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+        shape = RoundedCornerShape(14.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),

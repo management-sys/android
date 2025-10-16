@@ -1,14 +1,11 @@
 package com.example.attendancemanagementapp.ui.hr.department.manage
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -35,11 +32,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.attendancemanagementapp.ui.base.CollectUiEffect
+import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
-import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailEvent
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 import sh.calvin.reorderable.ReorderableItem
@@ -113,49 +109,57 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
                                 )
                             }
 
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                                    .then(
-                                        if (isDragging)
-                                            Modifier.shadow(10.dp, RoundedCornerShape(10.dp))
-                                        else Modifier
-                                    ),
-                                shape = RoundedCornerShape(10.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                elevation = CardDefaults.cardElevation(defaultElevation = if (isDragging) 6.dp else 2.dp),
-                                onClick = {
-                                    onEvent(DepartmentManageEvent.SelectedDepartmentWith(dept.id))
-                                    navController.navigate("departmentDetail")
-                                }
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth()
-                                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = dept.name,
-                                        modifier = Modifier.padding(start = 10.dp)
-                                    )
-
-                                    IconButton(
-                                        modifier = Modifier.draggableHandle(),
-                                        onClick = {}
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.DragHandle,
-                                            contentDescription = "드래그 아이콘",
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
-                                }
-                            }
+                            DepartmentInfoItem(
+                                modifier = Modifier.draggableHandle(),
+                                dept = dept,
+                                isDragging = isDragging,
+                                onClick = { onEvent(DepartmentManageEvent.SelectedDepartmentWith(dept.id)) }
+                            )
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/* 부서 목록 아이템 */
+@Composable
+fun DepartmentInfoItem(modifier: Modifier, dept: DepartmentDTO.DepartmentsInfo, isDragging: Boolean, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .then(
+                if (isDragging)
+                    Modifier.shadow(10.dp, RoundedCornerShape(10.dp))
+                else Modifier
+            ),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isDragging) 8.dp else 1.dp),
+        onClick = { onClick() }
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = dept.name,
+                modifier = Modifier.padding(start = 10.dp)
+            )
+
+            IconButton(
+                modifier = modifier,
+                onClick = {}
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DragHandle,
+                    contentDescription = "드래그 아이콘",
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
