@@ -10,5 +10,13 @@ data class EmployeeEditState(
     val searchText: String = "",                                            // 검색어
     val authors: List<AuthorDTO.GetAuthorsResponse> = emptyList(),          // 전체 권한 목록
     val selectAuthor: List<AuthorDTO.GetAuthorsResponse> = emptyList(),     // 선택한 권한 목록
-    val selectDepartmentId: String = ""                                     // 선택한 부서 아이디
+    val selectDepartmentId: String = "",                                    // 선택한 부서 아이디
+    //    val annualLeaveInfo: List<String> = listOf(),    // 연차 정보
+    val annualLeaveInfo: List<String> = listOf( // 연차 정보 테스트 (연차, 시작일, 종료일, 연차 개수, 이월 연차 개수, 사용 연차 개수
+        "0", "2025-07-21", "2026-07-20", "2", "0", "0"
+    ),
+//    val careerInfo: List<String> = listOf(), // 경력 정보
+    val careerInfo: List<String> = listOf(  // 경력 정보 테스트 (회사명, 입사일, 퇴사일, 기간)
+        "테이큰소프트", "2025-07-21", "", "3개월 (재직중)"
+    )
 )

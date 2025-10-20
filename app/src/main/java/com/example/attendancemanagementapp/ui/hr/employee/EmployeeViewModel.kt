@@ -8,6 +8,7 @@ import com.example.attendancemanagementapp.data.repository.AuthorRepository
 import com.example.attendancemanagementapp.data.repository.DepartmentRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.ui.base.UiEffect
+import com.example.attendancemanagementapp.ui.base.UiEffect.*
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddEvent
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddReducer
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddState
@@ -54,6 +55,9 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
     private val _employeeManageState = MutableStateFlow(EmployeeManageState())
     val employeeManageState = _employeeManageState.asStateFlow()
 
+    private val _currentPage = MutableStateFlow(0) // 현재 탭 페이지 번호
+    val currentPage = _currentPage.asStateFlow()
+
     init {
         getEmployees()
         getManageEmployees()
@@ -96,9 +100,13 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
         when (e) {
             is EmployeeDetailEvent.ClickedResetPassword -> resetPassword()
             EmployeeDetailEvent.ClickedDeactivate -> setDeactivate()
-            EmployeeDetailEvent.ClickedDismissDeactivate -> _uiEffect.tryEmit(UiEffect.ShowToast("사용자 탈퇴가 취소되었습니다."))
+            EmployeeDetailEvent.ClickedDismissDeactivate -> _uiEffect.tryEmit(ShowToast("사용자 탈퇴가 취소되었습니다."))
             EmployeeDetailEvent.ClickedActivate -> setActivate()
-            EmployeeDetailEvent.ClickedDismissActivate -> _uiEffect.tryEmit(UiEffect.ShowToast("사용자 복구가 취소되었습니다."))
+            EmployeeDetailEvent.ClickedDismissActivate -> _uiEffect.tryEmit(ShowToast("사용자 복구가 취소되었습니다."))
+            is EmployeeDetailEvent.ChangedPage -> {
+                _currentPage.value = e.page
+                Log.d("페이지 이동", _currentPage.value.toString())
+            }
         }
     }
 
@@ -124,6 +132,10 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
             is EmployeeEditEvent.ClickedInitBirthDate -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
             is EmployeeEditEvent.ClickedSearch -> searchDepartment()
             is EmployeeEditEvent.ClickedUpdate -> updateEmployee()
+            is EmployeeEditEvent.ChangedPage -> {
+                _currentPage.value = e.page
+                Log.d("페이지 이동", _currentPage.value.toString())
+            }
             else -> {
                 _employeeEditState.update { s ->
                     EmployeeEditReducer.reduce(s, e)

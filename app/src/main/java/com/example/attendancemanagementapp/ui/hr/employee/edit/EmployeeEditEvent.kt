@@ -3,8 +3,9 @@ package com.example.attendancemanagementapp.ui.hr.employee.edit
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
+import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailEvent
 
-enum class EmployeeEditField { NAME, DEPARTMENT, GRADE, TITLE, PHONE, BIRTHDATE, HIREDATE }
+enum class EmployeeEditField { NAME, DEPARTMENT, GRADE, TITLE, PHONE, BIRTHDATE, HIREDATE, ANNUAL_LEAVE }
 enum class SalaryField { YEAR, AMOUNT }
 
 sealed interface EmployeeEditEvent {
@@ -63,4 +64,9 @@ sealed interface EmployeeEditEvent {
 
     // 직원 정보 수정 버튼 클릭 이벤트
     data object ClickedUpdate: EmployeeEditEvent
+
+    // 페이지 변경 이벤트
+    data class ChangedPage(
+        val page: Int
+    ): EmployeeEditEvent
 }

@@ -70,7 +70,6 @@ fun BasicDrawer(drawerState: DrawerState, onItemClick: (String) -> Unit = {}, on
             ModalDrawerSheet(
                 modifier = Modifier.width(300.dp),
                 drawerContainerColor = Color.White
-//                drawerContainerColor = MaterialTheme.colorScheme.background
             ) {
                 Column(
                     modifier = Modifier

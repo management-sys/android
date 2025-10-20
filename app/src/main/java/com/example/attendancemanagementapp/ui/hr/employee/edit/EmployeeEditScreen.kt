@@ -3,15 +3,19 @@ package com.example.attendancemanagementapp.ui.hr.employee.edit
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,15 +23,21 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +45,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,15 +59,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
-import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicCheckbox
-import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.DateEditBar
 import com.example.attendancemanagementapp.ui.components.DateEditDeleteBar
 import com.example.attendancemanagementapp.ui.components.DropdownEditBar
 import com.example.attendancemanagementapp.ui.components.EditBar
+import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.components.PhoneEditBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
 import com.example.attendancemanagementapp.ui.components.SearchEditBar
@@ -64,10 +74,12 @@ import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchUiState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
+import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailEvent
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.util.rememberOnce
+import kotlinx.coroutines.launch
 
 /* 직원 수정 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,7 +87,12 @@ import com.example.attendancemanagementapp.ui.util.rememberOnce
 fun EmployeeEditScreen(navController: NavController, employeeViewModel: EmployeeViewModel) {
     val onEvent = employeeViewModel::onEditEvent
     val employeeEditState by employeeViewModel.employeeEditState.collectAsState()
-    
+    val currentPage by employeeViewModel.currentPage.collectAsState()
+
+    val tabs = listOf("기본정보", "연차정보", "경력정보", "연봉정보")
+    val pagerState = rememberPagerState(initialPage = currentPage, pageCount = { tabs.size })
+    val coroutineScope = rememberCoroutineScope()
+
     var openDeptDialog by remember { mutableStateOf(false) }    // 부서 선택 팝업창 열림 상태
     var openAuthDialog by remember { mutableStateOf(false) }    // 권한 선택 팝업창 열림 상태
 
@@ -103,29 +120,83 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
         topBar = {
             BasicTopBar(
                 title = "직원 수정",
-                onClickNavIcon = rememberOnce { navController.popBackStack() }
+                actIcon = Icons.Default.Edit,
+                actTint = MainBlue,
+                onClickNavIcon = rememberOnce { navController.popBackStack() },
+                onClickActIcon = {
+                    onEvent(EmployeeEditEvent.ChangedPage(pagerState.currentPage))
+                    onEvent(EmployeeEditEvent.ClickedUpdate)
+                }
             )
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(paddingValues).verticalScroll(rememberScrollState()).padding(horizontal = 26.dp, vertical = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(15.dp)
+            modifier = Modifier.padding(paddingValues)
         ) {
-            EmployeeEditCard(
-                employeeEditState = employeeEditState,
-                onEvent = onEvent,
-                onOpenAuth = { openAuthDialog = true },
-                onOpenDept = { openDeptDialog = true }
-            )
-            SalaryEditCard(
-                salaries = employeeEditState.inputData.salaries,
-                onEvent = onEvent
-            )
-            BasicLongButton(
-                name = "수정",
-                onClick = { onEvent(EmployeeEditEvent.ClickedUpdate) }
-            )
+            TabRow(
+                selectedTabIndex = pagerState.currentPage,
+                containerColor = MaterialTheme.colorScheme.background,
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                        color = MainBlue
+                    )
+                }
+            ) {
+                tabs.forEachIndexed { idx, title ->
+                    Tab(
+                        selected = pagerState.currentPage == idx,
+                        onClick = {
+                            coroutineScope.launch { pagerState.animateScrollToPage(idx) }
+                        },
+                        text = { Text(title) },
+                        selectedContentColor = MainBlue,
+                        unselectedContentColor = Color.Black
+                    )
+                }
+            }
+
+            Box(Modifier.weight(1f)) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 26.dp, vertical = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        when (page) {
+                            0 -> {  // 기본정보
+                                EmployeeEditCard(
+                                    employeeEditState = employeeEditState,
+                                    onEvent = onEvent,
+                                    onOpenAuth = { openAuthDialog = true },
+                                    onOpenDept = { openDeptDialog = true }
+                                )
+                            }
+                            1 -> {  // 연차정보
+                                AnnualLeaveEditCard(
+                                    employeeEditState = employeeEditState,
+                                    onEvent = onEvent
+                                )
+                            }
+                            2 -> {  // 경력정보
+
+                            }
+                            3 -> {  // 연봉정보
+                                SalaryEditCard(
+                                    salaries = employeeEditState.inputData.salaries,
+                                    onEvent = onEvent
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -206,6 +277,58 @@ private fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (Emp
     }
 }
 
+/* 연차 정보 수정 카드 */
+@Composable
+private fun AnnualLeaveEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEditEvent) -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            InfoBar(name = "연차", value = "${employeeEditState.annualLeaveInfo[0]}년차")
+            InfoBar(name = "시작일", value = employeeEditState.annualLeaveInfo[1])
+            InfoBar(name = "종료일", value = employeeEditState.annualLeaveInfo[2])
+            EditBar(
+                name = "연차 개수",
+                value = employeeEditState.annualLeaveInfo[3],
+                onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.ANNUAL_LEAVE, it))},
+            )
+            InfoBar(name = "이월 연차 개수", value = employeeEditState.annualLeaveInfo[4])
+            InfoBar(name = "사용 연차 개수", value = employeeEditState.annualLeaveInfo[5])
+        }
+    }
+}
+
+/* 경력 정보 수정 카드 TODO: 나중에 수정 필요 */
+@Composable
+private fun CareerEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEditEvent) -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            InfoBar(name = "연차", value = "${employeeEditState.annualLeaveInfo[0]}년차")
+            InfoBar(name = "시작일", value = employeeEditState.annualLeaveInfo[1])
+            InfoBar(name = "종료일", value = employeeEditState.annualLeaveInfo[2])
+            EditBar(
+                name = "연차 개수",
+                value = employeeEditState.annualLeaveInfo[3],
+                onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.ANNUAL_LEAVE, it))},
+            )
+            InfoBar(name = "이월 연차 개수", value = employeeEditState.annualLeaveInfo[4])
+            InfoBar(name = "사용 연차 개수", value = employeeEditState.annualLeaveInfo[5])
+        }
+    }
+}
+
 /* 연봉 정보 수정 카드 */
 @Composable
 private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (EmployeeEditEvent) -> Unit) {
@@ -219,7 +342,9 @@ private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (Emp
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(start = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -242,7 +367,9 @@ private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (Emp
 
             salaries.forEachIndexed { idx, salary ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -474,7 +601,9 @@ fun AuthItem(
         border = BorderStroke(width = 0.5.dp, color = DividerDefaults.color.copy(alpha = 0.8f))
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(end = 20.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {

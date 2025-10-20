@@ -15,4 +15,9 @@ sealed interface EmployeeDetailEvent {
 
     // 직원 복구 취소 버튼 클릭 이벤트
     data object ClickedDismissActivate: EmployeeDetailEvent
+
+    // 페이지 변경 이벤트
+    data class ChangedPage(
+        val page: Int
+    ): EmployeeDetailEvent
 }

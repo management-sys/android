@@ -7,5 +7,6 @@ object EmployeeDetailReducer {
         EmployeeDetailEvent.ClickedDismissDeactivate -> s
         EmployeeDetailEvent.ClickedActivate -> s
         EmployeeDetailEvent.ClickedDismissActivate -> s
+        is EmployeeDetailEvent.ChangedPage -> s
     }
 }

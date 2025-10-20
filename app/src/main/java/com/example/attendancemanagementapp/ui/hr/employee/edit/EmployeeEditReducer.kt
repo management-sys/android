@@ -18,7 +18,8 @@ object EmployeeEditReducer {
         is EmployeeEditEvent.ClickedEditAuthWith -> handleClickedEditAuth(s, e.selected)
         EmployeeEditEvent.ClickedInitBirthDate -> handleClickedInitBirthDate(s)
         EmployeeEditEvent.ClickedSearch -> s
-        EmployeeEditEvent.ClickedUpdate -> s
+        is EmployeeEditEvent.ClickedUpdate -> s
+        is EmployeeEditEvent.ChangedPage -> s
     }
 
     private fun handleInit(

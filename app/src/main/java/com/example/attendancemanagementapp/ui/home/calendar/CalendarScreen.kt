@@ -105,7 +105,7 @@ fun CalendarScreen(navController: NavController, calendarViewModel: CalendarView
     }
 }
 
-///* 일정 목록 바텀 시트 */
+///* TODO: 일정 목록 바텀 시트 */
 //@OptIn(ExperimentalMaterial3Api::class)
 //@Composable
 //private fun SchedulesBottomSheet(schedules: List<CalendarDTO.SchedulesInfo>, onDismiss: () -> Unit) {
