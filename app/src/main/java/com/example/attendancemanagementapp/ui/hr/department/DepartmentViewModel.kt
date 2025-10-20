@@ -7,10 +7,12 @@ import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.repository.DepartmentRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.ui.base.UiEffect
+import com.example.attendancemanagementapp.ui.base.UiEffect.*
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailEvent
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailReducer
 import com.example.attendancemanagementapp.ui.hr.department.detail.DepartmentDetailState
 import com.example.attendancemanagementapp.ui.hr.department.manage.DepartmentManageEvent
+import com.example.attendancemanagementapp.ui.hr.department.manage.DepartmentManageReducer
 import com.example.attendancemanagementapp.ui.hr.department.manage.DepartmentManageState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -61,7 +63,12 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
         when (e) {
             is DepartmentManageEvent.SelectedDepartmentWith -> {
                 getDepartmentDetail(e.departmentId)
-                _uiEffect.tryEmit(UiEffect.Navigate("departmentDetail"))
+                _uiEffect.tryEmit(Navigate("departmentDetail"))
+            }
+            is DepartmentManageEvent.MoveDepartmentWith -> {
+                _departmentManageState.update { DepartmentManageReducer.reduce(it, e) }
+                Log.d("부서 이동", "시작: ${e.fromDepartment}\n끝: ${e.endDepartment}")
+                // TODO: 근데 그냥 부서 위치 수정 API 보내고 다시 부서 목록 조회하면 되지 않나?
             }
         }
     }
