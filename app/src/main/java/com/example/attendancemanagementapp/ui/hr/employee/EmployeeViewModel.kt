@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.repository.AuthorRepository
+import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.data.repository.DepartmentRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
+import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.base.UiEffect.ShowToast
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddEvent
@@ -36,7 +38,12 @@ import javax.inject.Inject
 enum class EmployeeTarget { MANAGE, SEARCH }
 
 @HiltViewModel
-class EmployeeViewModel @Inject constructor(private val employeeRepository: EmployeeRepository, private val departmentRepository: DepartmentRepository, private val authorRepository: AuthorRepository) : ViewModel() {
+class EmployeeViewModel @Inject constructor(
+    private val employeeRepository: EmployeeRepository,
+    private val departmentRepository: DepartmentRepository,
+    private val commonCodeRepository: CommonCodeRepository,
+    private val authorRepository: AuthorRepository
+) : ViewModel() {
     companion object {
         private const val TAG = "HrViewModel"
     }
@@ -63,6 +70,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
         getManageEmployees()
         getDepartments()
         getAuthors()
+        getGradeTitle()
     }
 
     fun onAddEvent(e: EmployeeAddEvent) {
@@ -221,7 +229,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
                         .onSuccess { data ->
                             _employeeDetailState.update { it.copy(employeeInfo = data) }
                             Log.d(TAG, "직원 등록 성공: ${data}")
-                            _uiEffect.emit(UiEffect.ShowToast("등록이 완료되었습니다."))
+                            _uiEffect.emit(ShowToast("등록이 완료되었습니다."))
                             _uiEffect.emit(UiEffect.NavigateBack)
                             _uiEffect.emit(UiEffect.Navigate("employeeDetail")) // 등록한 직원 상세 조회 화면으로 이동
                         }
@@ -254,7 +262,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
                 result
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
-                        _uiEffect.emit(UiEffect.ShowToast("수정이 완료되었습니다"))
+                        _uiEffect.emit(ShowToast("수정이 완료되었습니다"))
                         _uiEffect.emit(UiEffect.NavigateBack)
                         Log.d(TAG, "직원 정보 수정 성공: ${data}")
                     }
@@ -290,6 +298,47 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
 
     }
 
+    /* 공통코드 목록에서 직급, 직책 조회 */
+    fun getGradeTitle() {
+        viewModelScope.launch {
+            commonCodeRepository.getCommonCodes(
+                searchType = SearchType.UPPER_CODE_NM,
+                searchKeyword = "직급",
+                page = 0    // 개수가 더 늘어나면 페이지 관리도 해야함 지금은 필요 없음
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        val gradeNames: List<String> = data.content.map { it.codeName }
+                        _employeeManageState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(gradeMenu = gradeNames)) }
+                        _employeeEditState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(gradeMenu = gradeNames)) }
+                        _employeeAddState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(gradeMenu = gradeNames)) }
+                        Log.d(TAG, "직급 목록 조회 성공\n${gradeNames}")
+                    }
+                    .onFailure { e ->
+                        e.printStackTrace()
+                    }
+            }
+
+            commonCodeRepository.getCommonCodes(
+                searchType = SearchType.UPPER_CODE_NM,
+                searchKeyword = "직책",
+                page = 0    // 개수가 더 늘어나면 페이지 관리도 해야함 지금은 필요 없음
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        val titleNames: List<String> = data.content.map { it.codeName }
+                        _employeeManageState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(titleMenu = titleNames)) }
+                        _employeeEditState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(titleMenu = titleNames)) }
+                        _employeeAddState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(titleMenu = titleNames)) }
+                        Log.d(TAG, "직책 목록 조회 성공\n${titleNames}")
+                    }
+                    .onFailure { e ->
+                        e.printStackTrace()
+                    }
+            }
+        }
+    }
+
     /* 권한 목록 조회 */
     fun getAuthors() {
         viewModelScope.launch {
@@ -314,7 +363,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
             employeeRepository.resetPassword(request).collect { result ->
                 result
                     .onSuccess { message ->
-                        _uiEffect.emit(UiEffect.ShowToast("비밀번호가 초기화되었습니다."))
+                        _uiEffect.emit(ShowToast("비밀번호가 초기화되었습니다."))
                         Log.d(TAG, "비밀번호 초기화 성공\n${message}")
                     }
                     .onFailure { e ->
@@ -331,7 +380,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
                 result
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
-                        _uiEffect.emit(UiEffect.ShowToast("사용자가 탈퇴되었습니다."))
+                        _uiEffect.emit(ShowToast("사용자가 탈퇴되었습니다."))
                         Log.d(TAG, "직원 탈퇴 성공\n${data}")
                     }
                     .onFailure { e ->
@@ -348,7 +397,7 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
                 result
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
-                        _uiEffect.emit(UiEffect.ShowToast("사용자가 복구되었습니다."))
+                        _uiEffect.emit(ShowToast("사용자가 복구되었습니다."))
                         Log.d(TAG, "직원 복구 성공\n${data}")
                     }
                     .onFailure { e ->

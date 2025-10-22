@@ -24,7 +24,7 @@ data class DropDownState(
 )
 
 data class DropDownMenu(
-    val departmentMenu: List<DepartmentDTO.DepartmentsInfo> = listOf(DepartmentDTO.DepartmentsInfo(name = "부서", depth = 0)),  // 부서 드롭다운 메뉴
-    val gradeMenu: List<String> = listOf("직급", "대표", "사장", "부장", "차장", "과장", "대리", "사원", "인턴"),     // 직급 드롭다운 메뉴
-    val titleMenu: List<String> = listOf("직책", "파트장", "본부장", "실장", "팀장")                                // 직책 드롭다운 메뉴
+    val departmentMenu: List<DepartmentDTO.DepartmentsInfo> = listOf(DepartmentDTO.DepartmentsInfo(name = "부서", depth = 0)),   // 부서 드롭다운 메뉴
+    val gradeMenu: List<String> = emptyList(),                                                                                  // 직급 드롭다운 메뉴
+    val titleMenu: List<String> = emptyList()                                                                                   // 직책 드롭다운 메뉴
 )
