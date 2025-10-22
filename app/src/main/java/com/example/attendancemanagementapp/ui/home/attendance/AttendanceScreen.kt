@@ -1,6 +1,5 @@
 package com.example.attendancemanagementapp.ui.home.attendance
 
-import android.os.SystemClock
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,13 +17,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Mouse
-import androidx.compose.material.icons.outlined.AccessTime
-import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Mouse
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -42,7 +37,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,10 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.R
-import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.AnnualLeaveImage
 import com.example.attendancemanagementapp.ui.components.FinishWorkImage
-import com.example.attendancemanagementapp.ui.components.ProfileImage
 import com.example.attendancemanagementapp.ui.components.StartWorkImage
 import com.example.attendancemanagementapp.ui.theme.DarkBlue
 import com.example.attendancemanagementapp.ui.theme.DeepDarkBlue
@@ -66,19 +58,17 @@ import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.MidDarkBlue
 import com.example.attendancemanagementapp.ui.theme.MiddleBlue
 import com.example.attendancemanagementapp.ui.theme.TextGray
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
-import java.util.logging.SimpleFormatter
 
 /* 근무체크 화면 */
 @Composable
 fun AttendanceScreen(navController: NavController, attendanceViewModel: AttendanceViewModel) {
-    val attendanceUiState by attendanceViewModel.attendanceUiState.collectAsState()
+    val onEvent = attendanceViewModel::onEvent
+    val attendanceState by attendanceViewModel.attendanceState.collectAsState()
 
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 26.dp).padding(bottom = 8.dp),
@@ -88,12 +78,8 @@ fun AttendanceScreen(navController: NavController, attendanceViewModel: Attendan
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            AttendanceCheckTopBar(isWorking = attendanceUiState.isWorking)
-            AttendanceCheck(
-                isWorking = attendanceUiState.isWorking,
-                onClickStart = { attendanceViewModel.reverseWorking() },
-                onClickFinish = { attendanceViewModel.reverseWorking() }
-            )
+            AttendanceCheckTopBar(isWorking = attendanceState.isWorking)
+            AttendanceCheck(onEvent = onEvent, isWorking = attendanceState.isWorking)
         }
         Divider()
         ProfileCard()
@@ -196,7 +182,7 @@ fun AttendanceCheckTopBar(isWorking: Boolean) {
 
 /* 근무체크 카드 */
 @Composable
-fun AttendanceCheck(isWorking: Boolean, onClickStart: () -> Unit, onClickFinish: () -> Unit) {
+fun AttendanceCheck(onEvent: (AttendanceEvent) -> Unit, isWorking: Boolean) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MiddleBlue.copy(alpha = 0.2f)),
         shape = RoundedCornerShape(14.dp)
@@ -213,9 +199,9 @@ fun AttendanceCheck(isWorking: Boolean, onClickStart: () -> Unit, onClickFinish:
             Row(
                 modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)
             ) {
-                StartWorkButton(isWorking = isWorking, onClick = { onClickStart() })
+                StartWorkButton(isWorking = isWorking, onClick = { onEvent(AttendanceEvent.ClickedStartWork) })
                 VerticalDivider(thickness = 0.5.dp, color = Color.White)
-                FinishWorkButton(isWorking = isWorking, onClick = { onClickFinish() })
+                FinishWorkButton(isWorking = isWorking, onClick = { onEvent(AttendanceEvent.ClickedFinishWork) })
             }
         }
     }

@@ -20,12 +20,15 @@ class AttendanceViewModel @Inject constructor(private val repository: EmployeeRe
     private val _uiEffect = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
     val uiEffect = _uiEffect.asSharedFlow()
 
-    private val _attendanceUiState = MutableStateFlow(AttendanceUiState())
-    val attendanceUiState = _attendanceUiState.asStateFlow()
+    private val _attendanceState = MutableStateFlow(AttendanceState())
+    val attendanceState = _attendanceState.asStateFlow()
 
-    /* 출근 퇴근 처리 */
-    fun reverseWorking() {
-        _attendanceUiState.update { it.copy(isWorking = !it.isWorking) }
-        _uiEffect.tryEmit(UiEffect.ShowToast(if (_attendanceUiState.value.isWorking) "출근했습니다." else "퇴근했습니다."))
+    fun onEvent(e: AttendanceEvent) {
+        _attendanceState.update { AttendanceReducer.reduce(it, e) }
+
+        when (e) {
+            AttendanceEvent.ClickedStartWork -> _uiEffect.tryEmit(UiEffect.ShowToast("출근했습니다."))
+            AttendanceEvent.ClickedFinishWork -> _uiEffect.tryEmit(UiEffect.ShowToast("퇴근했습니다."))
+        }
     }
 }
