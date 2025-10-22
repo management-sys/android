@@ -47,10 +47,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmployeeManageScreen(navController: NavController, employeeViewModel: EmployeeViewModel) {
-    val onEvent = employeeViewModel::onManageEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
+    val onEvent = employeeViewModel::onManageEvent
     val employeeManageUiState by employeeViewModel.employeeManageState.collectAsState()
 
     val listState = rememberLazyListState()

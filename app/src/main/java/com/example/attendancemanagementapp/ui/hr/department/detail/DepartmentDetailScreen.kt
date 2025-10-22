@@ -78,10 +78,10 @@ import com.example.attendancemanagementapp.ui.util.rememberOnce
 /* 부서 상세 화면 */
 @Composable
 fun DepartmentDetailScreen(navController: NavController, departmentViewModel: DepartmentViewModel) {
-    val onEvent = departmentViewModel::onDetailEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
+    val onEvent = departmentViewModel::onDetailEvent
     val departmentDetailState by departmentViewModel.departmentDetailState.collectAsState()
 
     var openDepartmentInfo by remember { mutableStateOf(true) }     // 부서 정보 카드 열림 여부

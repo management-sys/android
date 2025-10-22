@@ -3,9 +3,8 @@ package com.example.attendancemanagementapp.ui.hr.employee.search
 object EmployeeSearchReducer {
     fun reduce(s: EmployeeSearchState, e: EmployeeSearchEvent): EmployeeSearchState = when (e) {
         is EmployeeSearchEvent.ChangedSearchWith -> handleChangedSearch(s, e.value)
-        EmployeeSearchEvent.ClickedSearch -> s
         EmployeeSearchEvent.ClickedInitSearch -> handleClickedInitSearch()
-        is EmployeeSearchEvent.SelectedEmployeeWith -> s
+        else -> s
     }
 
     private fun handleChangedSearch(

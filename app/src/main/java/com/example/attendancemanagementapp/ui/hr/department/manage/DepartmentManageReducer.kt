@@ -5,8 +5,8 @@ import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 
 object DepartmentManageReducer {
     fun reduce(s: DepartmentManageState, e: DepartmentManageEvent): DepartmentManageState = when (e) {
-        is DepartmentManageEvent.SelectedDepartmentWith -> s
         is DepartmentManageEvent.MoveDepartmentWith -> handleMoveDepartment(s, e.fromDepartment, e.endDepartment)
+        else -> s
     }
 
     private fun handleMoveDepartment(

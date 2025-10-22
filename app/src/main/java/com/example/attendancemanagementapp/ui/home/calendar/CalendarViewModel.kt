@@ -20,16 +20,16 @@ class CalendarViewModel @Inject constructor(private val repository: EmployeeRepo
     private val _uiEffect = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
     val uiEffect = _uiEffect.asSharedFlow()
 
-    private val _calendarUiState = MutableStateFlow(CalendarUiState())
-    val calendarUiState = _calendarUiState.asStateFlow()
+    private val _calendarState = MutableStateFlow(CalendarState())
+    val calendarState = _calendarState.asStateFlow()
 
     /* 이전 달로 이동 */
     fun onClickPrev() {
-        _calendarUiState.update { it.copy(yearMonth = _calendarUiState.value.yearMonth.minusMonths(1)) }
+        _calendarState.update { it.copy(yearMonth = _calendarState.value.yearMonth.minusMonths(1)) }
     }
 
     /* 다음 달로 이동 */
     fun onClickNext() {
-        _calendarUiState.update { it.copy(yearMonth = _calendarUiState.value.yearMonth.plusMonths(1)) }
+        _calendarState.update { it.copy(yearMonth = _calendarState.value.yearMonth.plusMonths(1)) }
     }
 }

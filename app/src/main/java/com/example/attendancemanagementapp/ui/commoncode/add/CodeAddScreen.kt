@@ -43,10 +43,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 /* 공통코드 등록 화면 */
 @Composable
 fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
-    val onEvent = codeViewModel::onAddEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
+    val onEvent = codeViewModel::onAddEvent
     val codeAddState by codeViewModel.codeAddState.collectAsState()
     val codeListState by codeViewModel.codeManageState.collectAsState()
 

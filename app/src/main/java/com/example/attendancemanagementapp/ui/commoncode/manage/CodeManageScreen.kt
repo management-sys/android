@@ -31,15 +31,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.retrofit.param.SearchType
-import com.example.attendancemanagementapp.ui.theme.TextGray
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
-import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
-import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditEvent
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.CategorySearchBar
 import com.example.attendancemanagementapp.ui.components.search.CodeSearchState
 import com.example.attendancemanagementapp.ui.components.search.SearchState
+import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -47,10 +46,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel) {
-    val onEvent = codeViewModel::onManageEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
+    val onEvent = codeViewModel::onManageEvent
     val codeManageState by codeViewModel.codeManageState.collectAsState()
 
     val listState = rememberLazyListState()

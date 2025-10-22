@@ -67,7 +67,6 @@ import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.LightBlue
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.MiddleBlue
-import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.util.calculateCareerPeriod
 import com.example.attendancemanagementapp.ui.util.calculateTotalCareerPeriod
 import com.example.attendancemanagementapp.ui.util.rememberOnce

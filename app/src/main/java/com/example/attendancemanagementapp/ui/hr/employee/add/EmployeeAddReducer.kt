@@ -1,13 +1,11 @@
 package com.example.attendancemanagementapp.ui.hr.employee.add
 
-import android.util.Log
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 
 object EmployeeAddReducer {
     fun reduce(s: EmployeeAddState, e: EmployeeAddEvent): EmployeeAddState = when (e) {
-        EmployeeAddEvent.Init -> s
         is EmployeeAddEvent.InitWith -> handleInit(s, e.departments)
         is EmployeeAddEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
         is EmployeeAddEvent.ChangedSalaryWith -> handleChangedSalary(s, e.field, e.value, e.idx)
@@ -18,8 +16,7 @@ object EmployeeAddReducer {
         is EmployeeAddEvent.SelectedDepartmentWith -> handleSelectedDepartment(s, e.departmentName, e.departmentId)
         is EmployeeAddEvent.ClickedEditAuthWith -> handleClickedEditAuth(s, e.selected)
         EmployeeAddEvent.ClickedInitBirthDate -> handleClickedInitBirthDate(s)
-        EmployeeAddEvent.ClickedSearch -> s
-        EmployeeAddEvent.ClickedAdd -> s
+        else -> s
     }
 
     private fun handleInit(

@@ -3,7 +3,6 @@ package com.example.attendancemanagementapp.ui.hr.employee.edit
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
-import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailEvent
 
 enum class EmployeeEditField { NAME, DEPARTMENT, GRADE, TITLE, PHONE, BIRTHDATE, HIREDATE, ANNUAL_LEAVE }
 enum class SalaryField { YEAR, AMOUNT }

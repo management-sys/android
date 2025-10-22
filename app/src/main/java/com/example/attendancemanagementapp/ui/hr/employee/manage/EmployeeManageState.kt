@@ -4,17 +4,17 @@ import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 
 data class EmployeeManageState(
-    val employees: List<EmployeeDTO.ManageEmployeesInfo> = emptyList(),   // 직원 관리 목록
-    val searchText: String = "",                                    // 검색어
-    val dropDownState: DropDownState = DropDownState(         // 선택한 드롭다운 필드 값
+    val employees: List<EmployeeDTO.ManageEmployeesInfo> = emptyList(), // 직원 관리 목록
+    val searchText: String = "",                                        // 검색어
+    val dropDownState: DropDownState = DropDownState(                   // 선택한 드롭다운 필드 값
         department = "부서",
         grade = "직급",
         title = "직책"
     ),
-    val dropDownMenu: DropDownMenu = DropDownMenu(),                // 드롭다운 메뉴
-    val currentPage: Int = 0,                                       // 현재 페이지 번호
-    val totalPage: Int = Int.MAX_VALUE,                             // 총 페이지 개수
-    val isLoading: Boolean = false                                  // 로딩 중 여부
+    val dropDownMenu: DropDownMenu = DropDownMenu(),                    // 드롭다운 메뉴
+    val currentPage: Int = 0,                                           // 현재 페이지 번호
+    val totalPage: Int = Int.MAX_VALUE,                                 // 총 페이지 개수
+    val isLoading: Boolean = false                                      // 로딩 중 여부
 )
 
 data class DropDownState(

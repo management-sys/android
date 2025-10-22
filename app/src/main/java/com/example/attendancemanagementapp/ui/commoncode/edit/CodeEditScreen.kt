@@ -27,15 +27,15 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.retrofit.param.SearchType
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.BigEditBar
 import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.RadioEditBar
 import com.example.attendancemanagementapp.ui.components.SearchEditBar
-import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
-import com.example.attendancemanagementapp.ui.components.search.SearchCommonCodeDialog
 import com.example.attendancemanagementapp.ui.components.search.CodeSearchState
+import com.example.attendancemanagementapp.ui.components.search.SearchCommonCodeDialog
 import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -43,10 +43,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 /* 공통코드 수정 화면 */
 @Composable
 fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
-    val onEvent = codeViewModel::onEditEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
+    val onEvent = codeViewModel::onEditEvent
     val codeEditState by codeViewModel.codeEditState.collectAsState()
     val codeListState by codeViewModel.codeManageState.collectAsState()
 

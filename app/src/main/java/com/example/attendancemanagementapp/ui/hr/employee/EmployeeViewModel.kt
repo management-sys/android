@@ -15,6 +15,7 @@ import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddEvent
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddReducer
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddState
 import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailEvent
+import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailReducer
 import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailState
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditEvent
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditReducer
@@ -89,6 +90,8 @@ class EmployeeViewModel @Inject constructor(
     }
 
     fun onDetailEvent(e: EmployeeDetailEvent) {
+        _employeeDetailState.update { EmployeeDetailReducer.reduce(it, e) }
+
         when (e) {
             is EmployeeDetailEvent.ClickedResetPassword -> resetPassword()
             EmployeeDetailEvent.ClickedDeactivate -> setDeactivate()

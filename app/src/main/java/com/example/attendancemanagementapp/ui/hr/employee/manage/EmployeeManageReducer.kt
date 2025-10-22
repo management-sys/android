@@ -4,10 +4,9 @@ object EmployeeManageReducer {
     fun reduce(s: EmployeeManageState, e: EmployeeManageEvent): EmployeeManageState = when (e) {
         EmployeeManageEvent.Init -> handleInit(s)
         is EmployeeManageEvent.ChangedSearchWith -> handleChangedSearch(s, e.value)
-        EmployeeManageEvent.ClickedSearch -> s
         EmployeeManageEvent.ClickedInitSearch -> handleClickedInitSearch(s)
-        is EmployeeManageEvent.SelectedEmployeeWith -> s
         is EmployeeManageEvent.SelectedDropDownWith -> handleSelectedDropDown(s, e.field, e.value)
+        else -> s
     }
 
     private fun handleInit(

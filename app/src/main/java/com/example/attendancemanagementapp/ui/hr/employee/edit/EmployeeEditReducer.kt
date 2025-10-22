@@ -6,7 +6,6 @@ import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 
 object EmployeeEditReducer {
     fun reduce(s: EmployeeEditState, e: EmployeeEditEvent): EmployeeEditState = when (e) {
-        EmployeeEditEvent.Init -> s
         is EmployeeEditEvent.InitWith -> handleInit(s, e.employeeInfo, e.departments)
         is EmployeeEditEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
         is EmployeeEditEvent.ChangedSalaryWith -> handleChangedSalary(s, e.field, e.value, e.idx)
@@ -17,9 +16,7 @@ object EmployeeEditReducer {
         is EmployeeEditEvent.SelectedDepartmentWith -> handleSelectedDepartment(s, e.departmentName, e.departmentId)
         is EmployeeEditEvent.ClickedEditAuthWith -> handleClickedEditAuth(s, e.selected)
         EmployeeEditEvent.ClickedInitBirthDate -> handleClickedInitBirthDate(s)
-        EmployeeEditEvent.ClickedSearch -> s
-        is EmployeeEditEvent.ClickedUpdate -> s
-        is EmployeeEditEvent.ChangedPage -> s
+        else -> s
     }
 
     private fun handleInit(

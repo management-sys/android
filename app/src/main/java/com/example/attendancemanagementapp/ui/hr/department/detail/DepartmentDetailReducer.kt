@@ -5,7 +5,6 @@ import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 object DepartmentDetailReducer {
     fun reduce(s: DepartmentDetailState, e: DepartmentDetailEvent): DepartmentDetailState = when (e) {
         is DepartmentDetailEvent.ChangedSearchWith -> handleChangedSearch(s, e.value)
-        DepartmentDetailEvent.ClickedInitSearch -> s
         DepartmentDetailEvent.ClickedSearch -> handleClickedInitSearch(s)
         DepartmentDetailEvent.InitAddEmployeeList -> handleInitAddEmployeeList(s)
         is DepartmentDetailEvent.SelectedAddEmployeeWith -> handleSelectedAddEmployee(s, e.isChecked, e.user)
@@ -13,6 +12,7 @@ object DepartmentDetailReducer {
         is DepartmentDetailEvent.SelectedHeadWith -> handleSelectedHead(s, e.isHead, e.idName)
         is DepartmentDetailEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
         is DepartmentDetailEvent.SelectedSaveEmployeeWith -> handleSelectedSaveEmployee(s, e.isChecked, e.id)
+        else -> s
     }
 
     private fun handleChangedSearch(
