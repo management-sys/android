@@ -7,7 +7,7 @@ enum class EmployeeAddField { LOGINID, NAME, DEPARTMENT, GRADE, TITLE, PHONE, BI
 enum class SalaryField { YEAR, AMOUNT }
 
 sealed interface EmployeeAddEvent {
-    // 화면 초기화
+    // 초기화
     data object Init: EmployeeAddEvent
     data class InitWith(
         val departments: List<DepartmentDTO.DepartmentsInfo>
@@ -59,6 +59,6 @@ sealed interface EmployeeAddEvent {
     // 부서 검색 버튼 클릭 이벤트
     data object ClickedSearch: EmployeeAddEvent
 
-    // 직원 정보 수정 버튼 클릭 이벤트
+    // 직원 정보 추가 버튼 클릭 이벤트
     data object ClickedAdd: EmployeeAddEvent
 }

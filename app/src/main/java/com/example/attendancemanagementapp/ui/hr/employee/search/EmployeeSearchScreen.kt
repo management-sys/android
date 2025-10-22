@@ -29,13 +29,12 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
-import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
-import com.example.attendancemanagementapp.ui.components.search.SearchUiState
+import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeTarget
 import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
@@ -79,7 +78,7 @@ fun EmployeeSearchScreen(navController: NavController, employeeViewModel: Employ
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             SearchBar(
-                searchUiState = SearchUiState(
+                searchState = SearchState(
                     value = employeeSearchUiState.searchText,
                     onValueChange = { onEvent(EmployeeSearchEvent.ChangedSearchWith(it)) },
                     onClickSearch = {

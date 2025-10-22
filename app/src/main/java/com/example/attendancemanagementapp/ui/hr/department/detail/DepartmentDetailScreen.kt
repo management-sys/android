@@ -39,10 +39,8 @@ import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -63,7 +61,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
-import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicCheckbox
 import com.example.attendancemanagementapp.ui.components.BasicDialog
@@ -71,7 +68,7 @@ import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
-import com.example.attendancemanagementapp.ui.components.search.SearchUiState
+import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Yellow
 import com.example.attendancemanagementapp.ui.theme.DarkBlue
@@ -209,7 +206,7 @@ private fun EmployeesBottomSheet(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             SearchBar(
-                searchUiState = SearchUiState(
+                searchState = SearchState(
                     value = departmentDetailState.searchText,
                     onValueChange = { onEvent(DepartmentDetailEvent.ChangedSearchWith(it)) },
                     onClickSearch = { onClickSearch() },

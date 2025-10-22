@@ -8,7 +8,7 @@ import com.example.attendancemanagementapp.data.repository.AuthorRepository
 import com.example.attendancemanagementapp.data.repository.DepartmentRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.ui.base.UiEffect
-import com.example.attendancemanagementapp.ui.base.UiEffect.*
+import com.example.attendancemanagementapp.ui.base.UiEffect.ShowToast
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddEvent
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddReducer
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddState
@@ -66,33 +66,17 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
     }
 
     fun onAddEvent(e: EmployeeAddEvent) {
+        _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
+
         when (e) {
             is EmployeeAddEvent.Init -> {
                 val departments = employeeManageState.value.dropDownMenu.departmentMenu
-
                 _employeeAddState.update { EmployeeAddReducer.reduce(it, EmployeeAddEvent.InitWith(departments)) }
             }
-            is EmployeeAddEvent.ChangedValueWith -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
-            is EmployeeAddEvent.ChangedSalaryWith -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
-            is EmployeeAddEvent.ChangedSearchWith -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
-            is EmployeeAddEvent.ClickedAddSalary -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
-            is EmployeeAddEvent.ClickedDeleteSalaryWith -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
-            is EmployeeAddEvent.ClickedInitSearch -> {
-                _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
-                getDepartments()
-            }
-            is EmployeeAddEvent.SelectedDepartmentWith -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
-            is EmployeeAddEvent.ClickedEditAuthWith -> {
-                _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
-            }
-            is EmployeeAddEvent.ClickedInitBirthDate -> _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
+            is EmployeeAddEvent.ClickedInitSearch -> getDepartments()
             is EmployeeAddEvent.ClickedSearch -> searchDepartment()
             is EmployeeAddEvent.ClickedAdd -> addEmployee()
-            else -> {
-                _employeeAddState.update { s ->
-                    EmployeeAddReducer.reduce(s, e)
-                }
-            }
+            else -> Unit
         }
     }
 
@@ -103,73 +87,47 @@ class EmployeeViewModel @Inject constructor(private val employeeRepository: Empl
             EmployeeDetailEvent.ClickedDismissDeactivate -> _uiEffect.tryEmit(ShowToast("사용자 탈퇴가 취소되었습니다."))
             EmployeeDetailEvent.ClickedActivate -> setActivate()
             EmployeeDetailEvent.ClickedDismissActivate -> _uiEffect.tryEmit(ShowToast("사용자 복구가 취소되었습니다."))
-            is EmployeeDetailEvent.ChangedPage -> {
-                _currentPage.value = e.page
-                Log.d("페이지 이동", _currentPage.value.toString())
-            }
+            is EmployeeDetailEvent.ChangedPage -> _currentPage.value = e.page
         }
     }
 
     fun onEditEvent(e: EmployeeEditEvent) {
+        _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
+
         when (e) {
             is EmployeeEditEvent.Init -> {
                 val employeeInfo = employeeDetailState.value.employeeInfo
                 val departments = employeeManageState.value.dropDownMenu.departmentMenu
-
                 _employeeEditState.update { EmployeeEditReducer.reduce(it, EmployeeEditEvent.InitWith(employeeInfo, departments)) }
             }
-            is EmployeeEditEvent.ChangedValueWith -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
-            is EmployeeEditEvent.ChangedSalaryWith -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
-            is EmployeeEditEvent.ChangedSearchWith -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
-            is EmployeeEditEvent.ClickedAddSalary -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
-            is EmployeeEditEvent.ClickedDeleteSalaryWith -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
-            is EmployeeEditEvent.ClickedInitSearch -> {
-                _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
-                getDepartments()
-            }
-            is EmployeeEditEvent.SelectedDepartmentWith -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
-            is EmployeeEditEvent.ClickedEditAuthWith -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
-            is EmployeeEditEvent.ClickedInitBirthDate -> _employeeEditState.update { EmployeeEditReducer.reduce(it, e) }
+            is EmployeeEditEvent.ClickedInitSearch -> getDepartments()
             is EmployeeEditEvent.ClickedSearch -> searchDepartment()
             is EmployeeEditEvent.ClickedUpdate -> updateEmployee()
-            is EmployeeEditEvent.ChangedPage -> {
-                _currentPage.value = e.page
-                Log.d("페이지 이동", _currentPage.value.toString())
-            }
-            else -> {
-                _employeeEditState.update { s ->
-                    EmployeeEditReducer.reduce(s, e)
-                }
-            }
+            is EmployeeEditEvent.ChangedPage -> _currentPage.value = e.page
+            else -> Unit
         }
     }
 
     fun onManageEvent(e: EmployeeManageEvent) {
+        _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
+
         when (e) {
-            is EmployeeManageEvent.Init -> _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
-            is EmployeeManageEvent.ChangedSearchWith -> _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
             is EmployeeManageEvent.ClickedSearch -> getManageEmployees()
-            is EmployeeManageEvent.ClickedInitSearch -> {
-                _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
-                getManageEmployees()
-            }
+            is EmployeeManageEvent.ClickedInitSearch -> getManageEmployees()
             is EmployeeManageEvent.SelectedEmployeeWith -> getEmployeeDetail(e.target, e.userId)
-            is EmployeeManageEvent.SelectedDropDownWith -> {
-                _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
-                getManageEmployees()
-            }
+            is EmployeeManageEvent.SelectedDropDownWith -> getManageEmployees()
+            else -> Unit
         }
     }
 
     fun onSearchEvent(e: EmployeeSearchEvent) {
+        _employeeSearchState.update { EmployeeSearchReducer.reduce(it, e) }
+
         when (e) {
-            is EmployeeSearchEvent.ChangedSearchWith -> _employeeSearchState.update { EmployeeSearchReducer.reduce(it, e) }
             EmployeeSearchEvent.ClickedSearch -> getEmployees()
-            EmployeeSearchEvent.ClickedInitSearch -> {
-                _employeeSearchState.update { EmployeeSearchReducer.reduce(it, e) }
-                getEmployees()
-            }
+            EmployeeSearchEvent.ClickedInitSearch -> getEmployees()
             is EmployeeSearchEvent.SelectedEmployeeWith -> getEmployeeDetail(e.target, e.userId)
+            else -> Unit
         }
     }
 

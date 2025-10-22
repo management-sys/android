@@ -29,17 +29,15 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
-import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.DepthDropDownField
 import com.example.attendancemanagementapp.ui.components.DropDownField
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
-import com.example.attendancemanagementapp.ui.components.search.SearchUiState
+import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeTarget
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
-import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.ui.util.rememberOnce
@@ -119,7 +117,7 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
 
             Spacer(modifier = Modifier.height(10.dp))
             SearchBar(
-                searchUiState = SearchUiState(
+                searchState = SearchState(
                     value = employeeManageUiState.searchText,
                     onValueChange = { onEvent(EmployeeManageEvent.ChangedSearchWith(it)) },
                     onClickSearch = {

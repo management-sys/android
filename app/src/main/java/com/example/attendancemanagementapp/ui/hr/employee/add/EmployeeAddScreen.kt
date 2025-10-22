@@ -1,6 +1,5 @@
 package com.example.attendancemanagementapp.ui.hr.employee.add
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,7 +45,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
-import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -58,7 +56,7 @@ import com.example.attendancemanagementapp.ui.components.PhoneEditBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
 import com.example.attendancemanagementapp.ui.components.SearchEditBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
-import com.example.attendancemanagementapp.ui.components.search.SearchUiState
+import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.hr.employee.edit.AuthItem
 import com.example.attendancemanagementapp.ui.hr.employee.edit.DepartmentInfoItem
@@ -341,7 +339,7 @@ private fun DepartmentDialog(
                 .fillMaxHeight(0.9f),
         ) {
             SearchBar(
-                searchUiState = SearchUiState(
+                searchState = SearchState(
                     value = employeeAddState.searchText,
                     onValueChange = { onEvent(EmployeeAddEvent.ChangedSearchWith(it)) },
                     onClickSearch = {

@@ -72,9 +72,8 @@ import com.example.attendancemanagementapp.ui.components.ProfileImage
 import com.example.attendancemanagementapp.ui.components.SearchEditBar
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
-import com.example.attendancemanagementapp.ui.components.search.SearchUiState
+import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
-import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailEvent
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
@@ -469,7 +468,7 @@ private fun DepartmentDialog(
                 .fillMaxHeight(0.9f),
         ) {
             SearchBar(
-                searchUiState = SearchUiState(
+                searchState = SearchState(
                     value = employeeEditState.searchText,
                     onValueChange = { onEvent(EmployeeEditEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
