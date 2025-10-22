@@ -20,7 +20,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,21 +44,20 @@ import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.LightBlue
-import com.example.attendancemanagementapp.ui.theme.LightGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.MiddleBlue
 
 /* 검색바 */
 @Composable
-fun SearchBar(searchUiState: SearchUiState, hint: String = "검색어를 입력하세요") {
+fun SearchBar(searchState: SearchState, hint: String = "검색어를 입력하세요") {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
             modifier = Modifier.weight(0.88f).border(1.dp, MainBlue, RoundedCornerShape(90.dp)),
-            value = searchUiState.value,
-            onValueChange = { searchUiState.onValueChange(it) },
+            value = searchState.value,
+            onValueChange = { searchState.onValueChange(it) },
             singleLine = true,
             shape = RoundedCornerShape(90.dp),
             colors = TextFieldDefaults.colors(
@@ -80,12 +78,12 @@ fun SearchBar(searchUiState: SearchUiState, hint: String = "검색어를 입력�
                 imeAction = ImeAction.Search
             ),
             keyboardActions = KeyboardActions(
-                onSearch = { searchUiState.onClickSearch() }
+                onSearch = { searchState.onClickSearch() }
             ),
             trailingIcon = {
-                if (searchUiState.value.isNotEmpty()) {
+                if (searchState.value.isNotEmpty()) {
                     IconButton(
-                        onClick = { searchUiState.onClickInit() }
+                        onClick = { searchState.onClickInit() }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Cancel,
@@ -131,18 +129,18 @@ fun CategoryChip(selected: SearchType, name: String, onClick: () -> Unit) {
 
 /* 카테고리 선택 포함 검색바 */
 @Composable
-fun CategorySearchBar(codeSearchUiState: CodeSearchUiState) {
-    SearchBar(searchUiState = codeSearchUiState.searchUiState)
+fun CategorySearchBar(codeSearchState: CodeSearchState) {
+    SearchBar(searchState = codeSearchState.searchState)
 
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(codeSearchUiState.categories) { category ->
+        items(codeSearchState.categories) { category ->
             CategoryChip(
-                selected = codeSearchUiState.selectedCategory,
+                selected = codeSearchState.selectedCategory,
                 name = category.label,
-                onClick = { codeSearchUiState.onClickCategory(category) }
+                onClick = { codeSearchState.onClickCategory(category) }
             )
         }
     }
@@ -150,10 +148,10 @@ fun CategorySearchBar(codeSearchUiState: CodeSearchUiState) {
 
 /* 공통코드 검색 디알로그 */
 @Composable
-fun CommonCodeDialog(
+fun SearchCommonCodeDialog(
     listState: LazyListState,
     isLoading: Boolean,
-    codeSearchUiState: CodeSearchUiState,
+    codeSearchState: CodeSearchState,
     commonCodes: List<CommonCodeDTO.CommonCodesInfo>,
     onDismiss: () -> Unit = {},
     onClickItem: (CommonCodeDTO.CommonCodesInfo) -> Unit = {}
@@ -169,7 +167,7 @@ fun CommonCodeDialog(
                 .fillMaxWidth()
                 .fillMaxHeight(0.9f),
         ) {
-            CategorySearchBar(codeSearchUiState = codeSearchUiState)
+            CategorySearchBar(codeSearchState = codeSearchState)
 
             Spacer(Modifier.height(15.dp))
             LazyColumn(
@@ -206,7 +204,7 @@ fun CommonCodeDialog(
 
 /* 공통코드 검색 목록 아이템 */
 @Composable
-private fun CodeInfoItem(upperCodeInfo: CommonCodeDTO.CommonCodesInfo, onClick: () -> Unit) {
+fun CodeInfoItem(upperCodeInfo: CommonCodeDTO.CommonCodesInfo, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),

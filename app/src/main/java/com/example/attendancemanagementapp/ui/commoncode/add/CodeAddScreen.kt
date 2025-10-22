@@ -27,29 +27,28 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.retrofit.param.SearchType
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.BigEditBar
 import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.RadioEditBar
 import com.example.attendancemanagementapp.ui.components.SearchEditBar
-import com.example.attendancemanagementapp.ui.commoncode.CodeInfoField
-import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
-import com.example.attendancemanagementapp.ui.commoncode.Target
-import com.example.attendancemanagementapp.ui.components.search.CommonCodeDialog
-import com.example.attendancemanagementapp.ui.components.search.CodeSearchUiState
-import com.example.attendancemanagementapp.ui.components.search.SearchUiState
+import com.example.attendancemanagementapp.ui.components.search.CodeSearchState
+import com.example.attendancemanagementapp.ui.components.search.SearchCommonCodeDialog
+import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 공통코드 등록 화면 */
 @Composable
 fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
+    val onEvent = codeViewModel::onAddEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
     val codeAddState by codeViewModel.codeAddState.collectAsState()
-    val codeListState by codeViewModel.codeManageUiState.collectAsState()
+    val codeListState by codeViewModel.codeManageState.collectAsState()
 
     var openDialog by remember { mutableStateOf(false) }    // 공통코드 검색 디알로그 열림 상태
 
@@ -70,39 +69,36 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
 
     DisposableEffect(Unit) {
         onDispose {
-            codeViewModel.initCodeAddUiState() // 화면 사라질 때 입력한 내용 초기화
+            onEvent(CodeAddEvent.Init)  // 화면 사라질 때 입력한 내용 초기화
         }
     }
 
     if (openDialog) {
-        CommonCodeDialog(
+        SearchCommonCodeDialog(
             listState = listState,
             isLoading = codeListState.isLoading,
-            codeSearchUiState = CodeSearchUiState(
-                searchUiState = SearchUiState(
+            codeSearchState = CodeSearchState(
+                searchState = SearchState(
                     value = codeListState.searchText,
-                    onValueChange = { codeViewModel.onSearchTextChange(it) },
+                    onValueChange = { onEvent(CodeAddEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
                         // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        codeViewModel.getCodes()
+                        onEvent(CodeAddEvent.ClickedSearch)
                         keyboardController?.hide()
                         focusManager.clearFocus(force = true)
                     },
-                    onClickInit = {
-                        codeViewModel.onSearchTextChange("")
-                        codeViewModel.getCodes()
-                    }
+                    onClickInit = { onEvent(CodeAddEvent.ClickedInitSearch) }
                 ),
                 selectedCategory = codeListState.selectedCategory,
                 categories = SearchType.entries,
-                onClickCategory = { codeViewModel.onSearchTypeChange(it) }
+                onClickCategory = { onEvent(CodeAddEvent.ChangedCategoryWith(it)) }
             ),
             commonCodes = codeListState.codes,
             onDismiss = {
                 openDialog = false
-                codeViewModel.initSearchState() // 검색 관련 초기화
+                onEvent(CodeAddEvent.InitSearch) // 검색 관련 초기화
             },
-            onClickItem = { codeViewModel.onUpperCodeChange(Target.ADD, it) }
+            onClickItem = { onEvent(CodeAddEvent.SelectedUpperCodeWith(it.upperCode.orEmpty(), it.upperCodeName.orEmpty())) }
         )
     }
 
@@ -120,11 +116,8 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
         ) {
             CodeAddCard(
                 codeAddState = codeAddState,
-                onClickOpenDialog = { openDialog = true },
-                onFieldChange = { target, field, input ->
-                    codeViewModel.onFieldChange(target, field, input)
-                },
-                onClickAdd = { codeViewModel.addCode() }
+                onEvent = onEvent,
+                onClickOpenDialog = { openDialog = true }
             )
         }
     }
@@ -132,7 +125,7 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
 
 /* 공통카드 등록 카드 */
 @Composable
-private fun CodeAddCard(codeAddState: CodeAddState, onClickOpenDialog: () -> Unit, onFieldChange: (Target, CodeInfoField, String) -> Unit, onClickAdd: () -> Unit) {
+private fun CodeAddCard(codeAddState: CodeAddState, onEvent: (CodeAddEvent) -> Unit, onClickOpenDialog: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -149,25 +142,25 @@ private fun CodeAddCard(codeAddState: CodeAddState, onClickOpenDialog: () -> Uni
             EditBar(
                 name = "코드",
                 value = codeAddState.inputData.code,
-                onValueChange = { onFieldChange(Target.ADD, CodeInfoField.CODE, it) },
+                onValueChange = { onEvent(CodeAddEvent.ChangedValueWith(CodeAddField.CODE, it)) },
                 isRequired = true
             )
             EditBar(
                 name = "코드명",
                 value = codeAddState.inputData.codeName,
-                onValueChange = { onFieldChange(Target.ADD, CodeInfoField.CODENAME, it) },
+                onValueChange = { onEvent(CodeAddEvent.ChangedValueWith(CodeAddField.CODENAME, it)) },
                 isRequired = true
             )
             EditBar(
                 name = "코드 설정값",
                 value = codeAddState.inputData.codeValue ?: "",
-                onValueChange = { onFieldChange(Target.ADD, CodeInfoField.CODEVALUE, it) }
+                onValueChange = { onEvent(CodeAddEvent.ChangedValueWith(CodeAddField.CODEVALUE, it)) }
             )
             RadioEditBar(name = "사용여부", selected = "사용", isRequired = true)
             BigEditBar(
                 name = "설명",
                 value = codeAddState.inputData.description ?: "",
-                onValueChange = { onFieldChange(Target.ADD, CodeInfoField.DESCRIPTION, it) }
+                onValueChange = { onEvent(CodeAddEvent.ChangedValueWith(CodeAddField.DESCRIPTION, it)) }
             )
         }
 
@@ -175,7 +168,7 @@ private fun CodeAddCard(codeAddState: CodeAddState, onClickOpenDialog: () -> Uni
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BasicLongButton(name = "등록", onClick = { onClickAdd })
+            BasicLongButton(name = "등록", onClick = { onEvent(CodeAddEvent.ClickedAdd) })
         }
     }
 }

@@ -35,10 +35,11 @@ import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
+import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditEvent
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.CategorySearchBar
-import com.example.attendancemanagementapp.ui.components.search.CodeSearchUiState
-import com.example.attendancemanagementapp.ui.components.search.SearchUiState
+import com.example.attendancemanagementapp.ui.components.search.CodeSearchState
+import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -46,10 +47,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel) {
+    val onEvent = codeViewModel::onManageEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
-    val codeManageState by codeViewModel.codeManageUiState.collectAsState()
+    val codeManageState by codeViewModel.codeManageState.collectAsState()
 
     val listState = rememberLazyListState()
 
@@ -68,7 +70,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
 
     DisposableEffect(Unit) {
         onDispose {
-            codeViewModel.initSearchState()
+            onEvent(CodeManageEvent.InitSearch)
         }
     }
 
@@ -81,8 +83,8 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
         },
         floatingActionButton = {
             BasicFloatingButton(onClick = {
+                onEvent(CodeManageEvent.InitSearch)
                 navController.navigate("codeAdd")
-                codeViewModel.initSearchState()
             })
         }
     ) { paddingValues ->
@@ -90,24 +92,21 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
             modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp)
         ) {
             CategorySearchBar(
-                codeSearchUiState = CodeSearchUiState(
-                    searchUiState = SearchUiState(
+                codeSearchState = CodeSearchState(
+                    searchState = SearchState(
                         value = codeManageState.searchText,
-                        onValueChange = { codeViewModel.onSearchTextChange(it) },
+                        onValueChange = { onEvent(CodeManageEvent.ChangedSearchWith(it)) },
                         onClickSearch = {
                             // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                            codeViewModel.getCodes()
+                            onEvent(CodeManageEvent.ClickedSearch)
                             keyboardController?.hide()
                             focusManager.clearFocus(force = true)
                         },
-                        onClickInit = {
-                            codeViewModel.onSearchTextChange("")
-                            codeViewModel.getCodes()
-                        }
+                        onClickInit = { onEvent(CodeManageEvent.ClickedInitSearch) }
                     ),
                     selectedCategory = codeManageState.selectedCategory,
                     categories = SearchType.entries,
-                    onClickCategory = { codeViewModel.onSearchTypeChange(it) }
+                    onClickCategory = { onEvent(CodeManageEvent.ChangedCategoryWith(it)) }
                 )
             )
 
@@ -121,7 +120,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                     CodeInfoItem(
                         upperCodeInfo = item,
                         onClick = {
-                            codeViewModel.getCodeInfo(item.code)
+                            onEvent(CodeManageEvent.SelectedCode(item.code))
                             navController.navigate("codeDetail")
                         }
                     )

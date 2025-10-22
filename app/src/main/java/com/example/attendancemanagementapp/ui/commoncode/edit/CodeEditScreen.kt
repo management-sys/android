@@ -33,23 +33,22 @@ import com.example.attendancemanagementapp.ui.components.BigEditBar
 import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.RadioEditBar
 import com.example.attendancemanagementapp.ui.components.SearchEditBar
-import com.example.attendancemanagementapp.ui.commoncode.CodeInfoField
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
-import com.example.attendancemanagementapp.ui.commoncode.Target
-import com.example.attendancemanagementapp.ui.components.search.CommonCodeDialog
-import com.example.attendancemanagementapp.ui.components.search.CodeSearchUiState
-import com.example.attendancemanagementapp.ui.components.search.SearchUiState
+import com.example.attendancemanagementapp.ui.components.search.SearchCommonCodeDialog
+import com.example.attendancemanagementapp.ui.components.search.CodeSearchState
+import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 공통코드 수정 화면 */
 @Composable
 fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
+    val onEvent = codeViewModel::onEditEvent
     val focusManager = LocalFocusManager.current                        // 포커스 관리
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
     val codeEditState by codeViewModel.codeEditState.collectAsState()
-    val codeListState by codeViewModel.codeManageUiState.collectAsState()
+    val codeListState by codeViewModel.codeManageState.collectAsState()
 
     var openDialog by remember { mutableStateOf(false) }    // 공통코드 검색 디알로그 열림 상태
 
@@ -70,39 +69,36 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
 
     DisposableEffect(Unit) {
         onDispose {
-            codeViewModel.initCodeEditUiState() // 화면 사라질 때 입력한 내용 초기화
+            onEvent(CodeEditEvent.Init) // 화면 사라질 때 입력한 내용 초기화
         }
     }
 
     if (openDialog) {
-        CommonCodeDialog(
+        SearchCommonCodeDialog(
             listState = listState,
             isLoading = codeListState.isLoading,
-            codeSearchUiState = CodeSearchUiState(
-                searchUiState = SearchUiState(
+            codeSearchState = CodeSearchState(
+                searchState = SearchState(
                     value = codeListState.searchText,
-                    onValueChange = { codeViewModel.onSearchTextChange(it) },
+                    onValueChange = { onEvent(CodeEditEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
                         // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        codeViewModel.getCodes()
+                        onEvent(CodeEditEvent.ClickedSearch)
                         keyboardController?.hide()
                         focusManager.clearFocus(force = true)
                     },
-                    onClickInit = {
-                        codeViewModel.onSearchTextChange("")
-                        codeViewModel.getCodes()
-                    }
+                    onClickInit = { onEvent(CodeEditEvent.ClickedInitSearch) }
                 ),
                 selectedCategory = codeListState.selectedCategory,
                 categories = SearchType.entries,
-                onClickCategory = { codeViewModel.onSearchTypeChange(it) }
+                onClickCategory = { onEvent(CodeEditEvent.ChangedCategoryWith(it)) }
             ),
             commonCodes = codeListState.codes,
             onDismiss = {
                 openDialog = false
-                codeViewModel.initSearchState() // 검색 관련 초기화
+                onEvent(CodeEditEvent.InitSearch)
             },
-            onClickItem = { codeViewModel.onUpperCodeChange(Target.EDIT, it) }
+            onClickItem = { onEvent(CodeEditEvent.SelectedUpperCodeWith(it.upperCode.orEmpty(), it.upperCodeName.orEmpty())) }
         )
     }
 
@@ -120,11 +116,8 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
         ) {
             CodeEditCard(
                 codeEditState = codeEditState,
-                onClickOpenDialog = { openDialog = true },
-                onFieldChange = { target, field, input ->
-                    codeViewModel.onFieldChange(target, field, input)
-                },
-                onClickUpdate = { codeViewModel.updateCode() }
+                onEvent = onEvent,
+                onClickOpenDialog = { openDialog = true }
             )
         }
     }
@@ -132,7 +125,7 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
 
 /* 공통카드 수정 카드 */
 @Composable
-private fun CodeEditCard(codeEditState: CodeEditState, onClickOpenDialog: () -> Unit, onFieldChange: (Target, CodeInfoField, String) -> Unit, onClickUpdate: () -> Unit) {
+private fun CodeEditCard(codeEditState: CodeEditState, onEvent: (CodeEditEvent) -> Unit, onClickOpenDialog: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -150,19 +143,19 @@ private fun CodeEditCard(codeEditState: CodeEditState, onClickOpenDialog: () -> 
             EditBar(
                 name = "코드명",
                 value = codeEditState.inputData.codeName,
-                onValueChange = { onFieldChange(Target.EDIT, CodeInfoField.CODENAME, it) },
+                onValueChange = { onEvent(CodeEditEvent.ChangedValueWith(CodeEditField.CODENAME, it)) },
                 isRequired = true
             )
             EditBar(
                 name = "코드 설정값",
                 value = codeEditState.inputData.codeValue ?: "",
-                onValueChange = { onFieldChange(Target.EDIT, CodeInfoField.CODEVALUE, it) }
+                onValueChange = { onEvent(CodeEditEvent.ChangedValueWith(CodeEditField.CODEVALUE, it)) }
             )
             RadioEditBar(name = "사용여부", selected = "사용", isRequired = true)
             BigEditBar(
                 name = "설명",
                 value = codeEditState.inputData.description ?: "",
-                onValueChange = { onFieldChange(Target.EDIT, CodeInfoField.DESCRIPTION, it) }
+                onValueChange = { onEvent(CodeEditEvent.ChangedValueWith(CodeEditField.DESCRIPTION, it)) }
             )
         }
 
@@ -170,7 +163,7 @@ private fun CodeEditCard(codeEditState: CodeEditState, onClickOpenDialog: () -> 
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BasicLongButton(name = "수정", onClick = { onClickUpdate() })
+            BasicLongButton(name = "수정", onClick = { onEvent(CodeEditEvent.ClickedEdit) })
         }
     }
 }

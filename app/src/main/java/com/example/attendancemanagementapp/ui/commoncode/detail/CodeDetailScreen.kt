@@ -38,6 +38,7 @@ import com.example.attendancemanagementapp.ui.util.rememberOnce
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel) {
+    val onEvent = codeViewModel::onDetailEvent
     val codeDetailState by codeViewModel.codeDetailState.collectAsState()
 
     var openDialog by remember { mutableStateOf(false) }    // 삭제 확인 디알로그 열림 상태
@@ -59,7 +60,7 @@ fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel)
                 openDialog = false
             },
             onClickConfirm = {
-                codeViewModel.deleteCode()
+                onEvent(CodeDetailEvent.ClickedDelete)
             }
         )
     }
