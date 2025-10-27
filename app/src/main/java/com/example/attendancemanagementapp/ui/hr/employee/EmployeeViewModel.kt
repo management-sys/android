@@ -86,6 +86,7 @@ class EmployeeViewModel @Inject constructor(
             is EmployeeAddEvent.ClickedInitSearch -> searchDepartment(isEdit = false)
             is EmployeeAddEvent.ClickedSearch -> searchDepartment(isEdit = false)
             is EmployeeAddEvent.ClickedAdd -> addEmployee()
+            is EmployeeAddEvent.LoadNextPage -> searchDepartment(isEdit = false)
             else -> Unit
         }
     }
@@ -116,6 +117,7 @@ class EmployeeViewModel @Inject constructor(
             is EmployeeEditEvent.ClickedSearch -> searchDepartment(isEdit = true)
             is EmployeeEditEvent.ClickedUpdate -> updateEmployee()
             is EmployeeEditEvent.ChangedPage -> _currentPage.value = e.page
+            is EmployeeEditEvent.LoadNextPage -> searchDepartment(isEdit = true)
             else -> Unit
         }
     }

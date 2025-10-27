@@ -84,4 +84,7 @@ sealed interface EmployeeEditEvent {
     data class ClickedDeleteCareerWith(
         val idx: Int
     ): EmployeeEditEvent
+
+    // 부서 목록 다음 페이지 조회 이벤트
+    data object LoadNextPage: EmployeeEditEvent
 }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -34,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,6 +66,7 @@ import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.util.rememberOnce
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 직원 등록 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -327,6 +330,21 @@ private fun DepartmentDialog(
     onDismiss: () -> Unit = {},
     onEvent: (EmployeeAddEvent) -> Unit
 ) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val lastVisiblaIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
+        }.distinctUntilChanged().collect { shouldLoad ->
+            if (shouldLoad && !employeeAddState.paginationState.isLoading && employeeAddState.paginationState.currentPage < employeeAddState.paginationState.totalPage) {
+                onEvent(EmployeeAddEvent.LoadNextPage)
+            }
+        }
+    }
+
     Dialog(
         onDismissRequest = onDismiss
     ) {
@@ -356,7 +374,8 @@ private fun DepartmentDialog(
             Spacer(Modifier.height(15.dp))
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                state = listState
             ) {
                 items(employeeAddState.dropDownMenu.departmentMenu) { item ->
                     DepartmentInfoItem(

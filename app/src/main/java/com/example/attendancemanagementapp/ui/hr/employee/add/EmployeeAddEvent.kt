@@ -2,6 +2,7 @@ package com.example.attendancemanagementapp.ui.hr.employee.add
 
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
+import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditEvent
 
 enum class EmployeeAddField { LOGINID, NAME, DEPARTMENT, GRADE, TITLE, PHONE, BIRTHDATE, HIREDATE }
 enum class SalaryField { YEAR, AMOUNT }
@@ -61,4 +62,7 @@ sealed interface EmployeeAddEvent {
 
     // 직원 정보 추가 버튼 클릭 이벤트
     data object ClickedAdd: EmployeeAddEvent
+
+    // 부서 목록 다음 페이지 조회 이벤트
+    data object LoadNextPage: EmployeeAddEvent
 }
