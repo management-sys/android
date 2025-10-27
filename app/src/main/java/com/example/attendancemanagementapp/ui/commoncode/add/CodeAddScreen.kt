@@ -61,7 +61,7 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
             val total = info.totalItemsCount
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !codeListState.isLoading && codeListState.currentPage < codeListState.totalPage) {
+            if (shouldLoad && !codeListState.paginationState.isLoading && codeListState.paginationState.currentPage < codeListState.paginationState.totalPage) {
                 codeViewModel.getCodes()
             }
         }
@@ -76,7 +76,7 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
     if (openDialog) {
         SearchCommonCodeDialog(
             listState = listState,
-            isLoading = codeListState.isLoading,
+            isLoading = codeListState.paginationState.isLoading,
             codeSearchState = CodeSearchState(
                 searchState = SearchState(
                     value = codeListState.searchText,

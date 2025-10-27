@@ -19,7 +19,7 @@ object EmployeeManageReducer {
         state: EmployeeManageState,
         value: String
     ): EmployeeManageState {
-        return state.copy(searchText = value, currentPage = 0)
+        return state.copy(searchText = value, paginationState = state.paginationState.copy(currentPage = 0))
     }
 
     private fun handleClickedInitSearch(
@@ -30,9 +30,9 @@ object EmployeeManageReducer {
 
     private val dropDownUpdaters: Map<DropDownField, (EmployeeManageState, String) -> EmployeeManageState> =
         mapOf(
-            DropDownField.DEPARTMENT    to { s, v -> s.copy(dropDownState = s.dropDownState.copy(department = v), currentPage = 0) },
-            DropDownField.GRADE         to { s, v -> s.copy(dropDownState = s.dropDownState.copy(grade = v), currentPage = 0) },
-            DropDownField.TITLE         to { s, v -> s.copy(dropDownState = s.dropDownState.copy(title = v), currentPage = 0) }
+            DropDownField.DEPARTMENT    to { s, v -> s.copy(dropDownState = s.dropDownState.copy(department = v), paginationState = s.paginationState.copy(currentPage = 0)) },
+            DropDownField.GRADE         to { s, v -> s.copy(dropDownState = s.dropDownState.copy(grade = v), paginationState = s.paginationState.copy(currentPage = 0)) },
+            DropDownField.TITLE         to { s, v -> s.copy(dropDownState = s.dropDownState.copy(title = v), paginationState = s.paginationState.copy(currentPage = 0)) }
         )
 
     private fun handleSelectedDropDown(

@@ -627,7 +627,7 @@ private fun DepartmentDialog(
 //                        keyboardController?.hide()
 //                        focusManager.clearFocus(force = true)
                     },
-                    onClickInit = { EmployeeEditEvent.ClickedInitSearch }
+                    onClickInit = { onEvent(EmployeeEditEvent.ClickedInitSearch) }
                 ),
                 hint = "부서명"
             )
@@ -640,7 +640,7 @@ private fun DepartmentDialog(
                 items(employeeEditState.dropDownMenu.departmentMenu) { item ->
                     DepartmentInfoItem(
                         name = item.name,
-                        head = "부서장",   // TODO: 부서장 이름 출력 필요 (부서 목록 받을 때 부서장도 받기? 아니면 부서 검색에서만 받기?)
+                        head = item.headName ?: "",
                         onClick = {
                             onEvent(EmployeeEditEvent.SelectedDepartmentWith(item.name, item.id))
                             onDismiss()

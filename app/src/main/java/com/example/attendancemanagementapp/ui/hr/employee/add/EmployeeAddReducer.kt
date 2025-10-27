@@ -26,7 +26,7 @@ object EmployeeAddReducer {
         val data = state.copy(
             inputData = state.inputData.copy(grade = "선택", title = "선택"),
             dropDownMenu = state.dropDownMenu.copy(
-                departmentMenu = state.dropDownMenu.departmentMenu + departments
+                departmentMenu = departments
             )
         )
 
@@ -98,8 +98,8 @@ object EmployeeAddReducer {
         state: EmployeeAddState
     ): EmployeeAddState {
         return state.copy(
-            dropDownMenu = _root_ide_package_.com.example.attendancemanagementapp.ui.hr.employee.manage.DropDownMenu(),
-            searchText = ""
+            searchText = "",
+            paginationState = state.paginationState.copy(currentPage = 0)
         )
     }
 

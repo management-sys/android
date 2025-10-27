@@ -62,7 +62,7 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
             val total = info.totalItemsCount
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !employeeManageUiState.isLoading && employeeManageUiState.currentPage < employeeManageUiState.totalPage) {
+            if (shouldLoad && !employeeManageUiState.paginationState.isLoading && employeeManageUiState.paginationState.currentPage < employeeManageUiState.paginationState.totalPage) {
                 employeeViewModel.getManageEmployees()
             }
         }

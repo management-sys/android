@@ -61,7 +61,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
             val total = info.totalItemsCount
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !codeManageState.isLoading && codeManageState.currentPage < codeManageState.totalPage) {
+            if (shouldLoad && !codeManageState.paginationState.isLoading && codeManageState.paginationState.currentPage < codeManageState.paginationState.totalPage) {
                 codeViewModel.getCodes()
             }
         }
@@ -125,7 +125,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                     )
                 }
 
-                if (codeManageState.isLoading) {
+                if (codeManageState.paginationState.isLoading) {
                     item {
                         Box(
                             Modifier.fillMaxWidth().padding(16.dp),

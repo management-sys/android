@@ -133,27 +133,33 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
         }
     }
 
-    /* 공통코드 목록 조회 */
+    /* 공통코드 목록 조회 및 검색 */
     fun getCodes() {
         val state = _codeManageState.value
 
         viewModelScope.launch {
-            _codeManageState.update { it.copy(isLoading = true) }
+            _codeManageState.update { it.copy(paginationState = it.paginationState.copy(isLoading = true)) }
 
             repository.getCommonCodes(
                 state.selectedCategory,
                 state.searchText,
-                state.currentPage
+                state.paginationState.currentPage
             ).collect { result ->
                 result
                     .onSuccess { data ->
-                        if (state.currentPage == 0) {
-                            _codeManageState.update { it.copy(codes = data.content, currentPage = it.currentPage + 1, totalPage = data.totalPages, isLoading = false) }
+                        if (state.paginationState.currentPage == 0) {
+                            _codeManageState.update { it.copy(
+                                codes = data.content,
+                                paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, totalPage = data.totalPages, isLoading = false)
+                            ) }
                         }
                         else {
-                            _codeManageState.update { it.copy(codes = it.codes + data.content, currentPage = it.currentPage + 1, isLoading = false) }
+                            _codeManageState.update { it.copy(
+                                codes = it.codes + data.content,
+                                paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)
+                            ) }
                         }
-                        Log.d(TAG, "공통코드 목록 조회 성공: ${state.currentPage + 1}/${data.totalPages}, 검색(${state.selectedCategory}, ${state.searchText})\n${data.content}")
+                        Log.d(TAG, "공통코드 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.selectedCategory}, ${state.searchText})\n${data.content}")
                     }
                     .onFailure { e ->
                         e.printStackTrace()

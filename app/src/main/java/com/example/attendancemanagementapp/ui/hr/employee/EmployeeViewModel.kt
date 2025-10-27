@@ -3,6 +3,7 @@ package com.example.attendancemanagementapp.ui.hr.employee
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.repository.AuthorRepository
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
@@ -69,7 +70,7 @@ class EmployeeViewModel @Inject constructor(
     init {
         getEmployees()
         getManageEmployees()
-        getDepartments()
+        getAllDepartments()
         getAuthors()
         getGradeTitle()
     }
@@ -79,11 +80,11 @@ class EmployeeViewModel @Inject constructor(
 
         when (e) {
             is EmployeeAddEvent.Init -> {
-                val departments = employeeManageState.value.dropDownMenu.departmentMenu
+                val departments = employeeManageState.value.dropDownMenu.departmentMenu.filter { it.name != "부서" }
                 _employeeAddState.update { EmployeeAddReducer.reduce(it, EmployeeAddEvent.InitWith(departments)) }
             }
-            is EmployeeAddEvent.ClickedInitSearch -> getDepartments()
-            is EmployeeAddEvent.ClickedSearch -> searchDepartment()
+            is EmployeeAddEvent.ClickedInitSearch -> searchDepartment(isEdit = false)
+            is EmployeeAddEvent.ClickedSearch -> searchDepartment(isEdit = false)
             is EmployeeAddEvent.ClickedAdd -> addEmployee()
             else -> Unit
         }
@@ -108,11 +109,11 @@ class EmployeeViewModel @Inject constructor(
         when (e) {
             is EmployeeEditEvent.Init -> {
                 val employeeInfo = employeeDetailState.value.employeeInfo
-                val departments = employeeManageState.value.dropDownMenu.departmentMenu
+                val departments = employeeManageState.value.dropDownMenu.departmentMenu.filter { it.name != "부서" }
                 _employeeEditState.update { EmployeeEditReducer.reduce(it, EmployeeEditEvent.InitWith(employeeInfo, departments)) }
             }
-            is EmployeeEditEvent.ClickedInitSearch -> getDepartments()
-            is EmployeeEditEvent.ClickedSearch -> searchDepartment()
+            is EmployeeEditEvent.ClickedInitSearch -> searchDepartment(isEdit = true)
+            is EmployeeEditEvent.ClickedSearch -> searchDepartment(isEdit = true)
             is EmployeeEditEvent.ClickedUpdate -> updateEmployee()
             is EmployeeEditEvent.ChangedPage -> _currentPage.value = e.page
             else -> Unit
@@ -182,24 +183,24 @@ class EmployeeViewModel @Inject constructor(
         val state = employeeManageState.value
 
         viewModelScope.launch {
-            _employeeManageState.update { it.copy(isLoading = true) }
+            _employeeManageState.update { it.copy(paginationState = it.paginationState.copy(isLoading = true)) }
 
             employeeRepository.getManageEmployees(
                 department = state.dropDownState.department,
                 grade = state.dropDownState.grade,
                 title = state.dropDownState.title,
                 name = state.searchText,
-                page = state.currentPage
+                page = state.paginationState.currentPage
             ).collect { result ->
                 result
                     .onSuccess { data ->
-                        if (state.currentPage == 0) {
-                            _employeeManageState.update { it.copy(employees = data.content, currentPage = it.currentPage + 1, totalPage = data.totalPages, isLoading = false) }
+                        if (state.paginationState.currentPage == 0) {
+                            _employeeManageState.update { it.copy(employees = data.content, paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, totalPage = data.totalPages, isLoading = false)) }
                         }
                         else {
-                            _employeeManageState.update { it.copy(employees = it.employees + data.content, currentPage = it.currentPage + 1, isLoading = false) }
+                            _employeeManageState.update { it.copy(employees = it.employees + data.content, paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)) }
                         }
-                        Log.d(TAG, "직원 관리 목록 조회 성공: ${state.currentPage + 1}/${data.totalPages}, 검색(${state.dropDownState.department}, ${state.dropDownState.grade}, ${state.dropDownState.title}, ${state.searchText})\n${data.content}")
+                        Log.d(TAG, "직원 관리 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.dropDownState.department}, ${state.dropDownState.grade}, ${state.dropDownState.title}, ${state.searchText})\n${data.content}")
                     }
                     .onFailure { e ->
                         e.printStackTrace()
@@ -276,18 +277,16 @@ class EmployeeViewModel @Inject constructor(
         }
     }
 
-    /* 부서 목록 조회 */
-    fun getDepartments() {
+    /* 전체 부서 조회 */
+    fun getAllDepartments() {
         viewModelScope.launch {
-            departmentRepository.getDepartments().collect { result ->
+            departmentRepository.getAllDepartments().collect { result ->
                 result
                     .onSuccess { departments ->
-                        _employeeManageState.update { state -> state.copy(
-                            dropDownMenu = state.dropDownMenu.copy(
-                                departmentMenu = state.dropDownMenu.departmentMenu + departments
-                            ))
-                        }
-                        Log.d(TAG, "부서 목록 조회 성공\n${departments}")
+                        _employeeManageState.update { it.copy(
+                            dropDownMenu = it.dropDownMenu.copy(departmentMenu = it.dropDownMenu.departmentMenu + departments)
+                        ) }
+                        Log.d(TAG, "전체 부서 조회 성공: 검색(${employeeManageState.value.searchText})\n${departments}")
                     }
                     .onFailure { e ->
                         e.printStackTrace()
@@ -296,9 +295,91 @@ class EmployeeViewModel @Inject constructor(
         }
     }
 
-    /* TODO: 부서 검색 (API 추가 되면 구현) */
-    fun searchDepartment() {
+    /* 부서 검색 */
+    fun searchDepartment(isEdit: Boolean) {
+        if (isEdit) {
+            val state = employeeEditState.value
 
+            viewModelScope.launch {
+                _employeeEditState.update {
+                    it.copy(
+                        paginationState = it.paginationState.copy(
+                            isLoading = true
+                        )
+                    )
+                }
+
+                departmentRepository.getDepartments(
+                    searchName = state.searchText,
+                    page = state.paginationState.currentPage
+                ).collect { result ->
+                    result
+                        .onSuccess { data ->
+                            if (state.paginationState.currentPage == 0) {
+                                _employeeEditState.update {
+                                    it.copy(
+                                        dropDownMenu = it.dropDownMenu.copy(departmentMenu = data.content),
+                                        paginationState = it.paginationState.copy(
+                                            currentPage = it.paginationState.currentPage + 1,
+                                            totalPage = data.totalPages,
+                                            isLoading = false
+                                        )
+                                    )
+                                }
+                            } else {
+                                _employeeEditState.update {
+                                    it.copy(
+                                        dropDownMenu = it.dropDownMenu.copy(departmentMenu = data.content),
+                                        paginationState = it.paginationState.copy(
+                                            currentPage = it.paginationState.currentPage + 1,
+                                            isLoading = false
+                                        )
+                                    )
+                                }
+                            }
+                            Log.d(
+                                TAG,
+                                "부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}"
+                            )
+                        }
+                        .onFailure { e ->
+                            e.printStackTrace()
+                        }
+                }
+            }
+        }
+        else {
+            val state = employeeAddState.value
+
+            viewModelScope.launch {
+                _employeeAddState.update { it.copy(paginationState = it.paginationState.copy(isLoading = true)) }
+
+                departmentRepository.getDepartments(
+                    searchName = state.searchText,
+                    page = state.paginationState.currentPage
+                ).collect { result ->
+                    result
+                        .onSuccess { data ->
+                            if (state.paginationState.currentPage == 0) {
+                                _employeeAddState.update { it.copy(
+                                    dropDownMenu = it.dropDownMenu.copy(departmentMenu = data.content),
+                                    paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, totalPage = data.totalPages, isLoading = false)
+                                ) }
+                            }
+                            else {
+                                _employeeAddState.update { it.copy(
+                                    dropDownMenu = it.dropDownMenu.copy(departmentMenu = data.content),
+                                    paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)
+                                ) }
+                            }
+                            Log.d(TAG, "부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}")
+                        }
+                        .onFailure { e ->
+                            e.printStackTrace()
+                        }
+                }
+            }
+        }
     }
 
     /* 공통코드 목록에서 직급, 직책 조회 */

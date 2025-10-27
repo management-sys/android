@@ -2,7 +2,6 @@ package com.example.attendancemanagementapp.data.repository
 
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.retrofit.RetrofitInstance
-import com.example.attendancemanagementapp.retrofit.service.DepartmentService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -11,9 +10,20 @@ import javax.inject.Inject
 class DepartmentRepository @Inject constructor() {
     private val service = RetrofitInstance.departmentService
 
-    // 부서 목록 조회
-    fun getDepartments(): Flow<Result<List<DepartmentDTO.DepartmentsInfo>>> = flow {
-        val response = service.getDepartments()
+    // 전체 부서 목록 조회
+    fun getAllDepartments(): Flow<Result<List<DepartmentDTO.DepartmentsInfo>>> = flow {
+        val response = service.getAllDepartments()
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 부서 목록 조회 및 검색
+    fun getDepartments(searchName: String, page: Int): Flow<Result<DepartmentDTO.GetDepartmentsResponse>> = flow {
+        val response = service.getDepartments(
+            searchName = searchName,
+            page = page
+        )
         emit(Result.success(response))
     }.catch { e ->
         emit(Result.failure(e))

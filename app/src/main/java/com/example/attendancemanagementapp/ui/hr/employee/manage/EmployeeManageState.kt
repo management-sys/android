@@ -2,6 +2,7 @@ package com.example.attendancemanagementapp.ui.hr.employee.manage
 
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
+import com.example.attendancemanagementapp.retrofit.param.PaginationState
 
 data class EmployeeManageState(
     val employees: List<EmployeeDTO.ManageEmployeesInfo> = emptyList(), // 직원 관리 목록
@@ -11,10 +12,8 @@ data class EmployeeManageState(
         grade = "직급",
         title = "직책"
     ),
-    val dropDownMenu: DropDownMenu = DropDownMenu(),                    // 드롭다운 메뉴
-    val currentPage: Int = 0,                                           // 현재 페이지 번호
-    val totalPage: Int = Int.MAX_VALUE,                                 // 총 페이지 개수
-    val isLoading: Boolean = false                                      // 로딩 중 여부
+    val dropDownMenu: DropDownMenu = DropDownMenu(departmentMenu = listOf(DepartmentDTO.DepartmentsInfo(name = "부서"))), // 드롭다운 메뉴
+    val paginationState: PaginationState = PaginationState()                                                             // 페이지네이션 상태
 )
 
 data class DropDownState(
@@ -24,7 +23,7 @@ data class DropDownState(
 )
 
 data class DropDownMenu(
-    val departmentMenu: List<DepartmentDTO.DepartmentsInfo> = listOf(DepartmentDTO.DepartmentsInfo(name = "부서", depth = 0)),   // 부서 드롭다운 메뉴
-    val gradeMenu: List<String> = emptyList(),                                                                                  // 직급 드롭다운 메뉴
-    val titleMenu: List<String> = emptyList()                                                                                   // 직책 드롭다운 메뉴
+    val departmentMenu: List<DepartmentDTO.DepartmentsInfo> = emptyList(),  // 부서 드롭다운 메뉴
+    val gradeMenu: List<String> = emptyList(),                              // 직급 드롭다운 메뉴
+    val titleMenu: List<String> = emptyList()                               // 직책 드롭다운 메뉴
 )

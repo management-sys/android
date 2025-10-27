@@ -6,10 +6,17 @@ object DepartmentDTO {
     /* 부서 목록 데이터 */
     data class DepartmentsInfo(
         @Json(name = "deptId")      val id: String = "",        // 부서 아이디
+        @Json(name = "deptLdNm")    val headName: String? = "", // 부서장 이름
         @Json(name = "deptNm")      val name: String = "",      // 부서명
         @Json(name = "dp")          val depth: Int = 0,         // 계층 깊이 (레벨)
         @Json(name = "ordr")        val order: Int = 0,         // 동일 레벨 내 순서
         @Json(name = "upperDeptId") val upperId: String? = ""   // 상위 부서 아이디
+    )
+
+    /* 부서 목록 조회 응답 */
+    data class GetDepartmentsResponse(
+        @Json(name = "content")     val content: List<DepartmentsInfo>, // 부서 목록
+        @Json(name = "totalPages")  val totalPages: Int                 // 총 페이지 개수
     )
 
     /* 부서 정보 상세 데이터 */

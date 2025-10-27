@@ -19,19 +19,19 @@ object CodeManageReducer {
         state: CodeManageState,
         value: String
     ): CodeManageState {
-        return state.copy(searchText = value, currentPage = 0)
+        return state.copy(searchText = value, paginationState = state.paginationState.copy(currentPage = 0))
     }
 
     private fun handleChangedCategory(
         state: CodeManageState,
         category: SearchType
     ): CodeManageState {
-        return state.copy(selectedCategory = category, currentPage = 0)
+        return state.copy(selectedCategory = category, paginationState = state.paginationState.copy(currentPage = 0))
     }
 
     private fun handleClickedInitSearch(
         state: CodeManageState
     ): CodeManageState {
-        return state.copy(searchText = "", currentPage = 0)
+        return state.copy(searchText = "", paginationState = state.paginationState.copy(currentPage = 0))
     }
 }

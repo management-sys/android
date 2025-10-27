@@ -38,7 +38,7 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
     val departmentDetailState = _departmentDetailState.asStateFlow()
 
     init {
-        getDepartments()
+        getAllDepartments()
         getEmployees()
     }
 
@@ -97,16 +97,17 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
         }
     }
 
-    /* 부서 목록 조회 */
-    fun getDepartments() {
+    /* 전체 부서 목록 조회 */
+    fun getAllDepartments() {
         viewModelScope.launch {
-            departmentRepository.getDepartments().collect { result ->
+            departmentRepository.getAllDepartments().collect { result ->
                 result
                     .onSuccess { departments ->
                         _departmentManageState.update { it.copy(departments = departments) }
-                        Log.d(TAG, "부서 목록 조회 성공\n${departments}")
+                        Log.d(TAG, "전체 부서 목록 조회 성공\n${departments}")
                     }
                     .onFailure { e ->
+
                         e.printStackTrace()
                     }
             }

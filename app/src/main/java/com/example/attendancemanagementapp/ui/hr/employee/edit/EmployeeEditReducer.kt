@@ -32,7 +32,7 @@ object EmployeeEditReducer {
             selectAuthor = state.authors.filter { it.name in employeeInfo.authors.toHashSet() }, // 권한 이름으로 권한 코드 찾기
             selectDepartmentId = departments.firstOrNull { it.name == employeeInfo.department }?.id.orEmpty(), // 부서 이름으로 부서 아이디 찾기
             dropDownMenu = state.dropDownMenu.copy(
-                departmentMenu = state.dropDownMenu.departmentMenu + departments
+                departmentMenu = departments
             )
         )
 
@@ -85,7 +85,10 @@ object EmployeeEditReducer {
         state: EmployeeEditState,
         value: String
     ): EmployeeEditState {
-        return state.copy(searchText = value)
+        return state.copy(
+            searchText = value,
+            paginationState = state.paginationState.copy(currentPage = 0)
+        )
     }
 
     private fun handleClickedAddSalary(
@@ -110,8 +113,8 @@ object EmployeeEditReducer {
         state: EmployeeEditState
     ): EmployeeEditState {
         return state.copy(
-            dropDownMenu = _root_ide_package_.com.example.attendancemanagementapp.ui.hr.employee.manage.DropDownMenu(),
-            searchText = ""
+            searchText = "",
+            paginationState = state.paginationState.copy(currentPage = 0)
         )
     }
 

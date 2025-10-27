@@ -348,7 +348,7 @@ private fun DepartmentDialog(
 //                        keyboardController?.hide()
 //                        focusManager.clearFocus(force = true)
                     },
-                    onClickInit = { EmployeeAddEvent.ClickedInitSearch }
+                    onClickInit = { onEvent(EmployeeAddEvent.ClickedInitSearch) }
                 ),
                 hint = "부서명"
             )
