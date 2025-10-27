@@ -190,7 +190,8 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                             0 -> EmployeeInfoCard(employeeDetailState)
                             1 -> AnnualLeaveInfoCard(employeeDetailState.employeeInfo.annualLeaves)
                             2 -> {
-                                if (employeeDetailState.employeeInfo.careers.isNotEmpty()) {
+//                                if (employeeDetailState.employeeInfo.careers.isNotEmpty()) {
+                                if (employeeDetailState.careerInfo.isNotEmpty()) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
                                         horizontalArrangement = Arrangement.End
@@ -214,7 +215,8 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                                             )
                                             Text(
                                                 text = calculateTotalCareerPeriod(
-                                                    employeeDetailState.employeeInfo.careers
+                                                    employeeDetailState.careerInfo
+//                                                    employeeDetailState.employeeInfo.careers
                                                 ),
                                                 color = MainBlue,
                                                 fontWeight = FontWeight.SemiBold
@@ -223,7 +225,8 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                                     }
                                 }
 
-                                CareerInfoCard(employeeDetailState.employeeInfo.careers)
+                                CareerInfoCard(employeeDetailState.careerInfo)
+//                                CareerInfoCard(employeeDetailState.employeeInfo.careers)
                             }
                             3 -> SalaryInfoCard(employeeDetailState.employeeInfo.salaries)
                         }
@@ -389,6 +392,10 @@ private fun CareerInfoCard(careers: List<EmployeeDTO.CareerInfo>) {
             } else {
                 careers.forEachIndexed { idx, info ->
                     CareerInfoItem(info)
+
+                    if(idx < careers.size - 1) {
+                        Divider(modifier = Modifier.padding(vertical = 5.dp))
+                    }
                 }
             }
         }
@@ -444,7 +451,10 @@ private fun CareerInfoItem(info: EmployeeDTO.CareerInfo) {
             Column() {
                 InfoBar(name = "입사일", value = info.hireDate)
                 InfoBar(name = "퇴사일", value = info.resignDate ?: "")
-                InfoBar(name = "기간", value = if (info.resignDate == null) "${calculateCareerPeriod(info.hireDate, info.resignDate)} (재직중)" else calculateCareerPeriod(info.hireDate, info.resignDate))
+                InfoBar(
+                    name = "기간",
+                    value = if (info.resignDate.isNullOrBlank()) "${calculateCareerPeriod(info.hireDate, info.resignDate)} (재직중)" else calculateCareerPeriod(info.hireDate, info.resignDate)
+                )
             }
         }
     }

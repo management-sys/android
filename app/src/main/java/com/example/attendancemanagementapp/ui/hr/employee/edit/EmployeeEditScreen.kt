@@ -1,7 +1,11 @@
 package com.example.attendancemanagementapp.ui.hr.employee.edit
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -22,10 +27,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -50,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -59,6 +67,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO.CareerInfo
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicCheckbox
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -77,6 +86,7 @@ import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
+import com.example.attendancemanagementapp.ui.util.calculateCareerPeriod
 import com.example.attendancemanagementapp.ui.util.rememberOnce
 import kotlinx.coroutines.launch
 
@@ -184,7 +194,11 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
                                 )
                             }
                             2 -> {  // 경력정보
-
+                                CareerEditCard(
+                                    careers = employeeEditState.careerInfo,
+//                                    careers = employeeEditState.inputData.careers,
+                                    onEvent = onEvent
+                                )
                             }
                             3 -> {  // 연봉정보
                                 SalaryEditCard(
@@ -302,9 +316,9 @@ private fun AnnualLeaveEditCard(employeeEditState: EmployeeEditState, onEvent: (
     }
 }
 
-/* 경력 정보 수정 카드 TODO: 나중에 수정 필요 */
+/* 경력 정보 수정 카드 TODO: 수정 불가한 경력은 재직중이라서? */
 @Composable
-private fun CareerEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEditEvent) -> Unit) {
+private fun CareerEditCard(careers: List<CareerInfo>, onEvent: (EmployeeEditEvent) -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -312,18 +326,154 @@ private fun CareerEditCard(employeeEditState: EmployeeEditState, onEvent: (Emplo
         Column(
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            InfoBar(name = "연차", value = "${employeeEditState.annualLeaveInfo[0]}년차")
-            InfoBar(name = "시작일", value = employeeEditState.annualLeaveInfo[1])
-            InfoBar(name = "종료일", value = employeeEditState.annualLeaveInfo[2])
-            EditBar(
-                name = "연차 개수",
-                value = employeeEditState.annualLeaveInfo[3],
-                onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.ANNUAL_LEAVE, it))},
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "경력",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                IconButton(
+                    onClick = { onEvent(EmployeeEditEvent.ClickedAddCareer) }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AddCircle,
+                        contentDescription = "경력 아이템 추가 버튼",
+                        tint = MainBlue
+                    )
+                }
+            }
+
+            careers.forEachIndexed { idx, career ->
+                CareerInfoEditItem(
+                    info = career,
+                    idx = idx,
+                    onEvent = onEvent
+                )
+
+                if(idx < careers.size - 1) {
+                    Divider(modifier = Modifier.padding(vertical = 5.dp))
+                }
+            }
+        }
+    }
+}
+
+/* 경력 수정 아이템 */
+@Composable
+private fun CareerInfoEditItem(info: CareerInfo, idx: Int, onEvent: (EmployeeEditEvent) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val rotation by animateFloatAsState(targetValue = if (expanded) 90f else 0f)
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp).padding(top = 13.dp, bottom = 5.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "회사명",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(0.35f)
             )
-            InfoBar(name = "이월 연차 개수", value = employeeEditState.annualLeaveInfo[4])
-            InfoBar(name = "사용 연차 개수", value = employeeEditState.annualLeaveInfo[5])
+
+            OutlinedTextField(
+                modifier = Modifier.weight(0.5f),
+                value = info.name,
+                onValueChange = { onEvent(EmployeeEditEvent.ChangedCareerWith(CareerField.NAME, it, idx)) },
+                singleLine = true,
+                shape = RoundedCornerShape(5.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor = Color.White,
+                    unfocusedBorderColor = DarkGray,
+                    focusedBorderColor = DarkGray,
+                    disabledContainerColor = DisableGray,
+                    disabledBorderColor = DarkGray,
+                    disabledTextColor = DarkGray
+                ),
+                placeholder = {
+                    Text(
+                        text = "회사명",
+                        fontSize = 16.sp
+                    )
+                },
+                enabled = if (info.resignDate.isNullOrBlank() && info.id != null) false else true
+            )
+
+            IconButton(
+                onClick = { expanded = !expanded }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowForwardIos,
+                    contentDescription = "경력 아이템 열림/닫힘 아이콘",
+                    modifier = Modifier
+                        .size(12.dp)
+                        .rotate(rotation),
+                    tint = DarkGray
+                )
+            }
+        }
+
+        AnimatedVisibility(visible = expanded) {
+            Column() {
+                DateEditBar(
+                    name = "입사일",
+                    value = info.hireDate,
+                    onValueChange = { onEvent(EmployeeEditEvent.ChangedCareerWith(CareerField.HIREDATE, it, idx)) },
+                    enabled = if (info.resignDate.isNullOrBlank() && info.id != null) false else true
+                )
+
+                if (!info.resignDate.isNullOrBlank() || info.id == null) {
+                    DateEditBar(
+                        name = "퇴사일",
+                        value = info.resignDate ?: "",
+                        onValueChange = { onEvent(EmployeeEditEvent.ChangedCareerWith(CareerField.RESIGNDATE, it, idx)) }
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 13.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "기간",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.weight(0.35f)
+                    )
+
+                    Text(
+                        text = if (info.resignDate.isNullOrBlank() && info.id != null) "${calculateCareerPeriod(info.hireDate, info.resignDate)} (재직중)" else calculateCareerPeriod(info.hireDate, info.resignDate),
+                        fontSize = 16.sp,
+                        modifier = Modifier.weight(0.5f)
+                    )
+
+                    IconButton(
+                        onClick = { onEvent(EmployeeEditEvent.ClickedDeleteCareerWith(idx)) },
+                        modifier = Modifier.weight(0.1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "경력 아이템 삭제 버튼"
+                        )
+                    }
+                }
+            }
         }
     }
 }

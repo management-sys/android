@@ -192,7 +192,7 @@ fun WeekBar() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        weeks.forEachIndexed { idx, week ->
+        weeks.forEachIndexed { idx,                                                                                                                                                                                                                                 week ->
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -219,7 +219,7 @@ fun Month(modifier: Modifier, yearMonth: YearMonth) {
     val firstDayOfWeek = yearMonth.atDay(1).dayOfWeek   // 해당 월에서 1일의 요일
     val offset = firstDayOfWeek.value % 7       // 해당 월에서 1일의 요일 인덱스화 (일=0, 월=1, ..., 토=6)
     val lastDate = yearMonth.lengthOfMonth()    // 해당 월의 총 일수
-    val weeks = ((offset + lastDate + 6) / 7)   // 주수
+    val weeks = ((offset + lastDate + 6) / 7)   // 주수rrr
     var date = 1 - offset
 
     Column(

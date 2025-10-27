@@ -118,11 +118,6 @@ fun BasicDrawer(drawerState: DrawerState, onItemClick: (String) -> Unit = {}, on
                         onHeaderClick = { toggle(DrawerSection.ATTENDANCE) }
                     ) {
                         NavigationDrawerItem(
-                            label = { Text("나의 근태현황") },
-                            selected = false,
-                            onClick = { /* Handle click */ }
-                        )
-                        NavigationDrawerItem(
                             label = { Text("부서별 근태현황") },
                             selected = false,
                             onClick = { /* Handle click */ }
@@ -180,11 +175,6 @@ fun BasicDrawer(drawerState: DrawerState, onItemClick: (String) -> Unit = {}, on
                         expanded = expandedSection == DrawerSection.FINANCE,
                         onHeaderClick = { toggle(DrawerSection.FINANCE) }
                     ) {
-                        NavigationDrawerItem(
-                            label = { Text("급여명세서") },
-                            selected = false,
-                            onClick = { /* Handle click */ }
-                        )
                         NavigationDrawerItem(
                             label = { Text("직원별 급여명세서") },
                             selected = false,

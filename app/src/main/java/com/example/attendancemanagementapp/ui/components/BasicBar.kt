@@ -530,6 +530,7 @@ fun DateEditBar(
     name: String,
     value: String,
     onValueChange: (String) -> Unit,
+    enabled: Boolean = true,                // 이용 가능 여부
     isRequired: Boolean = false
 ) {
     var open by rememberSaveable { mutableStateOf(false) }
@@ -611,13 +612,19 @@ fun DateEditBar(
                     Icon(
                         imageVector = Icons.Default.CalendarToday,
                         contentDescription = "캘린더 열기",
-                        modifier = Modifier
-                            .clickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() }
-                            ) { open = true }
+                        modifier = Modifier.then(
+                            if (enabled) {
+                                Modifier.clickable(
+                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() }
+                                ) { open = true }
+                            } else {
+                                Modifier
+                            }
+                        )
                     )
-                }
+                },
+                enabled = enabled
             )
         }
     }

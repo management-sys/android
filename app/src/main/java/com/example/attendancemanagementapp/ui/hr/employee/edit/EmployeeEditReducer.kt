@@ -16,6 +16,9 @@ object EmployeeEditReducer {
         is EmployeeEditEvent.SelectedDepartmentWith -> handleSelectedDepartment(s, e.departmentName, e.departmentId)
         is EmployeeEditEvent.ClickedEditAuthWith -> handleClickedEditAuth(s, e.selected)
         EmployeeEditEvent.ClickedInitBirthDate -> handleClickedInitBirthDate(s)
+        EmployeeEditEvent.ClickedAddCareer -> handleClickedAddCareer(s)
+        is EmployeeEditEvent.ChangedCareerWith -> handleChangedCareer(s, e.field, e.value, e.idx)
+        is EmployeeEditEvent.ClickedDeleteCareerWith -> handleClickedDeleteCareer(s, e.idx)
         else -> s
     }
 
@@ -70,6 +73,7 @@ object EmployeeEditReducer {
     ): EmployeeEditState {
         val year = if (field == SalaryField.YEAR) value.filter(Char::isDigit) else state.inputData.salaries[idx].year
         val amount = if (field == SalaryField.AMOUNT) value.filter(Char::isDigit).toInt() else state.inputData.salaries[idx].amount
+
         val updated = state.inputData.salaries.mapIndexed { i, s -> // 수정한 인덱스의 값을 입력한 값으로 변경
             if (i == idx) s.copy(year = year, amount = amount) else s
         }
@@ -134,5 +138,56 @@ object EmployeeEditReducer {
         state: EmployeeEditState
     ): EmployeeEditState {
         return state.copy(inputData = state.inputData.copy(birthDate = ""))
+    }
+
+    private fun handleClickedAddCareer(
+        state: EmployeeEditState
+    ): EmployeeEditState {
+//        return state.copy(inputData = state.inputData.copy(
+//            careers = state.inputData.careers + EmployeeDTO.CareerInfo(null, "", "", ""))
+//        )
+        return state.copy(careerInfo = state.careerInfo + EmployeeDTO.CareerInfo(null, "", "", "")) // 임시
+    }
+
+    private fun handleChangedCareer(
+        state: EmployeeEditState,
+        field: CareerField,
+        value: String,
+        idx: Int
+    ): EmployeeEditState {
+//        val name = if (field == CareerField.NAME) value else state.inputData.careers[idx].name
+//        val hireDate = if (field == CareerField.HIREDATE) value else state.inputData.careers[idx].hireDate
+//        val resignDate = if (field == CareerField.RESIGNDATE) value else state.inputData.careers[idx].resignDate
+//
+//        val updated = state.inputData.careers.mapIndexed { i, s -> // 수정한 인덱스의 값을 입력한 값으로 변경
+//            if (i == idx) s.copy(name = name, hireDate = hireDate, resignDate = resignDate) else s
+//        }
+
+//        return state.copy(inputData = state.inputData.copy(careers = updated))
+
+        val name = if (field == CareerField.NAME) value else state.careerInfo[idx].name
+        val hireDate = if (field == CareerField.HIREDATE) value else state.careerInfo[idx].hireDate
+        val resignDate = if (field == CareerField.RESIGNDATE) value else state.careerInfo[idx].resignDate
+
+        val updated = state.careerInfo.mapIndexed { i, s -> // 수정한 인덱스의 값을 입력한 값으로 변경
+            if (i == idx) s.copy(name = name, hireDate = hireDate, resignDate = resignDate) else s
+        }
+
+        return state.copy(careerInfo = updated)  // 임시
+    }
+
+    private fun handleClickedDeleteCareer(
+        state: EmployeeEditState,
+        idx: Int
+    ): EmployeeEditState {
+//        val careers = state.inputData.careers
+//        val updated = careers.toMutableList().apply { removeAt(idx) }
+//
+//        return state.copy(inputData = state.inputData.copy(careers = updated))
+
+        val careers = state.careerInfo
+        val updated = careers.toMutableList().apply { removeAt(idx) }
+
+        return state.copy(careerInfo = updated)  // 임시
     }
 }

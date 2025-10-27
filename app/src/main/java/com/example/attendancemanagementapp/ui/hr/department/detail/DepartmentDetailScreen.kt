@@ -143,7 +143,8 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
                         openDeleteDialog = true
                     }
                     else {
-                        departmentViewModel.showSnackBar("${departmentDetailState.info.name} 부서에 ${departmentDetailState.users.size}명의 사용자가 있습니다. 부서를 삭제하기 전에 모든 사용자를 다른 부서로 이동시켜 주세요.")
+                        departmentViewModel.showSnackBar("부서를 삭제하기 전에 모든 사용자를 다른 부서로 이동시켜 주세요.")
+//                        departmentViewModel.showSnackBar("${departmentDetailState.info.name} 부서에 ${departmentDetailState.users.size}명의 사용자가 있습니다. 부서를 삭제하기 전에 모든 사용자를 다른 부서로 이동시켜 주세요.")
                     }
                 }
             )

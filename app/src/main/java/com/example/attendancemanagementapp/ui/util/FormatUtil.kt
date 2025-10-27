@@ -27,6 +27,10 @@ fun formatPhone(d: String): String {
 
 /* 재직 기간(경력) 계산 */
 fun calculateCareerPeriod(hireDate: String, resignDate: String?): String {
+    if (hireDate == "") {   // 경력 아이템 추가 시 입사일이 공백임
+        return "-"
+    }
+
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val hireDate = LocalDate.parse(hireDate, formatter)
     val resignDate = if (resignDate.isNullOrBlank()) LocalDate.now() else LocalDate.parse(resignDate, formatter)    // 퇴사일이 null이면 오늘 날짜를 기준으로 재직 기간 계산
@@ -35,7 +39,7 @@ fun calculateCareerPeriod(hireDate: String, resignDate: String?): String {
     val years = period.years
     val months = period.months
 
-    return "${years}년 ${months}개월"
+    return if (years == 0) "${months}개월" else "${years}년 ${months}개월"
 }
 
 /* 총 경력 계산 */

@@ -16,16 +16,16 @@ object DepartmentManageReducer {
     ): DepartmentManageState {
         val updatedDepartments = state.departments.map { dept ->
             when (dept.id) {
-                fromDepartment.id -> dept.copy(
+                fromDepartment.id -> dept.copy( // 01 11 21 22 12  12를 21, 22 사이에 넣는다. 01 11 21 22 23 / order도 여기서 처리하는건 아닌거 같음 일단 무시하고 depth만 신경씀
                     depth = endDepartment.depth,
-                    order = endDepartment.order,
+                    order = endDepartment.order + 1,
                     upperId = endDepartment.upperId
                 )
-                endDepartment.id -> dept.copy(
-                    depth = fromDepartment.depth,
-                    order = fromDepartment.order,
-                    upperId = fromDepartment.upperId
-                )
+//                endDepartment.id -> dept.copy(
+//                    depth = fromDepartment.depth,
+//                    order = fromDepartment.order,
+//                    upperId = fromDepartment.upperId
+//                )
                 else -> dept
             }
         }.sortedWith(compareBy({ it.depth }, { it.order }))
