@@ -33,4 +33,11 @@ interface DepartmentService {
     // 전체 부서 목록 조회 (페이징 X)
     @GET("/api/depts/all")
     suspend fun getAllDepartments(): List<DepartmentDTO.DepartmentsInfo>
+
+    // 부서 위치 변경
+    @PATCH("/api/depts/{deptId}/position")
+    suspend fun updatePosition(
+        @Path("deptId") departmentId: String,
+        @Body request: DepartmentDTO.UpdatePositionRequest
+    ): List<DepartmentDTO.DepartmentsInfo>
 }

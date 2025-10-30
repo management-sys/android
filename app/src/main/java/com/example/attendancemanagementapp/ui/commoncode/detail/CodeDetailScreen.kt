@@ -59,6 +59,7 @@ fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel)
             },
             onClickConfirm = {
                 onEvent(CodeDetailEvent.ClickedDelete)
+                openDialog = false
             }
         )
     }

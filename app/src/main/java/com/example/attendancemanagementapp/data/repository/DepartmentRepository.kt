@@ -49,4 +49,12 @@ class DepartmentRepository @Inject constructor() {
     }.catch { e ->
         emit(Result.failure(e))
     }
+
+    // 부서 위치 변경
+    fun updatePosition(departmentId: String, request: DepartmentDTO.UpdatePositionRequest): Flow<Result<List<DepartmentDTO.DepartmentsInfo>>> = flow {
+        val response = service.updatePosition(departmentId, request)
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
 }

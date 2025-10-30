@@ -127,7 +127,10 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
             title = "부서장을 추가하시겠습니까?",
             text = "이미 부서에는 부서장이 있습니다. (${departmentDetailState.selectedHead.joinToString(", ") { it.second }})",
             onDismiss = { openAddHeadDialog = false },
-            onClickConfirm = { onEvent(DepartmentDetailEvent.SelectedHeadWith(false, addIdName)) }
+            onClickConfirm = {
+                onEvent(DepartmentDetailEvent.SelectedHeadWith(false, addIdName))
+                openAddHeadDialog = false
+            }
         )
     }
 

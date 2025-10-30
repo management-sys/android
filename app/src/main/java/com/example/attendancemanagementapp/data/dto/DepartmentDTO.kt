@@ -42,4 +42,10 @@ object DepartmentDTO {
         @Json(name = "deptNm")  val name: String,       // 부서명
         @Json(name = "dc")      val description: String // 부서 설명
     )
+
+    /* 부서 위치 변경 요청 */
+    data class UpdatePositionRequest(
+        @Json(name = "newOrder")        val newOrder: Int,      // 새로운 순서
+        @Json(name = "newUprDeptId")    val newUpperId: String? // 새로운 상위 부서 아이디
+    )
 }

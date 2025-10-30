@@ -62,7 +62,7 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
             }
             is DepartmentManageEvent.MoveDepartmentWith -> {
                 Log.d("부서 이동", "시작: ${e.fromDepartment}\n끝: ${e.endDepartment}")
-                // TODO: 근데 그냥 부서 위치 수정 API 보내고 다시 부서 목록 조회하면 되지 않나?
+                updatePosition(e.fromDepartment.id, e.endDepartment.order, e.endDepartment.upperId)
             }
         }
     }
@@ -103,11 +103,12 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
             departmentRepository.getAllDepartments().collect { result ->
                 result
                     .onSuccess { departments ->
-                        _departmentManageState.update { it.copy(departments = departments) }
+                        val map = departments.groupBy { it.upperId }
+
+                        _departmentManageState.update { it.copy(departments = departments, departmentMap = map) }
                         Log.d(TAG, "전체 부서 목록 조회 성공\n${departments}")
                     }
                     .onFailure { e ->
-
                         e.printStackTrace()
                     }
             }
@@ -157,6 +158,30 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
                 result.onFailure { e ->
                     e.printStackTrace()
                 }
+            }
+        }
+    }
+
+    /* 부서 위치 변경 */
+    fun updatePosition(departmentId: String, newOrder: Int, newUpperId: String?) {
+        val request = DepartmentDTO.UpdatePositionRequest(
+            newOrder = newOrder,
+            newUpperId = newUpperId
+        )
+        
+        viewModelScope.launch { 
+            departmentRepository.updatePosition(
+                departmentId = departmentId,
+                request = request
+            ).collect { result ->
+                result
+                    .onSuccess { departments ->
+                        _departmentManageState.update { it.copy(departments = departments) }
+                        Log.d(TAG, "부서 위치 변경 성공\n${departments}")
+                    }
+                    .onFailure { e ->
+                        e.printStackTrace()
+                    }
             }
         }
     }

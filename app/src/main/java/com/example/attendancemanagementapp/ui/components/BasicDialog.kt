@@ -39,7 +39,6 @@ fun BasicDialog(
             TextButton(
                 onClick = {
                     onClickConfirm()
-                    onDismiss()
                 }
             ) {
                 Text(

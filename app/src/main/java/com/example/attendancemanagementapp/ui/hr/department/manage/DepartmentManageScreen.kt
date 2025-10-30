@@ -3,6 +3,7 @@ package com.example.attendancemanagementapp.ui.hr.department.manage
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +18,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.SubdirectoryArrowRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -31,6 +35,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,6 +61,7 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
 
     val departmentManageState by departmentViewModel.departmentManageState.collectAsState()
 
+    var deptList by remember { mutableStateOf(departmentManageState.departments) }  // 출력할 부서 리스트
     var fromInfo by remember { mutableStateOf(DepartmentDTO.DepartmentsInfo()) }  // 드래그 시작하는 부서 정보
     var toInfo by remember { mutableStateOf(DepartmentDTO.DepartmentsInfo()) }    // 드래그 끝내는 부서 정보
 
@@ -65,12 +71,13 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
         BasicDialog(
             title = "부서 위치를 변경하시겠습니까?",
             onDismiss = {
-                // 취소 -> 원래 리스트로 변경
+                deptList = departmentManageState.departments    // 취소 -> 원래 리스트로 변경
                 openUpdateOrderDialog = false
             },
             onClickConfirm = {
                 // 확인 -> 변경한 리스트로 저장
                 onEvent(DepartmentManageEvent.MoveDepartmentWith(fromInfo, toInfo))
+                openUpdateOrderDialog = false
             }
         )
     }
@@ -87,7 +94,6 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
             modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            var deptList by remember { mutableStateOf(departmentManageState.departments) }
             val lazyListState = rememberLazyListState()
 
             var currentDraggedIndex by remember { mutableStateOf<Int?>(null) }
@@ -170,49 +176,49 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
     }
 }
 
-    /* 부서 목록 아이템 */
-    @Composable
-    fun DepartmentInfoItem(
-        modifier: Modifier,
-        dept: DepartmentDTO.DepartmentsInfo,
-        isDragging: Boolean,
-        onClick: () -> Unit
+/* 부서 목록 아이템 */
+@Composable
+fun DepartmentInfoItem(
+    modifier: Modifier,
+    dept: DepartmentDTO.DepartmentsInfo,
+    isDragging: Boolean,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .then(
+                if (isDragging)
+                    Modifier.shadow(10.dp, RoundedCornerShape(10.dp))
+                else Modifier
+            ),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isDragging) 8.dp else 1.dp),
+        onClick = { onClick() }
     ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-                .then(
-                    if (isDragging)
-                        Modifier.shadow(10.dp, RoundedCornerShape(10.dp))
-                    else Modifier
-                ),
-            shape = RoundedCornerShape(10.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = if (isDragging) 8.dp else 1.dp),
-            onClick = { onClick() }
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = dept.name,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
+            Text(
+                text = dept.name,
+                modifier = Modifier.padding(start = 10.dp)
+            )
 
-                IconButton(
-                    modifier = modifier,
-                    onClick = {}
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.DragHandle,
-                        contentDescription = "드래그 아이콘",
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+            IconButton(
+                modifier = modifier,
+                onClick = {}
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DragHandle,
+                    contentDescription = "드래그 아이콘",
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
+}
