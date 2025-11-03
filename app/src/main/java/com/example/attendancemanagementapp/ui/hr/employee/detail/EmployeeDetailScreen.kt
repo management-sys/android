@@ -103,6 +103,7 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                 },
                 onClickConfirm = {
                     onEvent(EmployeeDetailEvent.ClickedDeactivate)
+                    openDeleteDialog = false
                 },
                 onClickDismiss = {
                     onEvent(EmployeeDetailEvent.ClickedDismissDeactivate)
@@ -119,6 +120,7 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                 },
                 onClickConfirm = {
                     onEvent(EmployeeDetailEvent.ClickedActivate)
+                    openDeleteDialog = false
                 },
                 onClickDismiss = {
                     onEvent(EmployeeDetailEvent.ClickedDismissActivate)
@@ -132,7 +134,10 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
         BasicDialog(
             title = "비밀번호를 초기화하시겠습니까?",
             onDismiss = { openChangeDialog = false },
-            onClickConfirm = { onEvent(EmployeeDetailEvent.ClickedResetPassword) }
+            onClickConfirm = {
+                onEvent(EmployeeDetailEvent.ClickedResetPassword)
+                openChangeDialog = false
+            }
         )
     }
 
@@ -190,8 +195,7 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                             0 -> EmployeeInfoCard(employeeDetailState)
                             1 -> AnnualLeaveInfoCard(employeeDetailState.employeeInfo.annualLeaves)
                             2 -> {
-//                                if (employeeDetailState.employeeInfo.careers.isNotEmpty()) {
-                                if (employeeDetailState.careerInfo.isNotEmpty()) {
+                                if (employeeDetailState.employeeInfo.annualLeaves.isNotEmpty()) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
                                         horizontalArrangement = Arrangement.End
@@ -215,8 +219,7 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                                             )
                                             Text(
                                                 text = calculateTotalCareerPeriod(
-                                                    employeeDetailState.careerInfo
-//                                                    employeeDetailState.employeeInfo.careers
+                                                    employeeDetailState.employeeInfo.careers
                                                 ),
                                                 color = MainBlue,
                                                 fontWeight = FontWeight.SemiBold
@@ -225,8 +228,7 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                                     }
                                 }
 
-                                CareerInfoCard(employeeDetailState.careerInfo)
-//                                CareerInfoCard(employeeDetailState.employeeInfo.careers)
+                                CareerInfoCard(employeeDetailState.employeeInfo.careers)
                             }
                             3 -> SalaryInfoCard(employeeDetailState.employeeInfo.salaries)
                         }

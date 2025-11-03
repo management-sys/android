@@ -8,6 +8,8 @@ object EmployeeEditReducer {
     fun reduce(s: EmployeeEditState, e: EmployeeEditEvent): EmployeeEditState = when (e) {
         is EmployeeEditEvent.InitWith -> handleInit(s, e.employeeInfo, e.departments)
         is EmployeeEditEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
+        is EmployeeEditEvent.ChangedAunnualLeaveWith -> handleChangedAnnualLeave(s, e.value, e.idx)
+        is EmployeeEditEvent.ChangedCareerWith -> handleChangedCareer(s, e.field, e.value, e.idx)
         is EmployeeEditEvent.ChangedSalaryWith -> handleChangedSalary(s, e.field, e.value, e.idx)
         is EmployeeEditEvent.ChangedSearchWith -> handleChangedSearch(s, e.value)
         EmployeeEditEvent.ClickedAddSalary -> handleClickedAddSalary(s)
@@ -17,7 +19,6 @@ object EmployeeEditReducer {
         is EmployeeEditEvent.ClickedEditAuthWith -> handleClickedEditAuth(s, e.selected)
         EmployeeEditEvent.ClickedInitBirthDate -> handleClickedInitBirthDate(s)
         EmployeeEditEvent.ClickedAddCareer -> handleClickedAddCareer(s)
-        is EmployeeEditEvent.ChangedCareerWith -> handleChangedCareer(s, e.field, e.value, e.idx)
         is EmployeeEditEvent.ClickedDeleteCareerWith -> handleClickedDeleteCareer(s, e.idx)
         else -> s
     }
@@ -146,10 +147,9 @@ object EmployeeEditReducer {
     private fun handleClickedAddCareer(
         state: EmployeeEditState
     ): EmployeeEditState {
-//        return state.copy(inputData = state.inputData.copy(
-//            careers = state.inputData.careers + EmployeeDTO.CareerInfo(null, "", "", ""))
-//        )
-        return state.copy(careerInfo = state.careerInfo + EmployeeDTO.CareerInfo(null, "", "", "")) // 임시
+        return state.copy(inputData = state.inputData.copy(
+            careers = state.inputData.careers + EmployeeDTO.CareerInfo(null, "", "", ""))
+        )
     }
 
     private fun handleChangedCareer(
@@ -158,39 +158,36 @@ object EmployeeEditReducer {
         value: String,
         idx: Int
     ): EmployeeEditState {
-//        val name = if (field == CareerField.NAME) value else state.inputData.careers[idx].name
-//        val hireDate = if (field == CareerField.HIREDATE) value else state.inputData.careers[idx].hireDate
-//        val resignDate = if (field == CareerField.RESIGNDATE) value else state.inputData.careers[idx].resignDate
-//
-//        val updated = state.inputData.careers.mapIndexed { i, s -> // 수정한 인덱스의 값을 입력한 값으로 변경
-//            if (i == idx) s.copy(name = name, hireDate = hireDate, resignDate = resignDate) else s
-//        }
+        val name = if (field == CareerField.NAME) value else state.inputData.careers[idx].name
+        val hireDate = if (field == CareerField.HIREDATE) value else state.inputData.careers[idx].hireDate
+        val resignDate = if (field == CareerField.RESIGNDATE) value else state.inputData.careers[idx].resignDate
 
-//        return state.copy(inputData = state.inputData.copy(careers = updated))
-
-        val name = if (field == CareerField.NAME) value else state.careerInfo[idx].name
-        val hireDate = if (field == CareerField.HIREDATE) value else state.careerInfo[idx].hireDate
-        val resignDate = if (field == CareerField.RESIGNDATE) value else state.careerInfo[idx].resignDate
-
-        val updated = state.careerInfo.mapIndexed { i, s -> // 수정한 인덱스의 값을 입력한 값으로 변경
+        val updated = state.inputData.careers.mapIndexed { i, s -> // 수정한 인덱스의 값을 입력한 값으로 변경
             if (i == idx) s.copy(name = name, hireDate = hireDate, resignDate = resignDate) else s
         }
 
-        return state.copy(careerInfo = updated)  // 임시
+        return state.copy(inputData = state.inputData.copy(careers = updated))
     }
 
     private fun handleClickedDeleteCareer(
         state: EmployeeEditState,
         idx: Int
     ): EmployeeEditState {
-//        val careers = state.inputData.careers
-//        val updated = careers.toMutableList().apply { removeAt(idx) }
-//
-//        return state.copy(inputData = state.inputData.copy(careers = updated))
-
-        val careers = state.careerInfo
+        val careers = state.inputData.careers
         val updated = careers.toMutableList().apply { removeAt(idx) }
 
-        return state.copy(careerInfo = updated)  // 임시
+        return state.copy(inputData = state.inputData.copy(careers = updated))
+    }
+
+    private fun handleChangedAnnualLeave(
+        state: EmployeeEditState,
+        value: String,
+        idx: Int
+    ): EmployeeEditState {
+        val updated = state.inputData.annualLeaves.mapIndexed { i, s -> // 수정한 인덱스의 값을 입력한 값으로 변경
+            if (i == idx) s.copy(totalCnt = value) else s
+        }
+
+        return state.copy(inputData = state.inputData.copy(annualLeaves = updated))
     }
 }

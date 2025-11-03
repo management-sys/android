@@ -171,7 +171,7 @@ class EmployeeViewModel @Inject constructor(
                             EmployeeTarget.SEARCH -> { _employeeSearchState.update { it.copy(employeeInfo = employeeInfo) } }
                             EmployeeTarget.MANAGE -> { _employeeDetailState.update { it.copy(employeeInfo = employeeInfo) } }
                         }
-                        Log.d(TAG, "직원 목록 상세 조회 성공: ${userId}\n${employeeInfo}")
+                        Log.d(TAG, "직원 상세 조회 성공: ${userId}\n${employeeInfo}")
                     }
                     .onFailure { e ->
                         e.printStackTrace()
@@ -257,11 +257,24 @@ class EmployeeViewModel @Inject constructor(
             grade = inputData.grade,
             title = if (inputData.title == "직책") "" else inputData.title!!,
             phone = formatPhone(inputData.phone ?: ""), // 전화번호 형식으로 포맷팅 (000-0000-0000)
-            birthDate = if (inputData.birthDate.isNullOrBlank()) "" else inputData.birthDate + "T00:00:00",
-            hireDate = inputData.hireDate + "T00:00:00",
+            birthDate = if (inputData.birthDate.isNullOrBlank()) "" else "${inputData.birthDate}T00:00:00",
+            hireDate = "${inputData.hireDate}T00:00:00",
             authors = employeeEditState.value.selectAuthor.map { it.code },
-            salaries = inputData.salaries.filter { it.year != "" && it.amount != 0 } // 연봉 정보를 입력하지 않았으면 제거
+            annualLeaves = inputData.annualLeaves.map { info ->
+                EmployeeDTO.UpdateAnnualLeavesInfo(
+                    id = info.id,
+                    totalCnt = info.totalCnt.toDoubleOrNull() ?: 0.0
+                )
+            },
+            careers = inputData.careers
+                .filter { it.name.isNotBlank() && it.hireDate.isNotBlank() }
+                .map { it.copy(
+                    hireDate = "${it.hireDate}T00:00:00",
+                    resignDate = if (!it.resignDate.isNullOrBlank()) "${it.resignDate}T00:00:00" else null
+                )},
+            salaries = inputData.salaries.filter { it.year.isNotBlank() && it.amount != 0 } // 연봉 정보를 입력하지 않았으면 제거
         )
+        Log.d("요청", "${request}")
 
         viewModelScope.launch {
             employeeRepository.updateEmployee(request).collect { result ->

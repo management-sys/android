@@ -76,16 +76,24 @@ object EmployeeDTO {
 
     /* 직원 정보 수정 요청 */
     data class UpdateEmployeeRequest(
-        @Json(name = "userId")      val userId: String = "",                        // 사용자 아이디
-        @Json(name = "userNm")      val name: String = "",                          // 이름
-        @Json(name = "deptId")      val departmentId: String = "",                  // 부서 아이디
-        @Json(name = "clsf")        val grade: String = "",                         // 직급
-        @Json(name = "rspofc")      val title: String = "",                         // 직책
-        @Json(name = "telno")       val phone: String = "",                         // 연락처: 000-0000-0000
-        @Json(name = "brthdy")      val birthDate: String = "",                     // 생년월일: yyyy-MM-ddT00:00:00
-        @Json(name = "encpn")       val hireDate: String = "",                      // 입사일: yyyy-MM-ddT00:00:00
-        @Json(name = "authorCodes") val authors: List<String> = emptyList(),        // 권한 코드 목록
-        @Json(name = "anslries")    val salaries: List<SalaryInfo> = emptyList(),   // 연봉
+        @Json(name = "userId")      val userId: String = "",                                        // 사용자 아이디
+        @Json(name = "userNm")      val name: String = "",                                          // 이름
+        @Json(name = "deptId")      val departmentId: String = "",                                  // 부서 아이디
+        @Json(name = "clsf")        val grade: String = "",                                         // 직급
+        @Json(name = "rspofc")      val title: String = "",                                         // 직책
+        @Json(name = "telno")       val phone: String = "",                                         // 연락처: 000-0000-0000
+        @Json(name = "brthdy")      val birthDate: String = "",                                     // 생년월일: yyyy-MM-ddT00:00:00
+        @Json(name = "encpn")       val hireDate: String = "",                                      // 입사일: yyyy-MM-ddT00:00:00
+        @Json(name = "authorCodes") val authors: List<String> = emptyList(),                        // 권한 코드 목록
+        @Json(name = "yrycs")       val annualLeaves: List<UpdateAnnualLeavesInfo> = emptyList(),   // 연차 수정 목록
+        @Json(name = "crrs")        val careers: List<CareerInfo> = emptyList(),                    // 경력 정보 목록
+        @Json(name = "anslries")    val salaries: List<SalaryInfo> = emptyList(),                   // 연봉
+    )
+
+    /* 연차 수정 목록 데이터 */
+    data class UpdateAnnualLeavesInfo(
+        @Json(name = "yrycId")  val id: Int,
+        @Json(name = "yrycCo")  val totalCnt: Double
     )
 
     /* 직원 등록 요청 */

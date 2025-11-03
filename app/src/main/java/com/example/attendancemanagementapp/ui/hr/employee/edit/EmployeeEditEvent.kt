@@ -5,8 +5,8 @@ import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 
 enum class EmployeeEditField { NAME, DEPARTMENT, GRADE, TITLE, PHONE, BIRTHDATE, HIREDATE, ANNUAL_LEAVE }
-enum class SalaryField { YEAR, AMOUNT }
 enum class CareerField { NAME, HIREDATE, RESIGNDATE }
+enum class SalaryField { YEAR, AMOUNT }
 
 sealed interface EmployeeEditEvent {
     // 화면 초기화
@@ -20,6 +20,19 @@ sealed interface EmployeeEditEvent {
     data class ChangedValueWith(
         val field: EmployeeEditField,
         val value: String
+    ): EmployeeEditEvent
+
+    // 연차 필드 값 변경 이벤트
+    data class ChangedAunnualLeaveWith(
+        val value: String,
+        val idx: Int
+    ): EmployeeEditEvent
+
+    // 경력 필드 값 변경 이벤트
+    data class ChangedCareerWith(
+        val field: CareerField,
+        val value: String,
+        val idx: Int
     ): EmployeeEditEvent
 
     // 연봉 필드 값 변경 이벤트
@@ -72,13 +85,6 @@ sealed interface EmployeeEditEvent {
 
     // 경력 아이템 추가 버튼 클릭 이벤트
     data object ClickedAddCareer: EmployeeEditEvent
-
-    // 경력 필드 값 변경 이벤트
-    data class ChangedCareerWith(
-        val field: CareerField,
-        val value: String,
-        val idx: Int
-    ): EmployeeEditEvent
 
     // 경력 아이템 삭제 버튼 클릭 이벤트
     data class ClickedDeleteCareerWith(

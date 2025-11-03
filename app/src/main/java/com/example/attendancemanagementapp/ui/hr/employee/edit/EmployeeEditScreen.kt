@@ -63,6 +63,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -192,14 +193,13 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
                             }
                             1 -> {  // 연차정보
                                 AnnualLeaveEditCard(
-                                    employeeEditState = employeeEditState,
+                                    annualLeaves = employeeEditState.inputData.annualLeaves,
                                     onEvent = onEvent
                                 )
                             }
                             2 -> {  // 경력정보
                                 CareerEditCard(
-                                    careers = employeeEditState.careerInfo,
-//                                    careers = employeeEditState.inputData.careers,
+                                    careers = employeeEditState.inputData.careers,
                                     onEvent = onEvent
                                 )
                             }
@@ -295,7 +295,7 @@ private fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (Emp
 
 /* 연차 정보 수정 카드 */
 @Composable
-private fun AnnualLeaveEditCard(employeeEditState: EmployeeEditState, onEvent: (EmployeeEditEvent) -> Unit) {
+private fun AnnualLeaveEditCard(annualLeaves: List<EmployeeDTO.AnnualLeaveInfo>, onEvent: (EmployeeEditEvent) -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -305,16 +305,78 @@ private fun AnnualLeaveEditCard(employeeEditState: EmployeeEditState, onEvent: (
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            InfoBar(name = "연차", value = "${employeeEditState.annualLeaveInfo[0]}년차")
-            InfoBar(name = "시작일", value = employeeEditState.annualLeaveInfo[1])
-            InfoBar(name = "종료일", value = employeeEditState.annualLeaveInfo[2])
-            EditBar(
-                name = "연차 개수",
-                value = employeeEditState.annualLeaveInfo[3],
-                onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.ANNUAL_LEAVE, it))},
+            annualLeaves.forEachIndexed { idx, annualLeave ->
+                AnnualLeaveInfoEditItem(
+                    info = annualLeave,
+                    idx = idx,
+                    onEvent = onEvent
+                )
+
+                if (idx < annualLeaves.size - 1) {
+                    Divider(modifier = Modifier.padding(vertical = 5.dp))
+                }
+            }
+        }
+    }
+}
+
+/* 연차 수정 아이템 */
+@Composable
+private fun AnnualLeaveInfoEditItem(info: EmployeeDTO.AnnualLeaveInfo, idx: Int, onEvent: (EmployeeEditEvent) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val rotation by animateFloatAsState(targetValue = if (expanded) 90f else 0f)
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp).padding(top = 13.dp, bottom = 5.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "연차",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(0.35f)
             )
-            InfoBar(name = "이월 연차 개수", value = employeeEditState.annualLeaveInfo[4])
-            InfoBar(name = "사용 연차 개수", value = employeeEditState.annualLeaveInfo[5])
+
+            Text(
+                text = "${info.year}",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.End,
+                modifier = Modifier.weight(0.5f)
+            )
+
+            IconButton(
+                onClick = { expanded = !expanded }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowForwardIos,
+                    contentDescription = "연차 아이템 열림/닫힘 아이콘",
+                    modifier = Modifier
+                        .size(12.dp)
+                        .rotate(rotation),
+                    tint = DarkGray
+                )
+            }
+        }
+
+        AnimatedVisibility(visible = expanded) {
+            Column() {
+                InfoBar(name = "시작일", value = info.startDate)
+                InfoBar(name = "종료일", value = info.endDate)
+                EditBar(
+                    name = "연차 개수",
+                    value = info.totalCnt,  // TODO: swagger 보고 null 체크 다시!!!!!!!!!!!!!
+                    onValueChange = { onEvent(EmployeeEditEvent.ChangedAunnualLeaveWith(it, idx))}
+                )
+                InfoBar(name = "이월 연차 개수", value = info.carryoverCnt)
+                InfoBar(name = "사용 연차 개수", value = info.usedCnt)
+            }
         }
     }
 }
@@ -466,14 +528,16 @@ private fun CareerInfoEditItem(info: CareerInfo, idx: Int, onEvent: (EmployeeEdi
                         modifier = Modifier.weight(0.5f)
                     )
 
-                    IconButton(
-                        onClick = { onEvent(EmployeeEditEvent.ClickedDeleteCareerWith(idx)) },
-                        modifier = Modifier.weight(0.1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = "경력 아이템 삭제 버튼"
-                        )
+                    if (!info.resignDate.isNullOrBlank() || info.id == null) {
+                        IconButton(
+                            onClick = { onEvent(EmployeeEditEvent.ClickedDeleteCareerWith(idx)) },
+                            modifier = Modifier.weight(0.1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "경력 아이템 삭제 버튼"
+                            )
+                        }
                     }
                 }
             }
