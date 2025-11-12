@@ -17,6 +17,8 @@ import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditState
 import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageEvent
 import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageReducer
 import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageState
+import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
+import com.example.attendancemanagementapp.util.ErrorHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -124,10 +126,10 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                         _uiEffect.emit(UiEffect.Navigate("codeDetail"))
                         _uiEffect.emit(UiEffect.ShowToast("등록이 완료되었습니다"))
 
-                        Log.d(TAG, "공통코드 등록 완료: ${code}\n${commonCodeData}")
+                        Log.d(TAG, "[addCode] 공통코드 등록 완료: ${code}\n${commonCodeData}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "addCode")
                     }
             }
         }
@@ -159,10 +161,10 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                                 paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)
                             ) }
                         }
-                        Log.d(TAG, "공통코드 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.selectedCategory}, ${state.searchText})\n${data.content}")
+                        Log.d(TAG, "[getCodes] 공통코드 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.selectedCategory}, ${state.searchText})\n${data.content}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "getCodes")
                     }
             }
         }
@@ -176,10 +178,10 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                     .onSuccess { codeInfo ->
                         _codeDetailState.update { it.copy(codeInfo = codeInfo) }
                         _codeEditState.update { it.copy(inputData = codeInfo) }
-                        Log.d(TAG, "공통코드 상세 조회 완료: ${code}\n${codeInfo}")
+                        Log.d(TAG, "[getCodeInfo] 공통코드 상세 조회 완료: ${code}\n${codeInfo}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "getCodeInfo")
                     }
             }
         }
@@ -206,10 +208,10 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                         _uiEffect.emit(UiEffect.NavigateBack)
                         _uiEffect.emit(UiEffect.ShowToast("수정이 완료되었습니다"))
 
-                        Log.d(TAG, "공통코드 수정 완료: ${code}\n${commoCodeData}")
+                        Log.d(TAG, "[updateCode] 공통코드 수정 완료: ${code}\n${commoCodeData}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "updateCode")
                     }
             }
         }
@@ -228,10 +230,10 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                         _uiEffect.emit(UiEffect.NavigateBack)
                         _uiEffect.emit(UiEffect.ShowToast("삭제가 완료되었습니다"))
 
-                        Log.d(TAG, "공통코드 삭제 완료: ${code} ${count}")
+                        Log.d(TAG, "[deleteCode] 공통코드 삭제 완료: ${code} ${count}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "deleteCode")
                     }
             }
         }

@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.util
+package com.example.attendancemanagementapp.util
 
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import java.time.LocalDate

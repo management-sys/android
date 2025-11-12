@@ -3,7 +3,6 @@ package com.example.attendancemanagementapp.ui.hr.employee
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.repository.AuthorRepository
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
@@ -12,6 +11,7 @@ import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.base.UiEffect.ShowToast
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddEvent
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddReducer
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddState
@@ -27,7 +27,8 @@ import com.example.attendancemanagementapp.ui.hr.employee.manage.EmployeeManageS
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchEvent
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchReducer
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchState
-import com.example.attendancemanagementapp.ui.util.formatPhone
+import com.example.attendancemanagementapp.util.ErrorHandler
+import com.example.attendancemanagementapp.util.formatPhone
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -152,10 +153,10 @@ class EmployeeViewModel @Inject constructor(
                 result
                     .onSuccess { employees ->
                         _employeeSearchState.update { it.copy(employees = employees) }
-                        Log.d(TAG, "직원 목록 조회 성공: 검색(${_employeeSearchState.value.searchText})\n${employees}")
+                        Log.d(TAG, "[getEmployees] 직원 목록 조회 성공: 검색(${_employeeSearchState.value.searchText})\n${employees}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "getEmployees")
                     }
             }
         }
@@ -171,10 +172,10 @@ class EmployeeViewModel @Inject constructor(
                             EmployeeTarget.SEARCH -> { _employeeSearchState.update { it.copy(employeeInfo = employeeInfo) } }
                             EmployeeTarget.MANAGE -> { _employeeDetailState.update { it.copy(employeeInfo = employeeInfo) } }
                         }
-                        Log.d(TAG, "직원 상세 조회 성공: ${userId}\n${employeeInfo}")
+                        Log.d(TAG, "[getEmployeeDetail] 직원 상세 조회 성공: ${userId}\n${employeeInfo}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "getEmployeeDetail")
                     }
             }
         }
@@ -202,10 +203,10 @@ class EmployeeViewModel @Inject constructor(
                         else {
                             _employeeManageState.update { it.copy(employees = it.employees + data.content, paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)) }
                         }
-                        Log.d(TAG, "직원 관리 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.dropDownState.department}, ${state.dropDownState.grade}, ${state.dropDownState.title}, ${state.searchText})\n${data.content}")
+                        Log.d(TAG, "[getManageEmployees] 직원 관리 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.dropDownState.department}, ${state.dropDownState.grade}, ${state.dropDownState.title}, ${state.searchText})\n${data.content}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "getManageEmployees")
                     }
             }
         }
@@ -234,13 +235,13 @@ class EmployeeViewModel @Inject constructor(
                     result
                         .onSuccess { data ->
                             _employeeDetailState.update { it.copy(employeeInfo = data) }
-                            Log.d(TAG, "직원 등록 성공: ${data}")
+                            Log.d(TAG, "[addEmployee] 직원 등록 성공: ${data}")
                             _uiEffect.emit(ShowToast("등록이 완료되었습니다."))
                             _uiEffect.emit(UiEffect.NavigateBack)
                             _uiEffect.emit(UiEffect.Navigate("employeeDetail")) // 등록한 직원 상세 조회 화면으로 이동
                         }
                         .onFailure { e ->
-                            e.printStackTrace()
+                            ErrorHandler.handle(e, TAG, "employeeDetail")
                         }
                 }
             }
@@ -283,10 +284,10 @@ class EmployeeViewModel @Inject constructor(
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
                         _uiEffect.emit(ShowToast("수정이 완료되었습니다"))
                         _uiEffect.emit(UiEffect.NavigateBack)
-                        Log.d(TAG, "직원 정보 수정 성공: ${data}")
+                        Log.d(TAG, "[updateEmployee] 직원 정보 수정 성공: ${data}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "updateEmployee")
                     }
             }
         }
@@ -301,10 +302,10 @@ class EmployeeViewModel @Inject constructor(
                         _employeeManageState.update { it.copy(
                             dropDownMenu = it.dropDownMenu.copy(departmentMenu = it.dropDownMenu.departmentMenu + departments)
                         ) }
-                        Log.d(TAG, "전체 부서 조회 성공: 검색(${employeeManageState.value.searchText})\n${departments}")
+                        Log.d(TAG, "[getAllDepartments] 전체 부서 조회 성공: 검색(${employeeManageState.value.searchText})\n${departments}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "getAllDepartments")
                     }
             }
         }
@@ -354,11 +355,11 @@ class EmployeeViewModel @Inject constructor(
                             }
                             Log.d(
                                 TAG,
-                                "부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}"
+                                "[searchDepartment] 부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}"
                             )
                         }
                         .onFailure { e ->
-                            e.printStackTrace()
+                            ErrorHandler.handle(e, TAG, "searchDepartment")
                         }
                 }
             }
@@ -387,10 +388,10 @@ class EmployeeViewModel @Inject constructor(
                                     paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)
                                 ) }
                             }
-                            Log.d(TAG, "부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}")
+                            Log.d(TAG, "[searchDepartment] 부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}")
                         }
                         .onFailure { e ->
-                            e.printStackTrace()
+                            ErrorHandler.handle(e, TAG, "searchDepartment")
                         }
                 }
             }
@@ -411,10 +412,10 @@ class EmployeeViewModel @Inject constructor(
                         _employeeManageState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(gradeMenu = gradeNames)) }
                         _employeeEditState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(gradeMenu = gradeNames)) }
                         _employeeAddState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(gradeMenu = gradeNames)) }
-                        Log.d(TAG, "직급 목록 조회 성공\n${gradeNames}")
+                        Log.d(TAG, "[getGradeTitle] 직급 목록 조회 성공\n${gradeNames}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "getGradeTitle")
                     }
             }
 
@@ -429,10 +430,10 @@ class EmployeeViewModel @Inject constructor(
                         _employeeManageState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(titleMenu = titleNames)) }
                         _employeeEditState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(titleMenu = titleNames)) }
                         _employeeAddState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(titleMenu = titleNames)) }
-                        Log.d(TAG, "직책 목록 조회 성공\n${titleNames}")
+                        Log.d(TAG, "[getGradeTitle] 직책 목록 조회 성공\n${titleNames}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "getGradeTitle")
                     }
             }
         }
@@ -446,10 +447,10 @@ class EmployeeViewModel @Inject constructor(
                     .onSuccess { authors ->
                         _employeeEditState.update { it.copy(authors = authors) }
                         _employeeAddState.update { it.copy(authors = authors) }
-                        Log.d(TAG, "권한 목록 조회 성공\n${authors}")
+                        Log.d(TAG, "[getAuthors] 권한 목록 조회 성공\n${authors}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "getAuthors")
                     }
             }
         }
@@ -463,10 +464,10 @@ class EmployeeViewModel @Inject constructor(
                 result
                     .onSuccess { message ->
                         _uiEffect.emit(ShowToast("비밀번호가 초기화되었습니다."))
-                        Log.d(TAG, "비밀번호 초기화 성공\n${message}")
+                        Log.d(TAG, "[resetPassword] 비밀번호 초기화 성공\n${message}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "resetPassword")
                     }
             }
         }
@@ -480,10 +481,10 @@ class EmployeeViewModel @Inject constructor(
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
                         _uiEffect.emit(ShowToast("사용자가 탈퇴되었습니다."))
-                        Log.d(TAG, "직원 탈퇴 성공\n${data}")
+                        Log.d(TAG, "[setDeactivate] 직원 탈퇴 성공\n${data}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "setDeactivate")
                     }
             }
         }
@@ -497,10 +498,10 @@ class EmployeeViewModel @Inject constructor(
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
                         _uiEffect.emit(ShowToast("사용자가 복구되었습니다."))
-                        Log.d(TAG, "직원 복구 성공\n${data}")
+                        Log.d(TAG, "[setActivate] 직원 복구 성공\n${data}")
                     }
                     .onFailure { e ->
-                        e.printStackTrace()
+                        ErrorHandler.handle(e, TAG, "setActivate")
                     }
             }
         }
