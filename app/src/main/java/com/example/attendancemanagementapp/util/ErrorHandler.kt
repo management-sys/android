@@ -3,6 +3,7 @@ package com.example.attendancemanagementapp.util
 import android.util.Log
 import retrofit2.HttpException
 
+/* 서버 통신 에러 처리 핸들러 */
 object ErrorHandler {
     fun handle(e: Throwable, tag: String, method: String) {
         when (e) {
