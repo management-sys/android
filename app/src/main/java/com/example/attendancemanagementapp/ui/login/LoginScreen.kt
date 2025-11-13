@@ -30,6 +30,8 @@ import com.example.attendancemanagementapp.ui.components.EditBar
 /* 로그인 화면 */
 @Composable
 fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel) {
+    val onEvent = loginViewModel::onEvent
+
     val loginState by loginViewModel.loginState.collectAsState()
 
     Scaffold { paddingValues ->
@@ -37,14 +39,14 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel) {
             modifier = Modifier.padding(paddingValues).fillMaxSize().padding(horizontal = 26.dp),
             verticalArrangement = Arrangement.Center
         ) {
-            LoginCard(loginState, navController)
+            LoginCard(loginState, navController, onEvent)
         }
     }
 }
 
 /* 로그인 카드 */
 @Composable
-fun LoginCard(loginState: LoginState, navController: NavController) {
+fun LoginCard(loginState: LoginState, navController: NavController, onEvent: (LoginEvent) -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -63,14 +65,14 @@ fun LoginCard(loginState: LoginState, navController: NavController) {
             EditBar(
                 name = "아이디",
                 value = loginState.id,
-                onValueChange = {  },
+                onValueChange = { onEvent(LoginEvent.ChangedValueWith(LoginField.ID, it)) },
                 hint = "아이디를 입력하세요."
             )
 
             EditBar(
                 name = "비밀번호",
                 value = loginState.password,
-                onValueChange = {  },
+                onValueChange = { onEvent(LoginEvent.ChangedValueWith(LoginField.PASSWORD, it)) },
                 hint = "비밀번호를 입력하세요."
             )
 
@@ -78,7 +80,10 @@ fun LoginCard(loginState: LoginState, navController: NavController) {
 
             BasicLongButton(
                 name = "로그인",
-                onClick = { navController.navigate("home") }
+                onClick = {
+                    onEvent(LoginEvent.ClickedLogin)
+                    navController.navigate("home")
+                }
             )
         }
     }
