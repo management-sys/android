@@ -53,6 +53,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -249,7 +251,8 @@ fun EditBar(
     onValueChange: (String) -> Unit = {},   // 값 변경 시 실행 함수
     enabled: Boolean = true,                // 이용 가능 여부
     isRequired: Boolean = false,            // 필수 여부
-    hint: String = ""                       // 값이 없을 때 보이는 값
+    hint: String = "",                      // 값이 없을 때 보이는 값
+    isPassword: Boolean = false             // 비밀번호 여부
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
@@ -283,7 +286,8 @@ fun EditBar(
                     fontSize = 16.sp
                 )
             },
-            enabled = enabled
+            enabled = enabled,
+            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
         )
     }
 }

@@ -26,7 +26,7 @@ fun HomeScreen(navController: NavController, calendarViewModel: CalendarViewMode
         topBar = {
             DrawerTopBar(
                 onClickNavIcon = { onOpenDrawer() },
-                onClickActIcon = { /* TODO: 마이페이지 화면 이동 */ }
+                onClickActIcon = { navController.navigate("mypage") }
             )
         },
         bottomBar = {

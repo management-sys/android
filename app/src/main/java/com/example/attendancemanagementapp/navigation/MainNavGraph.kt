@@ -37,6 +37,8 @@ import com.example.attendancemanagementapp.ui.hr.employee.manage.EmployeeManageS
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchScreen
 import com.example.attendancemanagementapp.ui.login.LoginScreen
 import com.example.attendancemanagementapp.ui.login.LoginViewModel
+import com.example.attendancemanagementapp.ui.mypage.MyPageScreen
+import com.example.attendancemanagementapp.ui.mypage.MyPageViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -55,6 +57,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
     val calendarViewModel: CalendarViewModel = hiltViewModel()
     val attendanceViewModel: AttendanceViewModel = hiltViewModel()
     val loginViewModel: LoginViewModel = hiltViewModel()
+    val myPageViewModel: MyPageViewModel = hiltViewModel()
 
     LaunchedEffect(enableGesture) {
         Log.d("드로어", "showDrawer: ${enableGesture}")
@@ -87,7 +90,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
                 startDestination = "login",
                 modifier = Modifier.padding(paddingValues)
             ) {
-                composable("login") { LoginScreen(navController, loginViewModel) }  // 로그인 화면
+                composable("login") { LoginScreen(navController, loginViewModel) }      // 로그인 화면
+                composable("mypage") { MyPageScreen(navController, myPageViewModel) }   // 마이페이지 화면
                 composable("home") { HomeScreen(navController, calendarViewModel, attendanceViewModel) { scope.launch { drawerState.open() } } }    // 홈 화면
 
                 composable("codeAdd") { CodeAddScreen(navController, codeViewModel) }       // 공통코드 등록 화면
