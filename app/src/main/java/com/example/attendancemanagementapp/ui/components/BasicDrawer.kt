@@ -53,7 +53,7 @@ private enum class DrawerSection {
 }
 
 @Composable
-fun BasicDrawer(drawerState: DrawerState, onItemClick: (String) -> Unit = {}, onLogoutClick: () -> Unit, content: @Composable () -> Unit) {
+fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (String) -> Unit = {}, onLogoutClick: () -> Unit, content: @Composable () -> Unit) {
     var expandedSection by rememberSaveable { mutableStateOf<DrawerSection?>(null) }
 
     fun toggle(section: DrawerSection) {
@@ -66,6 +66,7 @@ fun BasicDrawer(drawerState: DrawerState, onItemClick: (String) -> Unit = {}, on
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = enableGesture,
         drawerContent = {
             ModalDrawerSheet(
                 modifier = Modifier.width(300.dp),
