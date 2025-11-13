@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
+import com.example.attendancemanagementapp.ui.components.BasicTextButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.DateEditBar
 import com.example.attendancemanagementapp.ui.components.EditBar
@@ -49,7 +50,8 @@ fun MyPageScreen(navController: NavController, myPageViewModel: MyPageViewModel)
                 .padding(paddingValues)
                 .padding(horizontal = 26.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             MyInfoCard(
                 myPageState = myPageState,
@@ -64,6 +66,14 @@ fun MyPageScreen(navController: NavController, myPageViewModel: MyPageViewModel)
             BasicLongButton(
                 name = "수정",
                 onClick = { onEvent(MyPageEvent.ClickedUpdate) }
+            )
+
+            BasicTextButton(
+                name = "로그아웃",
+                onClick = {
+                    onEvent(MyPageEvent.ClickedLogout)
+                    navController.navigate("login")
+                }
             )
         }
     }

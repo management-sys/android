@@ -11,4 +11,7 @@ sealed interface MyPageEvent {
         val field: MyPageField,
         val value: String
     ): MyPageEvent
+
+    // 로그아웃 버튼 클릭 이벤트
+    data object ClickedLogout: MyPageEvent
 }
