@@ -23,13 +23,12 @@ class CalendarViewModel @Inject constructor(private val repository: EmployeeRepo
     private val _calendarState = MutableStateFlow(CalendarState())
     val calendarState = _calendarState.asStateFlow()
 
-    /* 이전 달로 이동 */
-    fun onClickPrev() {
-        _calendarState.update { it.copy(yearMonth = _calendarState.value.yearMonth.minusMonths(1)) }
+    fun onEvent(e: CalendarEvent) {
+        _calendarState.update { CalendarReducer.reduce(it, e) }
     }
 
-    /* 다음 달로 이동 */
-    fun onClickNext() {
-        _calendarState.update { it.copy(yearMonth = _calendarState.value.yearMonth.plusMonths(1)) }
+    /* 바텀 시트 열림 처리 */
+    fun resetOpenSheet() {
+        _calendarState.update { it.copy(openSheet = false) }
     }
 }

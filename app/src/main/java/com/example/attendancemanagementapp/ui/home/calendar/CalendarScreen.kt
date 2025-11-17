@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -33,16 +35,21 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,6 +67,7 @@ import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Red
 import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Yellow
 import com.example.attendancemanagementapp.ui.theme.AttendanceInfoItem_Blue
 import com.example.attendancemanagementapp.ui.theme.AttendanceInfoItem_Gray
+import com.example.attendancemanagementapp.ui.theme.BackgroundColor
 import com.example.attendancemanagementapp.ui.theme.EmptyDayBlockColor
 import com.example.attendancemanagementapp.ui.theme.TodayBlockColor
 import com.example.attendancemanagementapp.ui.theme.YearMonthBtn
@@ -70,8 +78,24 @@ import java.time.format.DateTimeFormatter
 /* 캘린더 화면 */
 @Composable
 fun CalendarScreen(navController: NavController, calendarViewModel: CalendarViewModel, openMonthInfo: Boolean, onClick: () -> Unit) {
+    val onEvent = calendarViewModel::onEvent
+
     val calendarState by calendarViewModel.calendarState.collectAsState()
     val yearMonth = calendarState.yearMonth
+
+    var showSheet by remember { mutableStateOf(false) }
+
+    if (calendarState.openSheet) {
+        showSheet = true
+        calendarViewModel.resetOpenSheet()
+    }
+
+    if (showSheet) {
+        SchedulesBottomSheet(
+            schedules = calendarState.schedules,
+            onDismiss = { showSheet = false }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -85,42 +109,61 @@ fun CalendarScreen(navController: NavController, calendarViewModel: CalendarView
         Divider()
         Calendar(
             yearMonth = yearMonth,
-            onClickPrev = { calendarViewModel.onClickPrev() },
-            onClickNext = { calendarViewModel.onClickNext() }
+            onEvent = onEvent
         )
     }
 }
 
-///* TODO: 일정 목록 바텀 시트 */
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//private fun SchedulesBottomSheet(schedules: List<CalendarDTO.SchedulesInfo>, onDismiss: () -> Unit) {
-//    val sheetState = rememberModalBottomSheetState()
-//
-//    ModalBottomSheet(
-//        onDismissRequest = { onDismiss() },
-//        sheetState = sheetState,
-//        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
-//    ) {
-//        Column(
-//            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),
-//            horizontalAlignment = Alignment.CenterHorizontally
-//        ) {
-//            InfoBar(name = "아이디", value = employeeInfo.id)
-//            InfoBar(name = "이름", value = employeeInfo.name)
-//            InfoBar(name = "부서", value = employeeInfo.department)
-//            InfoBar(name = "직급", value = employeeInfo.grade)
-//            InfoBar(name = "직책", value = employeeInfo.title ?: "")
-//            InfoBar(name = "연락처", value = employeeInfo.phone ?: "")
-//            InfoBar(name = "생년월일", value = employeeInfo.birthDate ?: "")
-//            InfoBar(name = "입사일", value = employeeInfo.hireDate)
-//        }
-//    }
-//}
+/* 일정 목록 바텀 시트 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SchedulesBottomSheet(schedules: List<List<String>>, onDismiss: () -> Unit) {
+    val sheetState = rememberModalBottomSheetState()
+
+    ModalBottomSheet(
+        modifier = Modifier.fillMaxSize(),
+        onDismissRequest = { onDismiss() },
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+        containerColor = BackgroundColor
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(schedules) { schedule ->
+                ScheduleItem(schedule)
+            }
+        }
+    }
+}
+
+/* 일정 목록 아이템 */
+@Composable
+private fun ScheduleItem(scheduleInfo: List<String>) {
+    Card(
+        colors = (CardDefaults.cardColors(containerColor = Color.White)),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(15.dp).fillMaxWidth().clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { /* TODO: 일정 종류에 따라 조회 */ },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "[${scheduleInfo[0]}] ${scheduleInfo[1]} (${scheduleInfo[2]} ${scheduleInfo[3]})",
+                fontSize = 15.sp
+            )
+        }
+    }
+}
 
 /* 캘린더 */
 @Composable
-fun Calendar(yearMonth: YearMonth, onClickPrev: () -> Unit, onClickNext: () -> Unit) {
+fun Calendar(yearMonth: YearMonth, onEvent: (CalendarEvent) -> Unit) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM")
     val ymStr = remember(yearMonth) { yearMonth.format(formatter) }
 
@@ -133,20 +176,20 @@ fun Calendar(yearMonth: YearMonth, onClickPrev: () -> Unit, onClickNext: () -> U
         ) {
             YearMonthBar(
                 ymStr = ymStr,
-                onClickPrev = { onClickPrev() },
-                onClickNext = { onClickNext() })
+                onEvent = onEvent
+            )
 
             Spacer(modifier = Modifier.height(15.dp))
 
             WeekBar()
-            Month(Modifier.weight(1f), yearMonth)
+            Month(Modifier.weight(1f), yearMonth, onEvent)
         }
     }
 }
 
 /* 년,월 출력 바 */
 @Composable
-fun YearMonthBar(ymStr: String, onClickPrev: () -> Unit, onClickNext: () -> Unit) {
+fun YearMonthBar(ymStr: String, onEvent: (CalendarEvent) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -156,7 +199,7 @@ fun YearMonthBar(ymStr: String, onClickPrev: () -> Unit, onClickNext: () -> Unit
             modifier = Modifier
                 .clip(RoundedCornerShape(5.dp))
                 .background(color = YearMonthBtn),
-            onClick = { onClickPrev() }
+            onClick = { onEvent(CalendarEvent.ClickedPrev) }
         ) {
             Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "이전 월 이동 버튼", tint = Color.White)
         }
@@ -171,7 +214,7 @@ fun YearMonthBar(ymStr: String, onClickPrev: () -> Unit, onClickNext: () -> Unit
             modifier = Modifier
                 .clip(RoundedCornerShape(5.dp))
                 .background(color = YearMonthBtn),
-            onClick = { onClickNext() }
+            onClick = { onEvent(CalendarEvent.ClickedNext) }
         ) {
             Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "이전 월 이동 버튼", tint = Color.White)
         }
@@ -215,7 +258,7 @@ fun WeekBar() {
 
 /* 한 달 출력 */
 @Composable
-fun Month(modifier: Modifier, yearMonth: YearMonth) {
+fun Month(modifier: Modifier, yearMonth: YearMonth, onEvent: (CalendarEvent) -> Unit) {
     val firstDayOfWeek = yearMonth.atDay(1).dayOfWeek   // 해당 월에서 1일의 요일
     val offset = firstDayOfWeek.value % 7       // 해당 월에서 1일의 요일 인덱스화 (일=0, 월=1, ..., 토=6)
     val lastDate = yearMonth.lengthOfMonth()    // 해당 월의 총 일수
@@ -240,7 +283,7 @@ fun Month(modifier: Modifier, yearMonth: YearMonth) {
                     if (date < 1 || date > lastDate) {
                         EmptyDayBlock()
                     } else {
-                        DayBlock(date, isToday, {})
+                        DayBlock(date, isToday, onEvent)
                     }
                     date++
 
@@ -270,7 +313,7 @@ fun RowScope.EmptyDayBlock() {
 
 /* 날짜 블럭 */
 @Composable
-fun RowScope.DayBlock(date: Int, isToday: Boolean, onClick: () -> Unit) {
+fun RowScope.DayBlock(date: Int, isToday: Boolean, onEvent: (CalendarEvent) -> Unit) {
     Box(
         modifier = Modifier
             .weight(1f)
@@ -279,7 +322,7 @@ fun RowScope.DayBlock(date: Int, isToday: Boolean, onClick: () -> Unit) {
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(true)
-            ) { onClick() }
+            ) { onEvent(CalendarEvent.ClickedDateWith(date)) }
             .padding(top = 5.dp, end = 3.dp),
         contentAlignment = Alignment.TopEnd
     ) {
