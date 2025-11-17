@@ -80,7 +80,13 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
             navController.navigate(route)
             scope.launch { drawerState.close() }
         },
-        onLogoutClick = { /* TODO: [기능] 로그아웃 */ }
+        onLogoutClick = {
+            scope.launch { drawerState.close() }
+            /* TODO: [기능] 로그아웃 */
+            navController.navigate("login") {
+                popUpTo(0) { inclusive = true }
+            }
+        }
     ) {
         Scaffold()
         { paddingValues ->

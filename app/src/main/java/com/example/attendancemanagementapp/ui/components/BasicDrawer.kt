@@ -88,7 +88,10 @@ fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (
                             fontSize = 14.sp,
                             color = DarkGray,
                             textDecoration = TextDecoration.Underline,
-                            modifier = Modifier.clickable(onClick = { onLogoutClick() })
+                            modifier = Modifier.clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { onLogoutClick() },
                         )
                     }
 
