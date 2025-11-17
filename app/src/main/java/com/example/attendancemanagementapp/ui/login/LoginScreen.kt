@@ -37,7 +37,8 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel) {
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier.padding(paddingValues).fillMaxSize().padding(horizontal = 26.dp),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             LoginCard(loginState, navController, onEvent)
         }
