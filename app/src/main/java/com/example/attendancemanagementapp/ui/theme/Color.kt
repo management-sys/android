@@ -2,6 +2,7 @@ package com.example.attendancemanagementapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+val BackgroundColor = Color(0xFFeff1fa)
 val MainBlue = Color(0xFF3C7CED)
 val MiddleBlue = Color(0xFF5583D5)
 val MidDarkBlue = Color(0xFF213f9a)
