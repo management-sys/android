@@ -53,7 +53,7 @@ private enum class DrawerSection {
 }
 
 @Composable
-fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (String) -> Unit = {}, onLogoutClick: () -> Unit, content: @Composable () -> Unit) {
+fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (String) -> Unit = {}, content: @Composable () -> Unit) {
     var expandedSection by rememberSaveable { mutableStateOf<DrawerSection?>(null) }
 
     fun toggle(section: DrawerSection) {
@@ -77,24 +77,6 @@ fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (
                         .padding(horizontal = 16.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Spacer(Modifier.height(20.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(end = 10.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Text(
-                            text = "로그아웃",
-                            fontSize = 14.sp,
-                            color = DarkGray,
-                            textDecoration = TextDecoration.Underline,
-                            modifier = Modifier.clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) { onLogoutClick() },
-                        )
-                    }
-
                     Spacer(Modifier.height(60.dp))
 
                     DrawerSection(

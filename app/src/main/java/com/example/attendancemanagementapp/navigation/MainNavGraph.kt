@@ -79,13 +79,6 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
         onItemClick = { route ->
             navController.navigate(route)
             scope.launch { drawerState.close() }
-        },
-        onLogoutClick = {
-            scope.launch { drawerState.close() }
-            /* TODO: [기능] 로그아웃 */
-            navController.navigate("login") {
-                popUpTo(0) { inclusive = true }
-            }
         }
     ) {
         Scaffold()

@@ -72,7 +72,9 @@ fun MyPageScreen(navController: NavController, myPageViewModel: MyPageViewModel)
                 name = "로그아웃",
                 onClick = {
                     onEvent(MyPageEvent.ClickedLogout)
-                    navController.navigate("login")
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }
