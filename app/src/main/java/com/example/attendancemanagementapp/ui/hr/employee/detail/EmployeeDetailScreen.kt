@@ -67,9 +67,9 @@ import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.LightBlue
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.MiddleBlue
-import com.example.attendancemanagementapp.ui.util.calculateCareerPeriod
-import com.example.attendancemanagementapp.ui.util.calculateTotalCareerPeriod
-import com.example.attendancemanagementapp.ui.util.rememberOnce
+import com.example.attendancemanagementapp.util.calculateCareerPeriod
+import com.example.attendancemanagementapp.util.calculateTotalCareerPeriod
+import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.launch
 import java.util.Locale
 

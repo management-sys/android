@@ -8,10 +8,10 @@ object MyPageReducer {
 
     private val myPageUpdaters: Map<MyPageField, (MyPageState, String) -> MyPageState> =
         mapOf(
-            MyPageField.NAME            to { s, v -> s.copy(id = v) },
-            MyPageField.PHONE           to { s, v -> s.copy(phone = v) },
-            MyPageField.BIRTHDATE       to { s, v -> s.copy(birthDate = v) },
-            MyPageField.PASSWORD        to { s, v -> s.copy(password = v) },
+            MyPageField.NAME            to { s, v -> s.copy(myInfo = s.myInfo.copy(name = v)) },
+            MyPageField.PHONE           to { s, v -> s.copy(myInfo = s.myInfo.copy(phone = v)) },
+            MyPageField.BIRTHDATE       to { s, v -> s.copy(myInfo = s.myInfo.copy(birthDate = v)) },
+            MyPageField.CUR_PASSWORD        to { s, v -> s.copy(curPassword = v) },
             MyPageField.NEW_PASSWORD    to { s, v -> s.copy(newPassword = v) },
         )
 

@@ -39,8 +39,8 @@ import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeTarget
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.theme.TextGray
-import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
-import com.example.attendancemanagementapp.ui.util.rememberOnce
+import com.example.attendancemanagementapp.util.formatDeptGradeTitle
+import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 직원 관리 화면 */
@@ -162,18 +162,18 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
 /* 직원 목록 아이템 */
 @Composable
 private fun EmployeeInfoItem(employeeInfo: EmployeeDTO.ManageEmployeesInfo, deptGradeTitle: String, onClick: () -> Unit) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            shape = RoundedCornerShape(10.dp),
-            elevation = CardDefaults.cardElevation(1.dp),
-            onClick = onClick
-        ) {
-            val textColor = if (employeeInfo.isUse == "Y") Color.Black else TextGray
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(1.dp),
+        onClick = onClick
+    ) {
+        val textColor = if (employeeInfo.isUse == "Y") Color.Black else TextGray
 
-            Spacer(modifier = Modifier.height(12.dp))
-            TwoInfoBar(deptGradeTitle, employeeInfo.name, textColor)
-            TwoInfoBar(employeeInfo.hireDate, employeeInfo.loginId, textColor)
-            Spacer(modifier = Modifier.height(14.dp))
-        }
+        Spacer(modifier = Modifier.height(12.dp))
+        TwoInfoBar(deptGradeTitle, employeeInfo.name, textColor)
+        TwoInfoBar(employeeInfo.hireDate, employeeInfo.loginId, textColor)
+        Spacer(modifier = Modifier.height(14.dp))
+    }
 }

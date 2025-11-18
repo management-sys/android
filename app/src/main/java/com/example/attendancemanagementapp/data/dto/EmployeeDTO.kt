@@ -107,11 +107,33 @@ object EmployeeDTO {
         @Json(name = "clsf")        val grade: String = "",                         // 직급
         @Json(name = "rspofc")      val title: String = "",                         // 직책
         @Json(name = "telno")       val phone: String = "",                         // 연락처: 000-0000-0000
-        @Json(name = "anslries")    val salaries: List<SalaryInfo> = emptyList(),   // 연봉
+        @Json(name = "anslries")    val salaries: List<SalaryInfo> = emptyList()    // 연봉
     )
 
     /* 비밀번호 초기화 요청 */
     data class ResetPasswordRequest(
         @Json(name = "userId")  val id: String = "" // 사용자 아이디
+    )
+
+    /* 내 정보 조회 응답 */
+    data class GetMyInfoResponse(
+        @Json(name = "loginId")     val loginId: String = "",       // 로그인 아이디
+        @Json(name = "userId")      val userId: String = "",        // 사용자 아이디 (고유 식별자)
+        @Json(name = "userNm")      val name: String = "",          // 이름
+        @Json(name = "deptNm")      val department: String = "",    // 부서
+        @Json(name = "clsf")        val grade: String = "",         // 직급
+        @Json(name = "rspofc")      val title: String? = "",        // 직책
+        @Json(name = "telno")       val phone: String? = "",        // 연락처
+        @Json(name = "brthdy")      val birthDate: String? = "",    // 생년월일: yyyy-MM-dd
+        @Json(name = "encpn")       val hireDate: String = ""       // 입사일: yyyy-MM-dd
+    )
+
+    /* 내 정보 수정 요청 */
+    data class UpdateMyInfoRequest(
+        @Json(name = "userNm")  val name: String = "",          // 이름
+        @Json(name = "telno")   val phone: String? = "",        // 연락처
+        @Json(name = "brthdy")  val birthDate: String? = "",    // 생년월일: yyyy-MM-dd
+        @Json(name = "curtPw")  val curPassword: String? = "",  // 현재 비밀번호
+        @Json(name = "newPw")   val newPassword: String? = ""   // 새 비밀번호
     )
 }

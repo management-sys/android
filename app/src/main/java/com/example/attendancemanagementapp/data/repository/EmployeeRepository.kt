@@ -1,16 +1,13 @@
 package com.example.attendancemanagementapp.data.repository
 
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
-import com.example.attendancemanagementapp.retrofit.RetrofitInstance
 import com.example.attendancemanagementapp.retrofit.service.EmployeeService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class EmployeeRepository @Inject constructor() {
-    private val service = RetrofitInstance.employeeService
-
+class EmployeeRepository @Inject constructor(private val service: EmployeeService) {
     // 직원 목록 조회 및 검색
     fun getEmployees(searchKeyword: String): Flow<Result<List<EmployeeDTO.EmployeesInfo>>> = flow {
         val response = service.getEmployees(
@@ -66,6 +63,22 @@ class EmployeeRepository @Inject constructor() {
         val response = service.setDeactivate(
             userId = userId
         )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 내 정보 조회
+    fun getMyInfo(): Flow<Result<EmployeeDTO.GetMyInfoResponse>> = flow {
+        val response = service.getMyInfo()
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 내 정보 수정
+    fun updateMyInfo(requst: EmployeeDTO.UpdateMyInfoRequest): Flow<Result<EmployeeDTO.GetMyInfoResponse>> = flow {
+        val response = service.updateMyInfo(requst)
         emit(Result.success(response))
     }.catch { e ->
         emit(Result.failure(e))

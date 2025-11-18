@@ -8,8 +8,6 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class AuthRepository @Inject constructor(private val service: AuthService) {
-//    private val service = RetrofitInstance.authService
-
     // 로그인
     fun login(request: AuthDTO.LoginRequest): Flow<Result<AuthDTO.TokenInfo>> = flow {
         val response = service.login(request)

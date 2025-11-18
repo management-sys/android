@@ -1,6 +1,6 @@
 package com.example.attendancemanagementapp.ui.mypage
 
-enum class MyPageField { NAME, PHONE, BIRTHDATE, PASSWORD, NEW_PASSWORD }
+enum class MyPageField { NAME, PHONE, BIRTHDATE, CUR_PASSWORD, NEW_PASSWORD }
 
 sealed interface MyPageEvent {
     // 수정 버튼 클릭 이벤트

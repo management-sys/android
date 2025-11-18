@@ -13,6 +13,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTextButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -36,6 +38,10 @@ fun MyPageScreen(navController: NavController, myPageViewModel: MyPageViewModel)
     val onEvent = myPageViewModel::onEvent
 
     val myPageState by myPageViewModel.myPageState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        myPageViewModel.init()
+    }
 
     Scaffold(
         topBar = {
@@ -54,7 +60,7 @@ fun MyPageScreen(navController: NavController, myPageViewModel: MyPageViewModel)
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             MyInfoCard(
-                myPageState = myPageState,
+                myInfo = myPageState.myInfo,
                 onEvent = onEvent
             )
 
@@ -72,9 +78,6 @@ fun MyPageScreen(navController: NavController, myPageViewModel: MyPageViewModel)
                 name = "로그아웃",
                 onClick = {
                     onEvent(MyPageEvent.ClickedLogout)
-                    navController.navigate("login") {
-                        popUpTo(0) { inclusive = true }
-                    }
                 }
             )
         }
@@ -83,7 +86,7 @@ fun MyPageScreen(navController: NavController, myPageViewModel: MyPageViewModel)
 
 /* 내 정보 카드 */
 @Composable
-private fun MyInfoCard(myPageState: MyPageState, onEvent: (MyPageEvent) -> Unit) {
+private fun MyInfoCard(myInfo: EmployeeDTO.GetMyInfoResponse, onEvent: (MyPageEvent) -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -94,17 +97,17 @@ private fun MyInfoCard(myPageState: MyPageState, onEvent: (MyPageEvent) -> Unit)
         ) {
             ProfileImage()
             Spacer(modifier = Modifier.height(30.dp))
-            InfoBar(name = "아이디", value = myPageState.id)
-            EditBar(name = "이름", value = myPageState.name, isRequired = true, onValueChange = { onEvent(
+            InfoBar(name = "아이디", value = myInfo.loginId)
+            EditBar(name = "이름", value = myInfo.name, isRequired = true, onValueChange = { onEvent(
                 MyPageEvent.ChangedValueWith(MyPageField.NAME, it)) })
-            InfoBar(name = "부서", value = myPageState.department)
-            InfoBar(name = "직급", value = myPageState.grade)
-            InfoBar(name = "직책", value = myPageState.title)
-            EditBar(name = "연락처", value = myPageState.phone, onValueChange = { onEvent(
+            InfoBar(name = "부서", value = myInfo.department)
+            InfoBar(name = "직급", value = myInfo.grade)
+            InfoBar(name = "직책", value = myInfo.title ?: "")
+            EditBar(name = "연락처", value = myInfo.phone ?: "", onValueChange = { onEvent(
                 MyPageEvent.ChangedValueWith(MyPageField.PHONE, it)) })
-            DateEditBar(name = "생년월일", value = myPageState.birthDate, onValueChange = { onEvent(
+            DateEditBar(name = "생년월일", value = myInfo.birthDate ?: "", onValueChange = { onEvent(
                 MyPageEvent.ChangedValueWith(MyPageField.BIRTHDATE, it)) })
-            InfoBar(name = "입사일", value = myPageState.hireDate)
+            InfoBar(name = "입사일", value = myInfo.hireDate)
         }
     }
 }
@@ -120,8 +123,8 @@ private fun PasswordEditCard(myPageState: MyPageState, onEvent: (MyPageEvent) ->
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            EditBar(name = "현재 비밀번호", value = myPageState.password, isPassword = true, onValueChange = { onEvent(
-                MyPageEvent.ChangedValueWith(MyPageField.PASSWORD, it)) })
+            EditBar(name = "현재 비밀번호", value = myPageState.curPassword, isPassword = true, onValueChange = { onEvent(
+                MyPageEvent.ChangedValueWith(MyPageField.CUR_PASSWORD, it)) })
             EditBar(name = "새 비밀번호", value = myPageState.newPassword, isPassword = true, onValueChange = { onEvent(
                 MyPageEvent.ChangedValueWith(MyPageField.NEW_PASSWORD, it)) })
 

@@ -46,6 +46,16 @@ interface EmployeeService {
         @Path("userId") userId: String
     ): EmployeeDTO.EmployeeInfo
 
+    // 내 정보 조회
+    @GET("/api/users/my-info")
+    suspend fun getMyInfo(): EmployeeDTO.GetMyInfoResponse
+
+    // 내 정보 수정
+    @PUT("/api/users/my-info")
+    suspend fun updateMyInfo(
+        @Body request: EmployeeDTO.UpdateMyInfoRequest
+    ): EmployeeDTO.GetMyInfoResponse
+
     // 비밀번호 초기화
     @PATCH("/api/users/password-reset")
     suspend fun resetPassword(

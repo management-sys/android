@@ -14,6 +14,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -33,6 +35,10 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel) {
     val onEvent = loginViewModel::onEvent
 
     val loginState by loginViewModel.loginState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        loginViewModel.init()
+    }
 
     Scaffold { paddingValues ->
         Column(

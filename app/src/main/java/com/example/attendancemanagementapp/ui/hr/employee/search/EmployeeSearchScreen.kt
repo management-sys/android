@@ -37,8 +37,8 @@ import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeTarget
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
-import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
-import com.example.attendancemanagementapp.ui.util.rememberOnce
+import com.example.attendancemanagementapp.util.formatDeptGradeTitle
+import com.example.attendancemanagementapp.util.rememberOnce
 
 /* 직원 검색 화면 */
 @OptIn(ExperimentalMaterial3Api::class)

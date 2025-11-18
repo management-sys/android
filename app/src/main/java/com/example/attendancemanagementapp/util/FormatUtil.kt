@@ -16,13 +16,18 @@ fun formatDeptGradeTitle(department: String, grade: String, title: String?): Str
 }
 
 /* 전화번호 형식 포맷팅: 000-0000-0000 */
-fun formatPhone(d: String): String {
-    val s = d.filter(Char::isDigit).take(11)
+fun formatPhone(phone: String): String {
+    val s = phone.filter(Char::isDigit).take(11)
     return when {
         s.length <= 3 -> s
         s.length <= 7 -> "${s.substring(0,3)}-${s.substring(3)}"
         else -> "${s.substring(0,3)}-${s.substring(3,7)}-${s.substring(7)}"
     }
+}
+
+/* 날짜 형식 포맷팅: yyyy-MM-ddT00:00:00 */
+fun formatDateTime(date: String?): String {
+    return if (date.isNullOrBlank()) "" else "${date}T00:00:00"
 }
 
 /* 재직 기간(경력) 계산 */

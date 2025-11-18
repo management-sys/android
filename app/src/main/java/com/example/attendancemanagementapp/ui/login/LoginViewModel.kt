@@ -38,6 +38,10 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
         }
     }
 
+    fun init() {
+        _loginState.value = LoginState()
+    }
+
     /* 로그인 */
     fun login() {
         val request = AuthDTO.LoginRequest(

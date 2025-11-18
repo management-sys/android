@@ -65,7 +65,7 @@ import com.example.attendancemanagementapp.ui.hr.employee.edit.DepartmentInfoIte
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
-import com.example.attendancemanagementapp.ui.util.rememberOnce
+import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 직원 등록 화면 */
@@ -117,10 +117,12 @@ fun EmployeeAddScreen(navController: NavController, employeeViewModel: EmployeeV
                 onOpenAuth = { openAuthDialog = true },
                 onOpenDept = { openDeptDialog = true }
             )
+
             SalaryEditCard(
                 salaries = employeeAddState.inputData.salaries,
                 onEvent = onEvent
             )
+
             BasicLongButton(
                 name = "등록",
                 onClick = { onEvent(EmployeeAddEvent.ClickedAdd) }
