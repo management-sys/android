@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.R
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.ui.components.AnnualLeaveImage
 import com.example.attendancemanagementapp.ui.components.FinishWorkImage
 import com.example.attendancemanagementapp.ui.components.StartWorkImage
@@ -82,7 +83,7 @@ fun AttendanceScreen(navController: NavController, attendanceViewModel: Attendan
             AttendanceCheck(onEvent = onEvent, isWorking = attendanceState.isWorking)
         }
         Divider()
-        ProfileCard()
+        ProfileCard(attendanceState.myInfo)
         Divider()
         AnnualLeaveInfo(16, 16, 0)
     }
@@ -90,7 +91,7 @@ fun AttendanceScreen(navController: NavController, attendanceViewModel: Attendan
 
 /* 프로필 카드 */
 @Composable
-fun ProfileCard() {
+fun ProfileCard(myInfo: EmployeeDTO.GetMyInfoResponse) {
     Card(
         colors = CardDefaults.cardColors(containerColor = DarkBlue),
         shape = RoundedCornerShape(14.dp)
@@ -107,7 +108,7 @@ fun ProfileCard() {
             )
 
             Text(
-                text = "관리자",
+                text = myInfo.name,
                 fontSize = 15.sp,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold
@@ -123,12 +124,12 @@ fun ProfileCard() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "테이큰소프트",
+                    text = myInfo.department,
                     fontSize = 12.sp,
                     color = Color.White
                 )
                 Text(
-                    text = "관리자",
+                    text = myInfo.grade,    // TODO: 웹 확인해보고 뭐 출력인지 확인 필요
                     fontSize = 12.sp,
                     color = Color.White
                 )
