@@ -91,4 +91,8 @@ dependencies {
 
     // 드래그 앤 드롭 정렬 기능 위해 추가
     implementation("sh.calvin.reorderable:reorderable:3.0.0")
+
+    // DataStore 사용 위해 추가
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
+    implementation("androidx.datastore:datastore-preferences-core:1.1.7")
 }
