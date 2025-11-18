@@ -28,6 +28,7 @@ import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchE
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchReducer
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchState
 import com.example.attendancemanagementapp.util.ErrorHandler
+import com.example.attendancemanagementapp.util.formatDateTime
 import com.example.attendancemanagementapp.util.formatPhone
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -223,8 +224,8 @@ class EmployeeViewModel @Inject constructor(
                 grade = inputData.grade,
                 title = if (inputData.title == "직책") "" else inputData.title!!,
                 phone = formatPhone(inputData.phone ?: ""), // 전화번호 형식으로 포맷팅 (000-0000-0000)
-                birthDate = if (inputData.birthDate.isNullOrBlank()) "" else inputData.birthDate + "T00:00:00",
-                hireDate = inputData.hireDate + "T00:00:00",
+                birthDate = formatDateTime(inputData.birthDate),
+                hireDate = formatDateTime(inputData.hireDate),
                 authors = employeeAddState.value.selectAuthor.map { it.code }, // 권한 코드
                 salaries = inputData.salaries.filter { it.year != "" && it.amount != 0 } // 연봉 정보를 입력하지 않았으면 제거
             )
@@ -258,8 +259,8 @@ class EmployeeViewModel @Inject constructor(
             grade = inputData.grade,
             title = if (inputData.title == "직책") "" else inputData.title!!,
             phone = formatPhone(inputData.phone ?: ""), // 전화번호 형식으로 포맷팅 (000-0000-0000)
-            birthDate = if (inputData.birthDate.isNullOrBlank()) "" else "${inputData.birthDate}T00:00:00",
-            hireDate = "${inputData.hireDate}T00:00:00",
+            birthDate = formatDateTime(inputData.birthDate),
+            hireDate = formatDateTime(inputData.hireDate),
             authors = employeeEditState.value.selectAuthor.map { it.code },
             annualLeaves = inputData.annualLeaves.map { info ->
                 EmployeeDTO.UpdateAnnualLeavesInfo(
@@ -270,8 +271,8 @@ class EmployeeViewModel @Inject constructor(
             careers = inputData.careers
                 .filter { it.name.isNotBlank() && it.hireDate.isNotBlank() }
                 .map { it.copy(
-                    hireDate = "${it.hireDate}T00:00:00",
-                    resignDate = if (!it.resignDate.isNullOrBlank()) "${it.resignDate}T00:00:00" else null
+                    hireDate = formatDateTime(it.hireDate),
+                    resignDate = formatDateTime(it.resignDate)
                 )},
             salaries = inputData.salaries.filter { it.year.isNotBlank() && it.amount != 0 } // 연봉 정보를 입력하지 않았으면 제거
         )
