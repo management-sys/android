@@ -1,12 +1,10 @@
 package com.example.attendancemanagementapp.navigation
 
-import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -59,18 +57,15 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
     val loginViewModel: LoginViewModel = hiltViewModel()
     val myPageViewModel: MyPageViewModel = hiltViewModel()
 
-    LaunchedEffect(enableGesture) {
-        Log.d("드로어", "showDrawer: ${enableGesture}")
-        Log.d("드로어", "drawerState: ${drawerState.currentValue}")
-    }
-
     CollectUiEffect(
         navController = navController,
         codeViewModel.uiEffect,
         employeeViewModel.uiEffect,
         departmentViewModel.uiEffect,
         calendarViewModel.uiEffect,
-        attendanceViewModel.uiEffect
+        attendanceViewModel.uiEffect,
+        loginViewModel.uiEffect,
+        myPageViewModel.uiEffect
     )
 
     BasicDrawer(

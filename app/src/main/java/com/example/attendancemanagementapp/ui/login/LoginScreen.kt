@@ -83,7 +83,6 @@ fun LoginCard(loginState: LoginState, navController: NavController, onEvent: (Lo
                 name = "로그인",
                 onClick = {
                     onEvent(LoginEvent.ClickedLogin)
-                    navController.navigate("home")
                 }
             )
         }

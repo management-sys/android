@@ -25,6 +25,11 @@ fun CollectUiEffect(
             when (effect) {
                 UiEffect.NavigateBack -> navController.popBackStack()
                 is UiEffect.Navigate -> navController.navigate(effect.route)
+                is UiEffect.AllDeleteNavigate -> {
+                    navController.navigate(effect.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
                 is UiEffect.ShowToast -> Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
             }
         }
