@@ -5,6 +5,9 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -13,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.attendancemanagementapp.data.datastore.TokenDataStore
 import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.commoncode.add.CodeAddScreen
@@ -40,7 +44,7 @@ import com.example.attendancemanagementapp.ui.mypage.MyPageViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainNavGraph(navController: NavHostController = rememberNavController()) {
+fun MainNavGraph(navController: NavHostController = rememberNavController(), tokenDataStore: TokenDataStore) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -57,6 +61,15 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
     val loginViewModel: LoginViewModel = hiltViewModel()
     val myPageViewModel: MyPageViewModel = hiltViewModel()
 
+    val logoutFlag by tokenDataStore.logoutFlagFlow.collectAsState(initial = false)
+
+    LaunchedEffect(logoutFlag) {
+        if (logoutFlag) {
+            navController.navigate("login") { popUpTo(0) }
+            tokenDataStore.setLogoutFlag(false)
+        }
+    }
+
     CollectUiEffect(
         navController = navController,
         codeViewModel.uiEffect,
@@ -65,7 +78,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
         calendarViewModel.uiEffect,
         attendanceViewModel.uiEffect,
         loginViewModel.uiEffect,
-        myPageViewModel.uiEffect
+        myPageViewModel.uiEffect,
+        tokenDataStore.uiEffect
     )
 
     BasicDrawer(

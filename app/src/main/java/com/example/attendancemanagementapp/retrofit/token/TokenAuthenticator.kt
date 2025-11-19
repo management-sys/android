@@ -25,9 +25,17 @@ class TokenAuthenticator(private val tokenDataStore: TokenDataStore, private val
             try {
                 authService.tokenRefresh(AuthDTO.TokenRefreshRequest(refreshToken))
             } catch (e: Exception) {
+                tokenDataStore.setLogoutFlag(true)
                 return@runBlocking null
             }
-        } ?: return null
+        }
+
+        if (result == null) {
+            runBlocking {
+                tokenDataStore.setLogoutFlag(true)
+            }
+            return null
+        }
 
         val newAccess = result.accessToken
         val newRefresh = result.refreshToken
