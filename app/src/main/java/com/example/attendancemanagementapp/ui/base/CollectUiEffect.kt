@@ -1,12 +1,8 @@
 package com.example.attendancemanagementapp.ui.base
 
 import android.widget.Toast
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
@@ -25,6 +21,7 @@ fun CollectUiEffect(
             when (effect) {
                 UiEffect.NavigateBack -> navController.popBackStack()
                 is UiEffect.Navigate -> navController.navigate(effect.route)
+                is UiEffect.TargetDeleteNavigate -> navController.popBackStack(effect.route, false)
                 is UiEffect.AllDeleteNavigate -> {
                     navController.navigate(effect.route) {
                         popUpTo(0) { inclusive = true }
