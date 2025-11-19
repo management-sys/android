@@ -1,12 +1,18 @@
 package com.example.attendancemanagementapp.ui.commoncode.edit
 
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
+import com.example.attendancemanagementapp.retrofit.param.PaginationState
+import com.example.attendancemanagementapp.retrofit.param.SearchType
 
 object CodeEditReducer {
     fun reduce(s: CodeEditState, e: CodeEditEvent): CodeEditState = when (e) {
         is CodeEditEvent.InitWith -> handleInit(s, e.codeInfo)
+        CodeEditEvent.InitSearch -> handleInitSearch(s)
         is CodeEditEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
         is CodeEditEvent.SelectedUpperCodeWith -> handleSelectedUpperCode(s, e.upperCode, e.upperCodeName)
+        is CodeEditEvent.ChangedSearchWith -> handleChangedSearch(s, e.value)
+        is CodeEditEvent.ChangedCategoryWith -> handleChangedCategory(s, e.category)
+        CodeEditEvent.ClickedInitSearch -> handleClickedInitSearch(s)
         else -> s
     }
 
@@ -15,6 +21,12 @@ object CodeEditReducer {
         codeInfo: CommonCodeDTO.CommonCodeInfo
     ): CodeEditState {
         return state.copy(inputData = codeInfo)
+    }
+
+    private fun handleInitSearch(
+        state: CodeEditState
+    ): CodeEditState {
+        return state.copy(codes = emptyList(), searchText = "", selectedCategory = SearchType.ALL, paginationState = PaginationState())
     }
 
     private val codeUpdaters: Map<CodeEditField, (CommonCodeDTO.CommonCodeInfo, String) -> CommonCodeDTO.CommonCodeInfo> =
@@ -39,5 +51,25 @@ object CodeEditReducer {
         upperCodeName: String
     ): CodeEditState {
         return state.copy(inputData = state.inputData.copy(upperCode = upperCode, upperCodeName = upperCodeName))
+    }
+
+    private fun handleChangedSearch(
+        state: CodeEditState,
+        value: String
+    ): CodeEditState {
+        return state.copy(searchText = value, paginationState = state.paginationState.copy(currentPage = 0))
+    }
+
+    private fun handleChangedCategory(
+        state: CodeEditState,
+        category: SearchType
+    ): CodeEditState {
+        return state.copy(selectedCategory = category, paginationState = state.paginationState.copy(currentPage = 0))
+    }
+
+    private fun handleClickedInitSearch(
+        state: CodeEditState
+    ): CodeEditState {
+        return state.copy(searchText = "", paginationState = state.paginationState.copy(currentPage = 0))
     }
 }

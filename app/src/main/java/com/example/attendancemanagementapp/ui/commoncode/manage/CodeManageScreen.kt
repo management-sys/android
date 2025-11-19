@@ -32,6 +32,7 @@ import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel.CodeScreenType
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
@@ -39,7 +40,7 @@ import com.example.attendancemanagementapp.ui.components.search.CategorySearchBa
 import com.example.attendancemanagementapp.ui.components.search.CodeSearchState
 import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.theme.TextGray
-import com.example.attendancemanagementapp.ui.util.rememberOnce
+import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 공통코드 관리 화면 */
@@ -62,15 +63,13 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
             if (shouldLoad && !codeManageState.paginationState.isLoading && codeManageState.paginationState.currentPage < codeManageState.paginationState.totalPage) {
-                codeViewModel.getCodes()
+                codeViewModel.getCodes(CodeScreenType.MANAGE)
             }
         }
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            onEvent(CodeManageEvent.InitSearch)
-        }
+    LaunchedEffect (Unit) {
+        onEvent(CodeManageEvent.InitSearch)
     }
 
     Scaffold(
@@ -82,7 +81,6 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
         },
         floatingActionButton = {
             BasicFloatingButton(onClick = {
-                onEvent(CodeManageEvent.InitSearch)
                 navController.navigate("codeAdd")
             })
         }
@@ -97,9 +95,11 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                         onValueChange = { onEvent(CodeManageEvent.ChangedSearchWith(it)) },
                         onClickSearch = {
                             // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                            onEvent(CodeManageEvent.ClickedSearch)
-                            keyboardController?.hide()
-                            focusManager.clearFocus(force = true)
+                            if (codeManageState.paginationState.currentPage < codeManageState.paginationState.totalPage) {
+                                onEvent(CodeManageEvent.ClickedSearch)
+                                keyboardController?.hide()
+                                focusManager.clearFocus(force = true)
+                            }
                         },
                         onClickInit = { onEvent(CodeManageEvent.ClickedInitSearch) }
                     ),

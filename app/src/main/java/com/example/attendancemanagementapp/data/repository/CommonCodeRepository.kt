@@ -1,7 +1,6 @@
 package com.example.attendancemanagementapp.data.repository
 
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
-import com.example.attendancemanagementapp.retrofit.RetrofitInstance
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.retrofit.service.CommonCodeService
 import kotlinx.coroutines.flow.Flow
@@ -9,9 +8,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class CommonCodeRepository @Inject constructor() {
-    private val service = RetrofitInstance.commonCodeService
-
+class CommonCodeRepository @Inject constructor(private val service: CommonCodeService) {
     // 공통코드 목록 조회 및 검색
     fun getCommonCodes(searchType: SearchType, searchKeyword: String, page: Int): Flow<Result<CommonCodeDTO.GetCommonCodesResponse>> = flow {
         val response = service.getCommonCodes(

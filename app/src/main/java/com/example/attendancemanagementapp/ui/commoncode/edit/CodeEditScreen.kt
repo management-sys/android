@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel.CodeScreenType
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.BigEditBar
@@ -37,7 +38,7 @@ import com.example.attendancemanagementapp.ui.components.SearchEditBar
 import com.example.attendancemanagementapp.ui.components.search.CodeSearchState
 import com.example.attendancemanagementapp.ui.components.search.SearchCommonCodeDialog
 import com.example.attendancemanagementapp.ui.components.search.SearchState
-import com.example.attendancemanagementapp.ui.util.rememberOnce
+import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 공통코드 수정 화면 */
@@ -48,7 +49,6 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
 
     val onEvent = codeViewModel::onEditEvent
     val codeEditState by codeViewModel.codeEditState.collectAsState()
-    val codeListState by codeViewModel.codeManageState.collectAsState()
 
     var openDialog by remember { mutableStateOf(false) }    // 공통코드 검색 디알로그 열림 상태
 
@@ -61,42 +61,36 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
             val total = info.totalItemsCount
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !codeListState.paginationState.isLoading && codeListState.paginationState.currentPage < codeListState.paginationState.totalPage) {
-                codeViewModel.getCodes()
+            if (shouldLoad && !codeEditState.paginationState.isLoading && codeEditState.paginationState.currentPage < codeEditState.paginationState.totalPage) {
+                codeViewModel.getCodes(CodeScreenType.EDIT)
             }
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            onEvent(CodeEditEvent.Init) // 화면 사라질 때 입력한 내용 초기화
         }
     }
 
     if (openDialog) {
         SearchCommonCodeDialog(
             listState = listState,
-            isLoading = codeListState.paginationState.isLoading,
+            isLoading = codeEditState.paginationState.isLoading,
             codeSearchState = CodeSearchState(
                 searchState = SearchState(
-                    value = codeListState.searchText,
+                    value = codeEditState.searchText,
                     onValueChange = { onEvent(CodeEditEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
-                        // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        onEvent(CodeEditEvent.ClickedSearch)
-                        keyboardController?.hide()
-                        focusManager.clearFocus(force = true)
+                        if (codeEditState.paginationState.currentPage < codeEditState.paginationState.totalPage) {
+                            onEvent(CodeEditEvent.ClickedSearch)
+                            keyboardController?.hide()
+                            focusManager.clearFocus(force = true)
+                        }
                     },
                     onClickInit = { onEvent(CodeEditEvent.ClickedInitSearch) }
                 ),
-                selectedCategory = codeListState.selectedCategory,
+                selectedCategory = codeEditState.selectedCategory,
                 categories = SearchType.entries,
                 onClickCategory = { onEvent(CodeEditEvent.ChangedCategoryWith(it)) }
             ),
-            commonCodes = codeListState.codes,
+            commonCodes = codeEditState.codes,
             onDismiss = {
                 openDialog = false
-                onEvent(CodeEditEvent.InitSearch)
             },
             onClickItem = { onEvent(CodeEditEvent.SelectedUpperCodeWith(it.upperCode.orEmpty(), it.upperCodeName.orEmpty())) }
         )
@@ -117,8 +111,17 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
             CodeEditCard(
                 codeEditState = codeEditState,
                 onEvent = onEvent,
-                onClickOpenDialog = { openDialog = true }
+                onClickOpenDialog = {
+                    onEvent(CodeEditEvent.InitSearch) // 검색 관련 초기화
+                    openDialog = true
+                }
             )
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            onEvent(CodeEditEvent.Init) // 화면 사라질 때 입력한 내용 초기화
         }
     }
 }

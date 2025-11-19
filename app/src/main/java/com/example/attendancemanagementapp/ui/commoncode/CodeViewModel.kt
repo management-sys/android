@@ -17,7 +17,6 @@ import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditState
 import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageEvent
 import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageReducer
 import com.example.attendancemanagementapp.ui.commoncode.manage.CodeManageState
-import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.util.ErrorHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -34,6 +33,10 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
         private const val TAG = "CodeViewModel"
     }
 
+    enum class CodeScreenType {
+        ADD, EDIT, MANAGE
+    }
+
     private val _uiEffect = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
     val uiEffect = _uiEffect.asSharedFlow()
 
@@ -46,20 +49,15 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
     private val _codeAddState = MutableStateFlow(CodeAddState())
     val codeAddState = _codeAddState.asStateFlow()
 
-    init {
-        getCodes()
-    }
-
     fun onAddEvent(e: CodeAddEvent) {
         _codeAddState.update { CodeAddReducer.reduce(it, e) }
 
         when (e) {
-            CodeAddEvent.InitSearch -> onManageEvent(CodeManageEvent.InitSearch)
-            is CodeAddEvent.ChangedCategoryWith -> onManageEvent(CodeManageEvent.ChangedCategoryWith(e.category))
-            is CodeAddEvent.ChangedSearchWith -> onManageEvent(CodeManageEvent.ChangedSearchWith(e.value))
+            CodeAddEvent.Init -> { _codeAddState.value = CodeAddState() }
+            is CodeAddEvent.ChangedCategoryWith -> getCodes(CodeScreenType.ADD)
             CodeAddEvent.ClickedAdd -> addCode()
-            CodeAddEvent.ClickedInitSearch -> onManageEvent(CodeManageEvent.ClickedInitSearch)
-            CodeAddEvent.ClickedSearch -> getCodes()
+            CodeAddEvent.ClickedInitSearch -> getCodes(CodeScreenType.ADD)
+            CodeAddEvent.ClickedSearch -> getCodes(CodeScreenType.ADD)
             else -> Unit
         }
     }
@@ -75,12 +73,10 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
 
         when (e) {
             CodeEditEvent.Init -> _codeEditState.update { CodeEditReducer.reduce(it, CodeEditEvent.InitWith(codeDetailState.value.codeInfo)) }
-            CodeEditEvent.InitSearch -> onManageEvent(CodeManageEvent.InitSearch)
-            is CodeEditEvent.ChangedCategoryWith -> onManageEvent(CodeManageEvent.ChangedCategoryWith(e.category))
-            is CodeEditEvent.ChangedSearchWith -> onManageEvent(CodeManageEvent.ChangedSearchWith(e.value))
+            is CodeEditEvent.ChangedCategoryWith -> getCodes(CodeScreenType.EDIT)
             CodeEditEvent.ClickedEdit -> updateCode()
-            CodeEditEvent.ClickedInitSearch -> onManageEvent(CodeManageEvent.ClickedInitSearch)
-            CodeEditEvent.ClickedSearch -> getCodes()
+            CodeEditEvent.ClickedInitSearch -> getCodes(CodeScreenType.EDIT)
+            CodeEditEvent.ClickedSearch -> getCodes(CodeScreenType.EDIT)
             else -> Unit
         }
     }
@@ -89,19 +85,19 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
         _codeManageState.update { CodeManageReducer.reduce(it, e) }
 
         when (e) {
-            CodeManageEvent.InitSearch -> getCodes()
-            is CodeManageEvent.ChangedCategoryWith -> getCodes()
-            CodeManageEvent.ClickedInitSearch -> getCodes()
-            CodeManageEvent.ClickedSearch -> getCodes()
+            CodeManageEvent.InitSearch -> getCodes(CodeScreenType.MANAGE)
+            is CodeManageEvent.ChangedCategoryWith -> getCodes(CodeScreenType.MANAGE)
+            CodeManageEvent.ClickedInitSearch -> getCodes(CodeScreenType.MANAGE)
+            CodeManageEvent.ClickedSearch -> getCodes(CodeScreenType.MANAGE)
             is CodeManageEvent.SelectedCode -> getCodeInfo(e.code)
             else -> Unit
         }
     }
 
     /* 검색어, 카테고리 상태 초기화 */
-    fun initSearchState() {
+    fun initSearchState(type: CodeScreenType) {
         _codeManageState.value = CodeManageState()
-        getCodes()  // 전체 코드 목록 가져옴
+        getCodes(type)  // 전체 코드 목록 가져옴
     }
 
     /* 공통코드 등록 */
@@ -120,7 +116,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                 result
                     .onSuccess { code ->
                         getCodeInfo(code)
-                        initSearchState()
+                        initSearchState(CodeScreenType.MANAGE)
 
                         _uiEffect.emit(UiEffect.NavigateBack)
                         _uiEffect.emit(UiEffect.Navigate("codeDetail"))
@@ -136,8 +132,12 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
     }
 
     /* 공통코드 목록 조회 및 검색 */
-    fun getCodes() {
-        val state = _codeManageState.value
+    fun getCodes(type: CodeScreenType) {
+        val state = when (type) {
+            CodeScreenType.ADD -> _codeAddState.value
+            CodeScreenType.EDIT -> _codeEditState.value
+            CodeScreenType.MANAGE -> _codeManageState.value
+        }
 
         viewModelScope.launch {
             _codeManageState.update { it.copy(paginationState = it.paginationState.copy(isLoading = true)) }
@@ -150,21 +150,53 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                 result
                     .onSuccess { data ->
                         if (state.paginationState.currentPage == 0) {
-                            _codeManageState.update { it.copy(
-                                codes = data.content,
-                                paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, totalPage = data.totalPages, isLoading = false)
-                            ) }
+                            when (type) {
+                                CodeScreenType.ADD -> {
+                                    _codeAddState.update { it.copy(
+                                        codes = data.content,
+                                        paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, totalPage = data.totalPages, isLoading = false)
+                                    ) }
+                                }
+                                CodeScreenType.EDIT -> {
+                                    _codeEditState.update { it.copy(
+                                        codes = data.content,
+                                        paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, totalPage = data.totalPages, isLoading = false)
+                                    ) }
+                                }
+                                CodeScreenType.MANAGE -> {
+                                    _codeManageState.update { it.copy(
+                                        codes = data.content,
+                                        paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, totalPage = data.totalPages, isLoading = false)
+                                    ) }
+                                }
+                            }
                         }
                         else {
-                            _codeManageState.update { it.copy(
-                                codes = it.codes + data.content,
-                                paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)
-                            ) }
+                            when (type) {
+                                CodeScreenType.ADD -> {
+                                    _codeAddState.update { it.copy(
+                                        codes = it.codes + data.content,
+                                        paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)
+                                    ) }
+                                }
+                                CodeScreenType.EDIT -> {
+                                    _codeEditState.update { it.copy(
+                                        codes = it.codes + data.content,
+                                        paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)
+                                    ) }
+                                }
+                                CodeScreenType.MANAGE -> {
+                                    _codeManageState.update { it.copy(
+                                        codes = it.codes + data.content,
+                                        paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)
+                                    ) }
+                                }
+                            }
                         }
-                        Log.d(TAG, "[getCodes] 공통코드 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.selectedCategory}, ${state.searchText})\n${data.content}")
+                        Log.d(TAG, "[getCodes-${type}] 공통코드 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.selectedCategory}, ${state.searchText})\n${data.content}")
                     }
                     .onFailure { e ->
-                        ErrorHandler.handle(e, TAG, "getCodes")
+                        ErrorHandler.handle(e, TAG, "getCodes-${type}")
                     }
             }
         }
@@ -203,7 +235,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
                 result
                     .onSuccess { code ->
                         getCodeInfo(code)
-                        initSearchState()
+//                        initSearchState(CodeScreenType.MANAGE)
 
                         _uiEffect.emit(UiEffect.NavigateBack)
                         _uiEffect.emit(UiEffect.ShowToast("수정이 완료되었습니다"))
@@ -225,7 +257,7 @@ class CodeViewModel @Inject constructor(private val repository: CommonCodeReposi
             repository.deleteCommonCode(code).collect { result ->
                 result
                     .onSuccess { count ->
-                        initSearchState()
+                        initSearchState(CodeScreenType.MANAGE)
 
                         _uiEffect.emit(UiEffect.NavigateBack)
                         _uiEffect.emit(UiEffect.ShowToast("삭제가 완료되었습니다"))

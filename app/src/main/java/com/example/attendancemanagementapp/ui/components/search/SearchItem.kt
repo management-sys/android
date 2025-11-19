@@ -78,7 +78,11 @@ fun SearchBar(searchState: SearchState, hint: String = "검색어를 입력하�
                 imeAction = ImeAction.Search
             ),
             keyboardActions = KeyboardActions(
-                onSearch = { searchState.onClickSearch() }
+                onSearch = {
+                    if (searchState.value.isNotBlank()) {
+                        searchState.onClickSearch()
+                    }
+                }
             ),
             trailingIcon = {
                 if (searchState.value.isNotEmpty()) {

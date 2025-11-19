@@ -1,12 +1,24 @@
 package com.example.attendancemanagementapp.ui.commoncode.add
 
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
+import com.example.attendancemanagementapp.retrofit.param.PaginationState
+import com.example.attendancemanagementapp.retrofit.param.SearchType
 
 object CodeAddReducer {
     fun reduce(s: CodeAddState, e: CodeAddEvent): CodeAddState = when (e) {
+        CodeAddEvent.InitSearch -> handleInitSearch(s)
         is CodeAddEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
         is CodeAddEvent.SelectedUpperCodeWith -> handleSelectedUpperCode(s, e.upperCode, e.upperCodeName)
+        is CodeAddEvent.ChangedSearchWith -> handleChangedSearch(s, e.value)
+        is CodeAddEvent.ChangedCategoryWith -> handleChangedCategory(s, e.category)
+        CodeAddEvent.ClickedInitSearch -> handleClickedInitSearch(s)
         else -> s
+    }
+
+    private fun handleInitSearch(
+        state: CodeAddState
+    ): CodeAddState {
+        return state.copy(codes = emptyList(), searchText = "", selectedCategory = SearchType.ALL, paginationState = PaginationState())
     }
 
     private val codeUpdaters: Map<CodeAddField, (CommonCodeDTO.CommonCodeInfo, String) -> CommonCodeDTO.CommonCodeInfo> =
@@ -32,5 +44,25 @@ object CodeAddReducer {
         upperCodeName: String
     ): CodeAddState {
         return state.copy(inputData = state.inputData.copy(upperCode = upperCode, upperCodeName = upperCodeName))
+    }
+
+    private fun handleChangedSearch(
+        state: CodeAddState,
+        value: String
+    ): CodeAddState {
+        return state.copy(searchText = value, paginationState = state.paginationState.copy(currentPage = 0))
+    }
+
+    private fun handleChangedCategory(
+        state: CodeAddState,
+        category: SearchType
+    ): CodeAddState {
+        return state.copy(selectedCategory = category, paginationState = state.paginationState.copy(currentPage = 0))
+    }
+
+    private fun handleClickedInitSearch(
+        state: CodeAddState
+    ): CodeAddState {
+        return state.copy(searchText = "", paginationState = state.paginationState.copy(currentPage = 0))
     }
 }
