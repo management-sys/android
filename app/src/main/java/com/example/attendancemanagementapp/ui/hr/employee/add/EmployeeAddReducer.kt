@@ -3,11 +3,14 @@ package com.example.attendancemanagementapp.ui.hr.employee.add
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
+import com.example.attendancemanagementapp.ui.hr.employee.edit.CareerField
+import com.example.attendancemanagementapp.ui.hr.employee.edit.SalaryField
 
 object EmployeeAddReducer {
     fun reduce(s: EmployeeAddState, e: EmployeeAddEvent): EmployeeAddState = when (e) {
         is EmployeeAddEvent.InitWith -> handleInit(s, e.departments)
         is EmployeeAddEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
+        is EmployeeAddEvent.ChangedCareerWith -> handleChangedCareer(s, e.field, e.value, e.idx)
         is EmployeeAddEvent.ChangedSalaryWith -> handleChangedSalary(s, e.field, e.value, e.idx)
         is EmployeeAddEvent.ChangedSearchWith -> handleChangedSearch(s, e.value)
         EmployeeAddEvent.ClickedAddSalary -> handleClickedAddSalary(s)
@@ -16,6 +19,8 @@ object EmployeeAddReducer {
         is EmployeeAddEvent.SelectedDepartmentWith -> handleSelectedDepartment(s, e.departmentName, e.departmentId)
         is EmployeeAddEvent.ClickedEditAuthWith -> handleClickedEditAuth(s, e.selected)
         EmployeeAddEvent.ClickedInitBirthDate -> handleClickedInitBirthDate(s)
+        EmployeeAddEvent.ClickedAddCareer -> handleClickedAddCareer(s)
+        is EmployeeAddEvent.ClickedDeleteCareerWith -> handleClickedDeleteCareer(s, e.idx)
         else -> s
     }
 
@@ -24,7 +29,7 @@ object EmployeeAddReducer {
         departments: List<DepartmentDTO.DepartmentsInfo>
     ): EmployeeAddState {
         val data = state.copy(
-            inputData = state.inputData.copy(grade = "선택", title = "선택"),
+            inputData = state.inputData.copy(grade = "직급", title = "직책"),
             dropDownMenu = state.dropDownMenu.copy(
                 departmentMenu = departments
             )
@@ -130,4 +135,40 @@ object EmployeeAddReducer {
     ): EmployeeAddState {
         return state.copy(inputData = state.inputData.copy(birthDate = ""))
     }
+
+    private fun handleClickedAddCareer(
+        state: EmployeeAddState
+    ): EmployeeAddState {
+        return state.copy(inputData = state.inputData.copy(
+            careers = state.inputData.careers + EmployeeDTO.CareerInfo(null, "", "", ""))
+        )
+    }
+
+    private fun handleChangedCareer(
+        state: EmployeeAddState,
+        field: CareerField,
+        value: String,
+        idx: Int
+    ): EmployeeAddState {
+        val name = if (field == CareerField.NAME) value else state.inputData.careers[idx].name
+        val hireDate = if (field == CareerField.HIREDATE) value else state.inputData.careers[idx].hireDate
+        val resignDate = if (field == CareerField.RESIGNDATE) value else state.inputData.careers[idx].resignDate
+
+        val updated = state.inputData.careers.mapIndexed { i, s -> // 수정한 인덱스의 값을 입력한 값으로 변경
+            if (i == idx) s.copy(name = name, hireDate = hireDate, resignDate = resignDate) else s
+        }
+
+        return state.copy(inputData = state.inputData.copy(careers = updated))
+    }
+
+    private fun handleClickedDeleteCareer(
+        state: EmployeeAddState,
+        idx: Int
+    ): EmployeeAddState {
+        val careers = state.inputData.careers
+        val updated = careers.toMutableList().apply { removeAt(idx) }
+
+        return state.copy(inputData = state.inputData.copy(careers = updated))
+    }
+
 }

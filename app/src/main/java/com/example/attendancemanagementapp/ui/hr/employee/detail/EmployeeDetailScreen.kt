@@ -40,6 +40,7 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -247,6 +248,12 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                     }
                 }
             }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            onEvent(EmployeeDetailEvent.ChangedPage(0))
         }
     }
 }

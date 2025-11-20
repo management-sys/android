@@ -2,10 +2,11 @@ package com.example.attendancemanagementapp.ui.hr.employee.add
 
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
+import com.example.attendancemanagementapp.ui.hr.employee.edit.CareerField
 import com.example.attendancemanagementapp.ui.hr.employee.edit.EmployeeEditEvent
+import com.example.attendancemanagementapp.ui.hr.employee.edit.SalaryField
 
 enum class EmployeeAddField { LOGINID, NAME, DEPARTMENT, GRADE, TITLE, PHONE, BIRTHDATE, HIREDATE }
-enum class SalaryField { YEAR, AMOUNT }
 
 sealed interface EmployeeAddEvent {
     // 초기화
@@ -18,6 +19,13 @@ sealed interface EmployeeAddEvent {
     data class ChangedValueWith(
         val field: EmployeeAddField,
         val value: String
+    ): EmployeeAddEvent
+
+    // 경력 필드 값 변경 이벤트
+    data class ChangedCareerWith(
+        val field: CareerField,
+        val value: String,
+        val idx: Int
     ): EmployeeAddEvent
 
     // 연봉 필드 값 변경 이벤트
@@ -62,6 +70,14 @@ sealed interface EmployeeAddEvent {
 
     // 직원 정보 추가 버튼 클릭 이벤트
     data object ClickedAdd: EmployeeAddEvent
+
+    // 경력 아이템 추가 버튼 클릭 이벤트
+    data object ClickedAddCareer: EmployeeAddEvent
+
+    // 경력 아이템 삭제 버튼 클릭 이벤트
+    data class ClickedDeleteCareerWith(
+        val idx: Int
+    ): EmployeeAddEvent
 
     // 부서 목록 다음 페이지 조회 이벤트
     data object LoadNextPage: EmployeeAddEvent

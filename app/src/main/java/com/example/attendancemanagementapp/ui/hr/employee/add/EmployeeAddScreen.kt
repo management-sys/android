@@ -1,32 +1,47 @@
 package com.example.attendancemanagementapp.ui.hr.employee.add
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,11 +49,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,8 +64,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO.CareerInfo
 import com.example.attendancemanagementapp.ui.components.BasicButton
-import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.DateEditBar
 import com.example.attendancemanagementapp.ui.components.DateEditDeleteBar
@@ -61,12 +78,16 @@ import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.hr.employee.edit.AuthItem
+import com.example.attendancemanagementapp.ui.hr.employee.edit.CareerField
 import com.example.attendancemanagementapp.ui.hr.employee.edit.DepartmentInfoItem
+import com.example.attendancemanagementapp.ui.hr.employee.edit.SalaryField
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
+import com.example.attendancemanagementapp.util.calculateCareerPeriod
 import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 /* 직원 등록 화면 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,6 +95,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun EmployeeAddScreen(navController: NavController, employeeViewModel: EmployeeViewModel) {
     val onEvent = employeeViewModel::onAddEvent
     val employeeAddState by employeeViewModel.employeeAddState.collectAsState()
+
+    val tabs = listOf("기본정보", "경력정보", "연봉정보")
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
+    val coroutineScope = rememberCoroutineScope()
 
     var openDeptDialog by remember { mutableStateOf(false) }    // 부서 선택 팝업창 열림 상태
     var openAuthDialog by remember { mutableStateOf(false) }    // 권한 선택 팝업창 열림 상태
@@ -102,31 +127,77 @@ fun EmployeeAddScreen(navController: NavController, employeeViewModel: EmployeeV
         topBar = {
             BasicTopBar(
                 title = "직원 등록",
-                onClickNavIcon = rememberOnce { navController.popBackStack() }
+                actIcon = Icons.Default.Add,
+                actTint = MainBlue,
+                onClickNavIcon = rememberOnce { navController.popBackStack() },
+                onClickActIcon = { onEvent(EmployeeAddEvent.ClickedAdd) }
             )
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(paddingValues).verticalScroll(rememberScrollState()).padding(horizontal = 26.dp, vertical = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(15.dp)
+            modifier = Modifier.padding(paddingValues)
         ) {
-            EmployeeEditCard(
-                employeeAddState = employeeAddState,
-                onEvent = onEvent,
-                onOpenAuth = { openAuthDialog = true },
-                onOpenDept = { openDeptDialog = true }
-            )
+            TabRow(
+                selectedTabIndex = pagerState.currentPage,
+                containerColor = MaterialTheme.colorScheme.background,
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                        color = MainBlue
+                    )
+                }
+            ) {
+                tabs.forEachIndexed { idx, title ->
+                    Tab(
+                        selected = pagerState.currentPage == idx,
+                        onClick = {
+                            coroutineScope.launch { pagerState.animateScrollToPage(idx) }
+                        },
+                        text = { Text(title) },
+                        selectedContentColor = MainBlue,
+                        unselectedContentColor = Color.Black
+                    )
+                }
+            }
 
-            SalaryEditCard(
-                salaries = employeeAddState.inputData.salaries,
-                onEvent = onEvent
-            )
-
-            BasicLongButton(
-                name = "등록",
-                onClick = { onEvent(EmployeeAddEvent.ClickedAdd) }
-            )
+            Box(Modifier.weight(1f)) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 26.dp, vertical = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        when (page) {
+                            0 -> {  // 기본 정보
+                                EmployeeEditCard(
+                                    employeeAddState = employeeAddState,
+                                    onEvent = onEvent,
+                                    onOpenAuth = { openAuthDialog = true },
+                                    onOpenDept = { openDeptDialog = true }
+                                )
+                            }
+                            1 -> {  // 경력 정보
+                                CareerEditCard(
+                                    careers = employeeAddState.inputData.careers,
+                                    onEvent = onEvent
+                                )
+                            }
+                            2 -> {  // 연봉 정보
+                                SalaryEditCard(
+                                    salaries = employeeAddState.inputData.salaries,
+                                    onEvent = onEvent
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -149,12 +220,11 @@ private fun EmployeeEditCard(employeeAddState: EmployeeAddState, onEvent: (Emplo
                 name = "아이디",
                 value = employeeAddState.inputData.loginId,
                 onValueChange = { onEvent(EmployeeAddEvent.ChangedValueWith(EmployeeAddField.LOGINID, it)) },
-                isRequired = true,
-                hint = "아이디를 입력해주세요."
+                isRequired = true
             )
             SearchEditBar(
                 name = "권한",
-                value = employeeAddState.selectAuthor.joinToString("/") { it.name },
+                value = if (employeeAddState.selectAuthor.joinToString("/") { it.name } == "") employeeAddState.inputData.authors.joinToString(", ") else employeeAddState.selectAuthor.joinToString("/") { it.name },
                 onClick = { onOpenAuth() },
                 isRequired = true,
                 enabled = true,
@@ -164,8 +234,7 @@ private fun EmployeeEditCard(employeeAddState: EmployeeAddState, onEvent: (Emplo
                 name = "이름",
                 value = employeeAddState.inputData.name,
                 onValueChange = { onEvent(EmployeeAddEvent.ChangedValueWith(EmployeeAddField.NAME, it)) },
-                isRequired = true,
-                hint = "이름을 입력해주세요."
+                isRequired = true
             )
             SearchEditBar(
                 name = "부서",
@@ -208,6 +277,166 @@ private fun EmployeeEditCard(employeeAddState: EmployeeAddState, onEvent: (Emplo
     }
 }
 
+/* 경력 정보 수정 카드 */
+@Composable
+private fun CareerEditCard(careers: List<CareerInfo>, onEvent: (EmployeeAddEvent) -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "경력",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                IconButton(
+                    onClick = { onEvent(EmployeeAddEvent.ClickedAddCareer) }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AddCircle,
+                        contentDescription = "경력 아이템 추가 버튼",
+                        tint = MainBlue
+                    )
+                }
+            }
+
+            careers.forEachIndexed { idx, career ->
+                CareerInfoEditItem(
+                    info = career,
+                    idx = idx,
+                    onEvent = onEvent
+                )
+
+                if(idx < careers.size - 1) {
+                    Divider(modifier = Modifier.padding(vertical = 5.dp))
+                }
+            }
+        }
+    }
+}
+
+/* 경력 수정 아이템 */
+@Composable
+private fun CareerInfoEditItem(info: CareerInfo, idx: Int, onEvent: (EmployeeAddEvent) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val rotation by animateFloatAsState(targetValue = if (expanded) 90f else 0f)
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp).padding(top = 13.dp, bottom = 5.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "회사명",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(0.35f)
+            )
+
+            OutlinedTextField(
+                modifier = Modifier.weight(0.5f),
+                value = info.name,
+                onValueChange = { onEvent(EmployeeAddEvent.ChangedCareerWith(CareerField.NAME, it, idx)) },
+                singleLine = true,
+                shape = RoundedCornerShape(5.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor = Color.White,
+                    unfocusedBorderColor = DarkGray,
+                    focusedBorderColor = DarkGray,
+                    disabledContainerColor = DisableGray,
+                    disabledBorderColor = DarkGray,
+                    disabledTextColor = DarkGray
+                ),
+                placeholder = {
+                    Text(
+                        text = "회사명",
+                        fontSize = 16.sp
+                    )
+                }
+            )
+
+            IconButton(
+                onClick = { expanded = !expanded }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowForwardIos,
+                    contentDescription = "경력 아이템 열림/닫힘 아이콘",
+                    modifier = Modifier
+                        .size(12.dp)
+                        .rotate(rotation),
+                    tint = DarkGray
+                )
+            }
+        }
+
+        AnimatedVisibility(visible = expanded) {
+            Column() {
+                DateEditBar(
+                    name = "입사일",
+                    value = info.hireDate,
+                    onValueChange = { onEvent(EmployeeAddEvent.ChangedCareerWith(CareerField.HIREDATE, it, idx)) }
+                )
+
+                DateEditBar(
+                    name = "퇴사일",
+                    value = info.resignDate ?: "",
+                    onValueChange = { onEvent(EmployeeAddEvent.ChangedCareerWith(CareerField.RESIGNDATE, it, idx)) }
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 13.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "기간",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.weight(0.35f)
+                    )
+
+                    Text(
+                        text = if (info.resignDate.isNullOrBlank() && info.id != null) "${calculateCareerPeriod(info.hireDate, info.resignDate)} (재직중)" else calculateCareerPeriod(info.hireDate, info.resignDate),
+                        fontSize = 16.sp,
+                        modifier = Modifier.weight(0.5f)
+                    )
+
+                    if (!info.resignDate.isNullOrBlank() || info.id == null) {
+                        IconButton(
+                            onClick = { onEvent(EmployeeAddEvent.ClickedDeleteCareerWith(idx)) },
+                            modifier = Modifier.weight(0.1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "경력 아이템 삭제 버튼"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 /* 연봉 정보 수정 카드 */
 @Composable
 private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (EmployeeAddEvent) -> Unit) {
@@ -221,7 +450,9 @@ private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (Emp
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(start = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -244,7 +475,9 @@ private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (Emp
 
             salaries.forEachIndexed { idx, salary ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -337,9 +570,9 @@ private fun DepartmentDialog(
     LaunchedEffect(listState) {
         snapshotFlow {
             val info = listState.layoutInfo
-            val lastVisiblaIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val lastVisibleIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
             val total = info.totalItemsCount
-            lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
+            lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
             if (shouldLoad && !employeeAddState.paginationState.isLoading && employeeAddState.paginationState.currentPage < employeeAddState.paginationState.totalPage) {
                 onEvent(EmployeeAddEvent.LoadNextPage)
@@ -363,10 +596,9 @@ private fun DepartmentDialog(
                     value = employeeAddState.searchText,
                     onValueChange = { onEvent(EmployeeAddEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
-                        // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        onEvent(EmployeeAddEvent.ClickedSearch)
-//                        keyboardController?.hide()
-//                        focusManager.clearFocus(force = true)
+                        if (employeeAddState.paginationState.currentPage <= employeeAddState.paginationState.totalPage) {
+                            onEvent(EmployeeAddEvent.ClickedSearch)
+                        }
                     },
                     onClickInit = { onEvent(EmployeeAddEvent.ClickedInitSearch) }
                 ),
@@ -382,7 +614,7 @@ private fun DepartmentDialog(
                 items(employeeAddState.dropDownMenu.departmentMenu) { item ->
                     DepartmentInfoItem(
                         name = item.name,
-                        head = "부서장",   // TODO: 부서장 이름 출력 필요 (부서 목록 받을 때 부서장도 받기? 아니면 부서 검색에서만 받기?)
+                        head = item.headName ?: "",
                         onClick = {
                             onEvent(EmployeeAddEvent.SelectedDepartmentWith(item.name, item.id))
                             onDismiss()
@@ -400,7 +632,7 @@ private fun DepartmentDialog(
 
 /* 권한 선택 디알로그 */
 @Composable
-private fun AuthDialog( // TODO: 체크한 권한이 체크표시가 안되어있음, 부서 목록 안 뜸
+private fun AuthDialog(
     employeeAddState: EmployeeAddState,
     onDismiss: () -> Unit = {},
     onEvent: (EmployeeAddEvent) -> Unit

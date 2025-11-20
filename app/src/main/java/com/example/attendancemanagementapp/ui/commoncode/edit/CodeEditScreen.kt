@@ -76,7 +76,7 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
                     value = codeEditState.searchText,
                     onValueChange = { onEvent(CodeEditEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
-                        if (codeEditState.paginationState.currentPage < codeEditState.paginationState.totalPage) {
+                        if (codeEditState.paginationState.currentPage <= codeEditState.paginationState.totalPage) {
                             onEvent(CodeEditEvent.ClickedSearch)
                             keyboardController?.hide()
                             focusManager.clearFocus(force = true)

@@ -415,7 +415,8 @@ fun SearchEditBar(
         )
 
         OutlinedTextField(
-            modifier = Modifier.weight(0.5f),
+            modifier = Modifier.weight(
+                0.5f),
             value = value,
             onValueChange = {},
             singleLine = true,

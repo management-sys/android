@@ -95,7 +95,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                         onValueChange = { onEvent(CodeManageEvent.ChangedSearchWith(it)) },
                         onClickSearch = {
                             // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                            if (codeManageState.paginationState.currentPage < codeManageState.paginationState.totalPage) {
+                            if (codeManageState.paginationState.currentPage <= codeManageState.paginationState.totalPage) {
                                 onEvent(CodeManageEvent.ClickedSearch)
                                 keyboardController?.hide()
                                 focusManager.clearFocus(force = true)

@@ -181,7 +181,7 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
                         verticalArrangement = Arrangement.Top
                     ) {
                         when (page) {
-                            0 -> {  // 기본정보
+                            0 -> {  // 기본 정보
                                 EmployeeEditCard(
                                     employeeEditState = employeeEditState,
                                     onEvent = onEvent,
@@ -189,19 +189,19 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
                                     onOpenDept = { openDeptDialog = true }
                                 )
                             }
-                            1 -> {  // 연차정보
+                            1 -> {  // 연차 정보
                                 AnnualLeaveEditCard(
                                     annualLeaves = employeeEditState.inputData.annualLeaves,
                                     onEvent = onEvent
                                 )
                             }
-                            2 -> {  // 경력정보
+                            2 -> {  // 경력 정보
                                 CareerEditCard(
                                     careers = employeeEditState.inputData.careers,
                                     onEvent = onEvent
                                 )
                             }
-                            3 -> {  // 연봉정보
+                            3 -> {  // 연봉 정보
                                 SalaryEditCard(
                                     salaries = employeeEditState.inputData.salaries,
                                     onEvent = onEvent
@@ -238,7 +238,7 @@ private fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (Emp
             )
             SearchEditBar(
                 name = "권한",
-                value = employeeEditState.selectAuthor.joinToString("/") { it.name },
+                value = if (employeeEditState.selectAuthor.joinToString("/") { it.name } == "") employeeEditState.inputData.authors.joinToString(", ") else employeeEditState.selectAuthor.joinToString("/") { it.name },
                 onClick = { onOpenAuth() },
                 isRequired = true,
                 enabled = true,
@@ -369,7 +369,7 @@ private fun AnnualLeaveInfoEditItem(info: EmployeeDTO.AnnualLeaveInfo, idx: Int,
                 InfoBar(name = "종료일", value = info.endDate)
                 EditBar(
                     name = "연차 개수",
-                    value = info.totalCnt,  // TODO: swagger 보고 null 체크 다시!!!!!!!!!!!!!
+                    value = info.totalCnt,
                     onValueChange = { onEvent(EmployeeEditEvent.ChangedAunnualLeaveWith(it, idx))}
                 )
                 InfoBar(name = "이월 연차 개수", value = info.carryoverCnt)
@@ -379,7 +379,7 @@ private fun AnnualLeaveInfoEditItem(info: EmployeeDTO.AnnualLeaveInfo, idx: Int,
     }
 }
 
-/* 경력 정보 수정 카드 TODO: 수정 불가한 경력은 재직중이라서? */
+/* 경력 정보 수정 카드 */
 @Composable
 private fun CareerEditCard(careers: List<CareerInfo>, onEvent: (EmployeeEditEvent) -> Unit) {
     Card(
@@ -473,8 +473,7 @@ private fun CareerInfoEditItem(info: CareerInfo, idx: Int, onEvent: (EmployeeEdi
                         text = "회사명",
                         fontSize = 16.sp
                     )
-                },
-                enabled = if (info.resignDate.isNullOrBlank() && info.id != null) false else true
+                }
             )
 
             IconButton(
@@ -496,17 +495,14 @@ private fun CareerInfoEditItem(info: CareerInfo, idx: Int, onEvent: (EmployeeEdi
                 DateEditBar(
                     name = "입사일",
                     value = info.hireDate,
-                    onValueChange = { onEvent(EmployeeEditEvent.ChangedCareerWith(CareerField.HIREDATE, it, idx)) },
-                    enabled = if (info.resignDate.isNullOrBlank() && info.id != null) false else true
+                    onValueChange = { onEvent(EmployeeEditEvent.ChangedCareerWith(CareerField.HIREDATE, it, idx)) }
                 )
 
-                if (!info.resignDate.isNullOrBlank() || info.id == null) {
-                    DateEditBar(
-                        name = "퇴사일",
-                        value = info.resignDate ?: "",
-                        onValueChange = { onEvent(EmployeeEditEvent.ChangedCareerWith(CareerField.RESIGNDATE, it, idx)) }
-                    )
-                }
+                DateEditBar(
+                    name = "퇴사일",
+                    value = info.resignDate ?: "",
+                    onValueChange = { onEvent(EmployeeEditEvent.ChangedCareerWith(CareerField.RESIGNDATE, it, idx)) }
+                )
 
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 13.dp),
@@ -702,10 +698,9 @@ private fun DepartmentDialog(
                     value = employeeEditState.searchText,
                     onValueChange = { onEvent(EmployeeEditEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
-                        // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        onEvent(EmployeeEditEvent.ClickedSearch)
-//                        keyboardController?.hide()
-//                        focusManager.clearFocus(force = true)
+                        if (employeeEditState.paginationState.currentPage <= employeeEditState.paginationState.totalPage) {
+                            onEvent(EmployeeEditEvent.ClickedSearch)
+                        }
                     },
                     onClickInit = { onEvent(EmployeeEditEvent.ClickedInitSearch) }
                 ),

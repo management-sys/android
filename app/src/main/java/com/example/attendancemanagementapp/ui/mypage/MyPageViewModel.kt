@@ -101,7 +101,7 @@ class MyPageViewModel @Inject constructor(private val employeeRepository: Employ
                         _uiEffect.emit(UiEffect.AllDeleteNavigate("login"))
                         _uiEffect.emit(UiEffect.ShowToast("로그아웃 되었습니다"))
 
-                        Log.d(TAG, "[logout] 로그아웃 성공: ${message}")
+                        Log.d(TAG, "[logout] 로그아웃 성공")
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "logout")

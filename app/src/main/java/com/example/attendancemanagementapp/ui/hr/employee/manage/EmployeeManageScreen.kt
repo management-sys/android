@@ -16,7 +16,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,7 +50,7 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
     val onEvent = employeeViewModel::onManageEvent
-    val employeeManageUiState by employeeViewModel.employeeManageState.collectAsState()
+    val employeeManageState by employeeViewModel.employeeManageState.collectAsState()
 
     val listState = rememberLazyListState()
 
@@ -62,16 +61,14 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
             val total = info.totalItemsCount
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !employeeManageUiState.paginationState.isLoading && employeeManageUiState.paginationState.currentPage < employeeManageUiState.paginationState.totalPage) {
+            if (shouldLoad && !employeeManageState.paginationState.isLoading && employeeManageState.paginationState.currentPage < employeeManageState.paginationState.totalPage) {
                 employeeViewModel.getManageEmployees()
             }
         }
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            onEvent(EmployeeManageEvent.Init)
-        }
+    LaunchedEffect(Unit) {
+        onEvent(EmployeeManageEvent.Init)
     }
 
     Scaffold(
@@ -97,20 +94,20 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 DepthDropDownField( // 부서 선택 드롭다운
-                    options = employeeManageUiState.dropDownMenu.departmentMenu,
-                    selected = employeeManageUiState.dropDownState.department,
+                    options = employeeManageState.dropDownMenu.departmentMenu,
+                    selected = employeeManageState.dropDownState.department,
                     onSelected = { onEvent(EmployeeManageEvent.SelectedDropDownWith(DropDownField.DEPARTMENT, it)) }
                 )
                 DropDownField(  // 직급 선택 드롭다운
                     modifier = Modifier.width(110.dp),
-                    options = employeeManageUiState.dropDownMenu.gradeMenu,
-                    selected = employeeManageUiState.dropDownState.grade,
+                    options = employeeManageState.dropDownMenu.gradeMenu,
+                    selected = employeeManageState.dropDownState.grade,
                     onSelected = { onEvent(EmployeeManageEvent.SelectedDropDownWith(DropDownField.GRADE, it)) }
                 )
                 DropDownField(  // 직책 선택 드롭다운
                     modifier = Modifier.width(110.dp),
-                    options = employeeManageUiState.dropDownMenu.titleMenu,
-                    selected = employeeManageUiState.dropDownState.title,
+                    options = employeeManageState.dropDownMenu.titleMenu,
+                    selected = employeeManageState.dropDownState.title,
                     onSelected = { onEvent(EmployeeManageEvent.SelectedDropDownWith(DropDownField.TITLE, it)) }
                 )
             }
@@ -118,13 +115,15 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
             Spacer(modifier = Modifier.height(10.dp))
             SearchBar(
                 searchState = SearchState(
-                    value = employeeManageUiState.searchText,
+                    value = employeeManageState.searchText,
                     onValueChange = { onEvent(EmployeeManageEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
                         // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        onEvent(EmployeeManageEvent.ClickedSearch)
-                        keyboardController?.hide()
-                        focusManager.clearFocus(force = true)
+                        if (employeeManageState.paginationState.currentPage <= employeeManageState.paginationState.totalPage) {
+                            onEvent(EmployeeManageEvent.ClickedSearch)
+                            keyboardController?.hide()
+                            focusManager.clearFocus(force = true)
+                        }
                     },
                     onClickInit = { onEvent(EmployeeManageEvent.ClickedInitSearch) }
                 ),
@@ -137,7 +136,7 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 state = listState
             ) {
-                employeeManageUiState.employees.forEach { employeeInfo ->
+                employeeManageState.employees.forEach { employeeInfo ->
                     item {
                         EmployeeInfoItem(
                             employeeInfo = employeeInfo,

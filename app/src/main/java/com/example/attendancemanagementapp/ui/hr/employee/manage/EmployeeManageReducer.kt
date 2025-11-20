@@ -1,5 +1,7 @@
 package com.example.attendancemanagementapp.ui.hr.employee.manage
 
+import com.example.attendancemanagementapp.retrofit.param.PaginationState
+
 object EmployeeManageReducer {
     fun reduce(s: EmployeeManageState, e: EmployeeManageEvent): EmployeeManageState = when (e) {
         EmployeeManageEvent.Init -> handleInit(s)
@@ -12,7 +14,11 @@ object EmployeeManageReducer {
     private fun handleInit(
         state: EmployeeManageState
     ): EmployeeManageState {
-        return EmployeeManageState(dropDownMenu = state.dropDownMenu)
+        return state.copy(
+            searchText = "",
+            dropDownState = DropDownState(department = "부서", grade = "직급", title = "직책"),
+            paginationState = PaginationState()
+        )
     }
 
     private fun handleChangedSearch(

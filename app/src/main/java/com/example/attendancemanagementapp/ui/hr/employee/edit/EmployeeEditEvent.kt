@@ -9,7 +9,7 @@ enum class CareerField { NAME, HIREDATE, RESIGNDATE }
 enum class SalaryField { YEAR, AMOUNT }
 
 sealed interface EmployeeEditEvent {
-    // 화면 초기화
+    // 초기화
     data object Init: EmployeeEditEvent
     data class InitWith(
         val employeeInfo: EmployeeDTO.EmployeeInfo,

@@ -3,6 +3,7 @@ package com.example.attendancemanagementapp.ui.hr.employee
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.repository.AuthorRepository
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
@@ -11,7 +12,6 @@ import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.base.UiEffect.ShowToast
-import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddEvent
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddReducer
 import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddState
@@ -49,7 +49,11 @@ class EmployeeViewModel @Inject constructor(
     private val authorRepository: AuthorRepository
 ) : ViewModel() {
     companion object {
-        private const val TAG = "HrViewModel"
+        private const val TAG = "EmployeeViewModel"
+    }
+
+    enum class EmployeeScreenType {
+        ADD, EDIT
     }
 
     private val _uiEffect = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
@@ -69,19 +73,13 @@ class EmployeeViewModel @Inject constructor(
     private val _currentPage = MutableStateFlow(0) // 현재 탭 페이지 번호
     val currentPage = _currentPage.asStateFlow()
 
-    init {
-        getEmployees()
-        getManageEmployees()
-        getAllDepartments()
-        getAuthors()
-        getGradeTitle()
-    }
-
     fun onAddEvent(e: EmployeeAddEvent) {
         _employeeAddState.update { EmployeeAddReducer.reduce(it, e) }
 
         when (e) {
             is EmployeeAddEvent.Init -> {
+                getAuthors(EmployeeScreenType.ADD)
+
                 val departments = employeeManageState.value.dropDownMenu.departmentMenu.filter { it.name != "부서" }
                 _employeeAddState.update { EmployeeAddReducer.reduce(it, EmployeeAddEvent.InitWith(departments)) }
             }
@@ -111,6 +109,8 @@ class EmployeeViewModel @Inject constructor(
 
         when (e) {
             is EmployeeEditEvent.Init -> {
+                getAuthors(EmployeeScreenType.EDIT)
+
                 val employeeInfo = employeeDetailState.value.employeeInfo
                 val departments = employeeManageState.value.dropDownMenu.departmentMenu.filter { it.name != "부서" }
                 _employeeEditState.update { EmployeeEditReducer.reduce(it, EmployeeEditEvent.InitWith(employeeInfo, departments)) }
@@ -128,6 +128,11 @@ class EmployeeViewModel @Inject constructor(
         _employeeManageState.update { EmployeeManageReducer.reduce(it, e) }
 
         when (e) {
+            is EmployeeManageEvent.Init -> {
+                getAllDepartments()
+                getGradeTitle()
+                getManageEmployees()
+            }
             is EmployeeManageEvent.ClickedSearch -> getManageEmployees()
             is EmployeeManageEvent.ClickedInitSearch -> getManageEmployees()
             is EmployeeManageEvent.SelectedEmployeeWith -> getEmployeeDetail(e.target, e.userId)
@@ -154,6 +159,7 @@ class EmployeeViewModel @Inject constructor(
                 result
                     .onSuccess { employees ->
                         _employeeSearchState.update { it.copy(employees = employees) }
+
                         Log.d(TAG, "[getEmployees] 직원 목록 조회 성공: 검색(${_employeeSearchState.value.searchText})\n${employees}")
                     }
                     .onFailure { e ->
@@ -173,6 +179,7 @@ class EmployeeViewModel @Inject constructor(
                             EmployeeTarget.SEARCH -> { _employeeSearchState.update { it.copy(employeeInfo = employeeInfo) } }
                             EmployeeTarget.MANAGE -> { _employeeDetailState.update { it.copy(employeeInfo = employeeInfo) } }
                         }
+
                         Log.d(TAG, "[getEmployeeDetail] 직원 상세 조회 성공: ${userId}\n${employeeInfo}")
                     }
                     .onFailure { e ->
@@ -204,6 +211,7 @@ class EmployeeViewModel @Inject constructor(
                         else {
                             _employeeManageState.update { it.copy(employees = it.employees + data.content, paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)) }
                         }
+
                         Log.d(TAG, "[getManageEmployees] 직원 관리 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.dropDownState.department}, ${state.dropDownState.grade}, ${state.dropDownState.title}, ${state.searchText})\n${data.content}")
                     }
                     .onFailure { e ->
@@ -227,6 +235,12 @@ class EmployeeViewModel @Inject constructor(
                 birthDate = formatDateTime(inputData.birthDate),
                 hireDate = formatDateTime(inputData.hireDate),
                 authors = employeeAddState.value.selectAuthor.map { it.code }, // 권한 코드
+                careers = inputData.careers
+                    .filter { it.name.isNotBlank() && it.hireDate.isNotBlank() }
+                    .map { it.copy(
+                        hireDate = formatDateTime(it.hireDate),
+                        resignDate = formatDateTime(it.resignDate)
+                    )},
                 salaries = inputData.salaries.filter { it.year != "" && it.amount != 0 } // 연봉 정보를 입력하지 않았으면 제거
             )
 
@@ -236,13 +250,15 @@ class EmployeeViewModel @Inject constructor(
                     result
                         .onSuccess { data ->
                             _employeeDetailState.update { it.copy(employeeInfo = data) }
-                            Log.d(TAG, "[addEmployee] 직원 등록 성공: ${data}")
+
                             _uiEffect.emit(ShowToast("등록이 완료되었습니다."))
                             _uiEffect.emit(UiEffect.NavigateBack)
                             _uiEffect.emit(UiEffect.Navigate("employeeDetail")) // 등록한 직원 상세 조회 화면으로 이동
+
+                            Log.d(TAG, "[addEmployee] 직원 등록 성공: ${data}")
                         }
                         .onFailure { e ->
-                            ErrorHandler.handle(e, TAG, "employeeDetail")
+                            ErrorHandler.handle(e, TAG, "addEmployee")
                         }
                 }
             }
@@ -283,8 +299,10 @@ class EmployeeViewModel @Inject constructor(
                 result
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
+
                         _uiEffect.emit(ShowToast("수정이 완료되었습니다"))
                         _uiEffect.emit(UiEffect.NavigateBack)
+
                         Log.d(TAG, "[updateEmployee] 직원 정보 수정 성공: ${data}")
                     }
                     .onFailure { e ->
@@ -301,8 +319,9 @@ class EmployeeViewModel @Inject constructor(
                 result
                     .onSuccess { departments ->
                         _employeeManageState.update { it.copy(
-                            dropDownMenu = it.dropDownMenu.copy(departmentMenu = it.dropDownMenu.departmentMenu + departments)
+                            dropDownMenu = it.dropDownMenu.copy(departmentMenu = listOf(DepartmentDTO.DepartmentsInfo(name = "부서")) + departments)
                         ) }
+
                         Log.d(TAG, "[getAllDepartments] 전체 부서 조회 성공: 검색(${employeeManageState.value.searchText})\n${departments}")
                     }
                     .onFailure { e ->
@@ -354,10 +373,8 @@ class EmployeeViewModel @Inject constructor(
                                     )
                                 }
                             }
-                            Log.d(
-                                TAG,
-                                "[searchDepartment] 부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}"
-                            )
+
+                            Log.d(TAG, "[searchDepartment] 부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}")
                         }
                         .onFailure { e ->
                             ErrorHandler.handle(e, TAG, "searchDepartment")
@@ -389,6 +406,7 @@ class EmployeeViewModel @Inject constructor(
                                     paginationState = it.paginationState.copy(currentPage = it.paginationState.currentPage + 1, isLoading = false)
                                 ) }
                             }
+
                             Log.d(TAG, "[searchDepartment] 부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}")
                         }
                         .onFailure { e ->
@@ -413,6 +431,7 @@ class EmployeeViewModel @Inject constructor(
                         _employeeManageState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(gradeMenu = gradeNames)) }
                         _employeeEditState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(gradeMenu = gradeNames)) }
                         _employeeAddState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(gradeMenu = gradeNames)) }
+
                         Log.d(TAG, "[getGradeTitle] 직급 목록 조회 성공\n${gradeNames}")
                     }
                     .onFailure { e ->
@@ -431,6 +450,7 @@ class EmployeeViewModel @Inject constructor(
                         _employeeManageState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(titleMenu = titleNames)) }
                         _employeeEditState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(titleMenu = titleNames)) }
                         _employeeAddState.update { it.copy(dropDownMenu = it.dropDownMenu.copy(titleMenu = titleNames)) }
+
                         Log.d(TAG, "[getGradeTitle] 직책 목록 조회 성공\n${titleNames}")
                     }
                     .onFailure { e ->
@@ -441,14 +461,21 @@ class EmployeeViewModel @Inject constructor(
     }
 
     /* 권한 목록 조회 */
-    fun getAuthors() {
+    fun getAuthors(type: EmployeeScreenType) {
         viewModelScope.launch {
             authorRepository.getAuthors().collect { result ->
                 result
                     .onSuccess { authors ->
-                        _employeeEditState.update { it.copy(authors = authors) }
-                        _employeeAddState.update { it.copy(authors = authors) }
-                        Log.d(TAG, "[getAuthors] 권한 목록 조회 성공\n${authors}")
+                        when (type) {
+                            EmployeeScreenType.ADD -> {
+                                _employeeAddState.update { it.copy(authors = authors) }
+                            }
+                            EmployeeScreenType.EDIT -> {
+                                _employeeEditState.update { it.copy(authors = authors) }
+                            }
+                        }
+
+                        Log.d(TAG, "[getAuthors-${type}] 권한 목록 조회 성공\n${authors}")
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "getAuthors")
@@ -465,6 +492,7 @@ class EmployeeViewModel @Inject constructor(
                 result
                     .onSuccess { message ->
                         _uiEffect.emit(ShowToast("비밀번호가 초기화되었습니다."))
+
                         Log.d(TAG, "[resetPassword] 비밀번호 초기화 성공\n${message}")
                     }
                     .onFailure { e ->
@@ -481,7 +509,10 @@ class EmployeeViewModel @Inject constructor(
                 result
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
+
                         _uiEffect.emit(ShowToast("사용자가 탈퇴되었습니다."))
+                        _uiEffect.emit(UiEffect.NavigateBack)
+
                         Log.d(TAG, "[setDeactivate] 직원 탈퇴 성공\n${data}")
                     }
                     .onFailure { e ->
@@ -498,7 +529,9 @@ class EmployeeViewModel @Inject constructor(
                 result
                     .onSuccess { data ->
                         _employeeDetailState.update { it.copy(employeeInfo = data) }
+
                         _uiEffect.emit(ShowToast("사용자가 복구되었습니다."))
+
                         Log.d(TAG, "[setActivate] 직원 복구 성공\n${data}")
                     }
                     .onFailure { e ->

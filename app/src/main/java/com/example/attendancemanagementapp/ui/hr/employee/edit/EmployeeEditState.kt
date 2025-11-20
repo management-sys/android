@@ -1,13 +1,12 @@
 package com.example.attendancemanagementapp.ui.hr.employee.edit
 
 import com.example.attendancemanagementapp.data.dto.AuthorDTO
-import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.retrofit.param.PaginationState
 import com.example.attendancemanagementapp.ui.hr.employee.manage.DropDownMenu
 
 data class EmployeeEditState(
-    val inputData: EmployeeDTO.EmployeeInfo = EmployeeDTO.EmployeeInfo(),   // 입력한 직원 정보
+    val inputData: EmployeeDTO.EmployeeInfo = EmployeeDTO.EmployeeInfo(),   // 입력한 직원 정보(기본 정보, 연봉 정보)
     val dropDownMenu: DropDownMenu = DropDownMenu(),                        // 드롭다운 메뉴 (부서, 직급, 직책)
     val searchText: String = "",                                            // 검색어
     val paginationState: PaginationState = PaginationState(),               // 페이지네이션 상태
