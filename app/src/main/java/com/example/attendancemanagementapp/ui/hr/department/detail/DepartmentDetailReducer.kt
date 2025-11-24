@@ -9,7 +9,8 @@ object DepartmentDetailReducer {
         DepartmentDetailEvent.InitAddEmployeeList -> handleInitAddEmployeeList(s)
         is DepartmentDetailEvent.SelectedAddEmployeeWith -> handleSelectedAddEmployee(s, e.isChecked, e.user)
         DepartmentDetailEvent.ClickedSaveAddEmployee -> handleClickedSaveAddEmployee(s)
-        is DepartmentDetailEvent.SelectedHeadWith -> handleSelectedHead(s, e.isHead, e.idName)
+        is DepartmentDetailEvent.SelectedHeadWith -> handleSelectedHead(s, e.isHead, e.id)
+//        is DepartmentDetailEvent.SelectedHeadWith -> handleSelectedHead(s, e.isHead, e.idName)
         is DepartmentDetailEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
         is DepartmentDetailEvent.SelectedSaveEmployeeWith -> handleSelectedSaveEmployee(s, e.isChecked, e.id)
         else -> s
@@ -49,16 +50,36 @@ object DepartmentDetailReducer {
             searchText = "",
             users = (state.users + state.selectedEmployees),
             selectedEmployees = emptyList(),
-            selectedSave = state.selectedEmployees.map { it.id }.toSet()
+            selectedSave = state.selectedSave + state.selectedEmployees.map { DepartmentDTO.AddUserInfo(userId = it.id) }
+//            selectedSave = state.selectedEmployees.map { it.id }.toSet()
         )
     }
 
     private fun handleSelectedHead(
         state: DepartmentDetailState,
         isHead: Boolean,
-        idName: Pair<String, String>
+//        idName: Pair<String, String>
+        id: String
     ): DepartmentDetailState {
-        return state.copy(selectedHead = if (isHead) state.selectedHead.filterNot { it.first == idName.first }.toSet() else state.selectedHead + idName)
+        return state.copy(
+            users = state.users.map { user ->
+                if (user.id == id) {
+                    user.copy(isHead = if (isHead) "Y" else "N")
+                }
+                else {
+                    user
+                }
+            },
+            selectedSave = state.selectedSave.map { user ->
+                if (user.userId == id) {
+                    user.copy(isHead = if (isHead) "Y" else "N")
+                }
+                else {
+                    user
+                }
+            }
+        )
+//        return state.copy(selectedHead = if (isHead) state.selectedHead.filterNot { it.first == idName.first }.toSet() else state.selectedHead + idName)
     }
 
     private val departmentUpdaters: Map<DepartmentField, (DepartmentDTO.DepartmentInfo, String) -> DepartmentDTO.DepartmentInfo> =
@@ -81,6 +102,13 @@ object DepartmentDetailReducer {
         isChecked: Boolean,
         id: String
     ): DepartmentDetailState {
-        return state.copy(selectedSave = if (isChecked) state.selectedSave - id else state.selectedSave + id)
+        return state.copy(
+            selectedSave = if (isChecked) {
+                state.selectedSave.filterNot { it.userId == id }
+            } else {
+                state.selectedSave + DepartmentDTO.AddUserInfo(userId = id)
+            }
+        )
+//        return state.copy(selectedSave = if (isChecked) state.selectedSave - id else state.selectedSave + id)
     }
 }

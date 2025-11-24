@@ -48,4 +48,23 @@ object DepartmentDTO {
         @Json(name = "newOrder")        val newOrder: Int,      // 새로운 순서
         @Json(name = "newUprDeptId")    val newUpperId: String? // 새로운 상위 부서 아이디
     )
+
+    /* 새로운 부서 등록 요청 */
+    data class AddDepartmentRequest(
+        @Json(name = "dc")          val description: String? = "",  // 부서 설명
+        @Json(name = "deptNm")      val name: String = "",          // 부서명
+        @Json(name = "upperDeptId") val upperId: String? = null     // 상위 부서 아이디 (최상위 부서인 경우 null)
+    )
+
+    /* 부서 사용자 정보 저장 요청 */
+    data class UpdateDepartmentUserRequest(
+        @Json(name = "deptId")  val id: String,                 // 부서 아이디
+        @Json(name = "users")   val users: List<AddUserInfo>    // 추가할 사용자 목록
+    )
+
+    /* 추가할 사용자 목록 데이터 */
+    data class AddUserInfo(
+        @Json(name = "dprlrAt") val isHead: String = "N",   // 부서장 여부
+        @Json(name = "userId")  val userId: String          // 사용자 아이디
+    )
 }

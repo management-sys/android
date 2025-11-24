@@ -44,14 +44,8 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
     private val _departmentManageState = MutableStateFlow(DepartmentManageState())
     val departmentManageState = _departmentManageState.asStateFlow()
 
-    init {
-        getAllDepartments()
-        getEmployees()
-    }
-
     fun onAddEvent(e: DepartmentAddEvent) {
         _departmentAddState.update { DepartmentAddReducer.reduce(it, e) }
-
     }
 
     fun onDetailEvent(e: DepartmentDetailEvent) {
@@ -60,6 +54,15 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
         when (e) {
             DepartmentDetailEvent.ClickedInitSearch -> getEmployees()
             DepartmentDetailEvent.ClickedSearch -> getEmployees()
+            DepartmentDetailEvent.ClickedAddDepartment -> {
+                _departmentAddState.update { it.copy(
+                    inputData = _departmentAddState.value.inputData.copy(
+                        upperId = departmentDetailState.value.info.id
+                    ),
+                    upperName = departmentDetailState.value.info.name
+                ) }
+            }
+            DepartmentDetailEvent.ClickedAddEmployee -> getEmployees()
             else -> Unit
         }
     }
@@ -68,6 +71,7 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
         _departmentManageState.update { DepartmentManageReducer.reduce(it, e) }
 
         when (e) {
+            is DepartmentManageEvent.Init -> getAllDepartments()
             is DepartmentManageEvent.SelectedDepartmentWith -> {
                 getDepartmentDetail(e.departmentId)
                 _uiEffect.tryEmit(Navigate("departmentDetail"))
@@ -189,6 +193,7 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
                 result
                     .onSuccess { departments ->
                         _departmentManageState.update { it.copy(departments = departments) }
+
                         Log.d(TAG, "[updatePosition] 부서 위치 변경 성공\n${departments}")
                     }
                     .onFailure { e ->
@@ -206,8 +211,11 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
             ).collect { result ->
                 result
                     .onSuccess {
-                        _uiEffect.tryEmit(UiEffect.ShowToast("부서가 성공적으로 삭제되었습니다."))
-                        _uiEffect.tryEmit(UiEffect.NavigateBack)
+                        getAllDepartments()
+
+                        _uiEffect.emit(UiEffect.ShowToast("부서가 성공적으로 삭제되었습니다."))
+                        _uiEffect.emit(UiEffect.NavigateBack)
+
                         Log.d(TAG, "[deleteDepartment] 부서 삭제 성공")
                     }
                     .onFailure { e ->
@@ -231,7 +239,7 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
                 result
                     .onSuccess { departmentInfo ->
                         _departmentDetailState.update { it.copy(info = departmentInfo, selectedSave = emptyList()) }
-                        _uiEffect.tryEmit(UiEffect.ShowToast("부서 사용자 정보가 수정되었습니다."))
+                        _uiEffect.emit(UiEffect.ShowToast("부서 사용자 정보가 수정되었습니다."))
                         Log.d(TAG, "[saveDepartmentUser] 부서 사용자 정보 수정 성공\n${departmentInfo}")
                     }
                     .onFailure { e ->
@@ -251,8 +259,9 @@ class DepartmentViewModel @Inject constructor(private val departmentRepository: 
                     .onSuccess { departments ->
                         _departmentManageState.update { it.copy(departments = departments) }
 
-                        _uiEffect.tryEmit(UiEffect.ShowToast("부서가 성공적으로 등록되었습니다."))
-                        _uiEffect.tryEmit(UiEffect.NavigateBack)
+                        _uiEffect.emit(UiEffect.ShowToast("부서가 성공적으로 등록되었습니다."))
+                        _uiEffect.emit(UiEffect.TargetDeleteNavigate("departmentManage"))
+
                         Log.d(TAG, "[addDepartment] 부서 등록 성공")
                     }
                     .onFailure { e ->

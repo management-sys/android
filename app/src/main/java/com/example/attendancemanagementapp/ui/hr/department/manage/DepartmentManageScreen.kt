@@ -3,7 +3,6 @@ package com.example.attendancemanagementapp.ui.hr.department.manage
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,10 +17,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.SubdirectoryArrowRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,7 +31,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,10 +42,11 @@ import androidx.compose.ui.unit.times
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.ui.components.BasicDialog
+import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.ui.theme.DarkGray
-import com.example.attendancemanagementapp.ui.util.rememberOnce
+import com.example.attendancemanagementapp.util.rememberOnce
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -82,11 +78,27 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
         )
     }
 
+    LaunchedEffect(Unit) {
+        onEvent(DepartmentManageEvent.Init)
+    }
+
+    LaunchedEffect(departmentManageState.departments) {
+        deptList = departmentManageState.departments
+    }
+
     Scaffold(
         topBar = {
             BasicTopBar(
                 title = "부서 관리",
                 onClickNavIcon = rememberOnce { navController.popBackStack() }
+            )
+        },
+        floatingActionButton = {
+            // 최상위 부서 등록 버튼
+            BasicFloatingButton(
+                onClick = {
+                    navController.navigate("departmentAdd")
+                }
             )
         }
     ) { paddingValues ->
@@ -178,7 +190,7 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
 
 /* 부서 목록 아이템 */
 @Composable
-fun DepartmentInfoItem(
+private fun DepartmentInfoItem(
     modifier: Modifier,
     dept: DepartmentDTO.DepartmentsInfo,
     isDragging: Boolean,

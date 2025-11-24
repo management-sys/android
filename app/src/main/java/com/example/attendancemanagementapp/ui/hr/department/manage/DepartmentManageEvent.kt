@@ -3,6 +3,9 @@ package com.example.attendancemanagementapp.ui.hr.department.manage
 import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 
 sealed interface DepartmentManageEvent {
+    // 초기화
+    data object Init: DepartmentManageEvent
+
     // 정보 조회할 부서 선택 이벤트
     data class SelectedDepartmentWith(
         val departmentId: String

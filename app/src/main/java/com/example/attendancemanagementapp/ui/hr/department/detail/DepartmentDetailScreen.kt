@@ -64,6 +64,7 @@ import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicCheckbox
 import com.example.attendancemanagementapp.ui.components.BasicDialog
+import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.SubButton
@@ -72,8 +73,8 @@ import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Yellow
 import com.example.attendancemanagementapp.ui.theme.DarkBlue
-import com.example.attendancemanagementapp.ui.util.formatDeptGradeTitle
-import com.example.attendancemanagementapp.ui.util.rememberOnce
+import com.example.attendancemanagementapp.util.formatDeptGradeTitle
+import com.example.attendancemanagementapp.util.rememberOnce
 
 /* 부서 상세 화면 */
 @Composable
@@ -89,7 +90,8 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
 
     var openDeleteDialog by remember { mutableStateOf(false) }      // 삭제 확인 팝업창 열림 여부
     var openAddHeadDialog by remember { mutableStateOf(false) }     // 부서장 추가 팝업창 열림 여부
-    var addIdName by remember { mutableStateOf("" to "") }          // 부서장으로 추가할 아이디, 이름
+    var addId by remember { mutableStateOf("") }                    // 부서장으로 추가할 아이디
+//    var addIdName by remember { mutableStateOf("" to "") }          // 부서장으로 추가할 아이디, 이름
 
     var openBottomSheet by remember { mutableStateOf(false) }   // 직원 목록 바텀 시트 열림 상태
 
@@ -125,10 +127,12 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
     if (openAddHeadDialog) {
         BasicDialog(
             title = "부서장을 추가하시겠습니까?",
-            text = "이미 부서에는 부서장이 있습니다. (${departmentDetailState.selectedHead.joinToString(", ") { it.second }})",
+            text = "이미 부서에는 부서장이 있습니다. (${departmentDetailState.users.filter { it.isHead == "Y" }.joinToString(", ") { it.name }})",
+//            text = "이미 부서에는 부서장이 있습니다. (${departmentDetailState.selectedHead.joinToString(", ") { it.second }})",
             onDismiss = { openAddHeadDialog = false },
             onClickConfirm = {
-                onEvent(DepartmentDetailEvent.SelectedHeadWith(false, addIdName))
+                onEvent(DepartmentDetailEvent.SelectedHeadWith(false, addId))
+//                onEvent(DepartmentDetailEvent.SelectedHeadWith(false, addIdName))
                 openAddHeadDialog = false
             }
         )
@@ -151,6 +155,15 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            // 현재 부서의 하위 부서 등록 버튼
+            BasicFloatingButton(
+                onClick = {
+                    onEvent(DepartmentDetailEvent.ClickedAddDepartment) // 등록할 부서의 상위 부서 아이디를 현재 부서 아이디로 설정
+                    navController.navigate("departmentAdd")
+                }
+            )
         }
     ) { paddingValues ->
         Column(
@@ -171,15 +184,21 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
                 onChecked = { isChecked, id -> onEvent(DepartmentDetailEvent.SelectedSaveEmployeeWith(isChecked, id)) },
                 onSelectHead = { isHead, idName ->
                     // 부서장이 이미 있는데 또 선택한 경우 팝업창 출력
-                    if (!isHead && departmentDetailState.selectedHead.isNotEmpty()) {
-                        addIdName = idName
+                    if (!isHead && departmentDetailState.users.any { it.isHead == "Y" }) {
+//                    if (!isHead && departmentDetailState.selectedHead.isNotEmpty()) {
+//                        addIdName = idName
+                        addId = idName.first
                         openAddHeadDialog = true
                     }
                     else {
-                        onEvent(DepartmentDetailEvent.SelectedHeadWith(isHead, idName))
+                        onEvent(DepartmentDetailEvent.SelectedHeadWith(isHead, idName.first))
+//                        onEvent(DepartmentDetailEvent.SelectedHeadWith(isHead, idName))
                     }
                 },
-                onClickAdd = { openBottomSheet = true },
+                onClickAdd = {
+                    onEvent(DepartmentDetailEvent.ClickedAddEmployee)
+                    openBottomSheet = true
+                },
                 onClickSave = { departmentViewModel.saveDepartmentUser() }
             )
         }
@@ -315,7 +334,7 @@ private fun EmployeeInfoItem(name: String, deptGradeTitle: String, isContain: Bo
 
 /* 부서 정보 카드 */
 @Composable
-fun DepartmentInfoCard(departmentInfo: DepartmentDTO.DepartmentInfo, openDepartmentInfo: Boolean, onClick: () -> Unit, onClickUpdate: () -> Unit, onFieldChange: (DepartmentField, String) -> Unit) {
+private fun DepartmentInfoCard(departmentInfo: DepartmentDTO.DepartmentInfo, openDepartmentInfo: Boolean, onClick: () -> Unit, onClickUpdate: () -> Unit, onFieldChange: (DepartmentField, String) -> Unit) {
     val rotation by animateFloatAsState(targetValue = if (openDepartmentInfo) 90f else 0f)
 
     Card(
@@ -409,7 +428,7 @@ fun DepartmentInfoCard(departmentInfo: DepartmentDTO.DepartmentInfo, openDepartm
 
 /* 부서 사용자 카드 */
 @Composable
-fun DepartmentUserInfoCard(
+private fun DepartmentUserInfoCard(
     state: DepartmentDetailState,
     openDepartmentInfo: Boolean,
     onClick: () -> Unit,
@@ -489,8 +508,10 @@ fun DepartmentUserInfoCard(
                             contentPadding = PaddingValues(bottom = 70.dp)
                         ) {
                             items(state.users) { userInfo ->
-                                val isChecked = userInfo.id in state.selectedSave               // 저장 목록 체크 여부
-                                val isHead = state.selectedHead.any { it.first == userInfo.id } // 부서장 여부
+//                                val isChecked = userInfo.id in state.selectedSave                 // 저장 목록 체크 여부
+                                val isChecked = userInfo.id in state.selectedSave.map { it.userId } // 저장 목록 체크 여부
+                                val isHead = userInfo.isHead == "Y"            // 부서장 여부
+//                                val isHead = state.selectedHead.any { it.first == userInfo.id }     // 부서장 여부
 
                                 DepartmentUserItem(
                                     userInfo = userInfo,
@@ -528,7 +549,7 @@ fun DepartmentUserInfoCard(
 
 /* 부서 사용자 목록 아이템 */
 @Composable
-fun DepartmentUserItem(
+private fun DepartmentUserItem(
     userInfo: DepartmentDTO.DepartmentUserInfo,
     departmentName: String,
     isChecked: Boolean, isHead: Boolean,

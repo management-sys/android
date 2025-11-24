@@ -19,6 +19,9 @@ sealed interface DepartmentDetailEvent {
     // 추가할 직원 목록 상태 초기화 이벤트
     data object InitAddEmployeeList: DepartmentDetailEvent
 
+    // 부서 사용자 추가 버튼 클릭 이벤트
+    data object ClickedAddEmployee: DepartmentDetailEvent
+
     // 추가할 직원 목록 체크박스 선택 이벤트
     data class SelectedAddEmployeeWith(
         val isChecked: Boolean,
@@ -31,7 +34,8 @@ sealed interface DepartmentDetailEvent {
     // 부서장 선택 이벤트
     data class SelectedHeadWith(
         val isHead: Boolean,
-        val idName: Pair<String, String>
+        val id: String
+//        val idName: Pair<String, String>
     ): DepartmentDetailEvent
 
     // 부서 정보 필드 값 변경 이벤트
@@ -45,6 +49,9 @@ sealed interface DepartmentDetailEvent {
         val isChecked: Boolean,
         val id: String
     ): DepartmentDetailEvent
+
+    // 하위 부서 추가 버튼 클릭 이벤트
+    data object ClickedAddDepartment: DepartmentDetailEvent
 
 //    // 부서 삭제 버튼 클릭 이벤트
 //    data object ClickedDeleteDepartment: DepartmentDetailEvent
