@@ -135,6 +135,10 @@ private fun SchedulesBottomSheet(schedules: List<List<String>>, onDismiss: () ->
             items(schedules) { schedule ->
                 ScheduleItem(schedule)
             }
+
+            item {
+                Spacer(Modifier.height(5.dp))
+            }
         }
     }
 }

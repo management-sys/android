@@ -73,14 +73,16 @@ import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicCheckbox
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.DateEditBar
-import com.example.attendancemanagementapp.ui.components.DateEditDeleteBar
-import com.example.attendancemanagementapp.ui.components.DropdownEditBar
+import com.example.attendancemanagementapp.ui.components.TwoLineDateEditDeleteBar
+import com.example.attendancemanagementapp.ui.components.TwoLineDropdownEditBar
 import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.InfoBar
-import com.example.attendancemanagementapp.ui.components.PhoneEditBar
+import com.example.attendancemanagementapp.ui.components.TwoLinePhoneEditBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
-import com.example.attendancemanagementapp.ui.components.SearchEditBar
+import com.example.attendancemanagementapp.ui.components.TwoLineSearchEditBar
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
+import com.example.attendancemanagementapp.ui.components.TwoLineDateEditBar
+import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
@@ -208,6 +210,10 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
                                 )
                             }
                         }
+
+                        Box(
+                            modifier = Modifier.height(40.dp)
+                        )
                     }
                 }
             }
@@ -228,15 +234,18 @@ private fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (Emp
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             ProfileImage() // TODO: 이미지 수정 기능
+
             Spacer(modifier = Modifier.height(20.dp))
-            EditBar(
+
+            TwoLineEditBar(
                 name = "아이디",
                 value = employeeEditState.inputData.loginId,
                 onValueChange = {},
                 enabled = false,
                 isRequired = true
             )
-            SearchEditBar(
+
+            TwoLineSearchEditBar(
                 name = "권한",
                 value = if (employeeEditState.selectAuthor.joinToString("/") { it.name } == "") employeeEditState.inputData.authors.joinToString(", ") else employeeEditState.selectAuthor.joinToString("/") { it.name },
                 onClick = { onOpenAuth() },
@@ -244,44 +253,51 @@ private fun EmployeeEditCard(employeeEditState: EmployeeEditState, onEvent: (Emp
                 enabled = true,
                 icon = Icons.Default.AddCircle
             )
-            EditBar(
+
+            TwoLineEditBar(
                 name = "이름",
                 value = employeeEditState.inputData.name,
                 onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.NAME, it)) },
                 isRequired = true
             )
-            SearchEditBar(
+
+            TwoLineSearchEditBar(
                 name = "부서",
                 value = employeeEditState.inputData.department,
                 onClick = { onOpenDept() },
                 isRequired = true,
                 enabled = true
             )
-            DropdownEditBar(
+
+            TwoLineDropdownEditBar(
                 name = "직급",
                 options = employeeEditState.dropDownMenu.gradeMenu,
                 selected = employeeEditState.inputData.grade,
                 onSelected = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.GRADE, it)) },
                 isRequired = true
             )
-            DropdownEditBar(
+
+            TwoLineDropdownEditBar(
                 name = "직책",
                 options = employeeEditState.dropDownMenu.titleMenu,
                 selected = employeeEditState.inputData.title ?: "직책",
                 onSelected = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.TITLE, it)) }
             )
-            PhoneEditBar(
+
+            TwoLinePhoneEditBar(
                 name = "연락처",
                 value = employeeEditState.inputData.phone ?: "",
                 onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.PHONE, it)) }
             )
-            DateEditDeleteBar(
+
+            TwoLineDateEditDeleteBar(
                 name = "생년월일",
                 value = employeeEditState.inputData.birthDate ?: "",
                 onClick = { onEvent(EmployeeEditEvent.ClickedInitBirthDate) },
                 onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.BIRTHDATE, it)) }
             )
-            DateEditBar(
+
+            TwoLineDateEditBar(
                 name = "입사일",
                 value = employeeEditState.inputData.hireDate,
                 onValueChange = { onEvent(EmployeeEditEvent.ChangedValueWith(EmployeeEditField.HIREDATE, it)) },

@@ -292,31 +292,83 @@ fun EditBar(
     }
 }
 
+/* 두 줄 정보 수정 바 */
+@Composable
+fun TwoLineEditBar(
+    name: String,                           // 이름
+    value: String,                          // 값
+    onValueChange: (String) -> Unit = {},   // 값 변경 시 실행 함수
+    enabled: Boolean = true,                // 이용 가능 여부
+    isRequired: Boolean = false,            // 필수 여부
+    hint: String = "",                      // 값이 없을 때 보이는 값
+    isPassword: Boolean = false,            // 비밀번호 여부
+    onlyNumber: Boolean = false             // 숫자만 입력 가능
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                append(name)
+                if (isRequired) {
+                    append(" ")
+                    withStyle(style = SpanStyle(color = Color.Red)) {
+                        append("*")
+                    }
+                }
+            },
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = value,
+            onValueChange = { newValue ->
+                if (onlyNumber) {
+                    if (newValue.length <= 9 && newValue.matches(Regex("^[0-9]*$"))) {
+                        onValueChange(newValue)
+                    }
+                } else {
+                    onValueChange(newValue)
+                }
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(5.dp),
+            colors = BasicOutlinedTextFieldColors(),
+            placeholder = {
+                Text(
+                    text = value.ifBlank { hint },
+                    fontSize = 16.sp
+                )
+            },
+            enabled = enabled,
+            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
+        )
+    }
+}
+
 /* 정보 수정 바 - 큰 텍스트 필드 */
 @Composable
-fun BigEditBar(
+fun TwoLineBigEditBar(
     name: String,
     value: String,
     onValueChange: (String) -> Unit = {},
     enabled: Boolean = true
 ) {
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.Top
+        verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        Column(
-            modifier = Modifier.weight(0.35f).padding(top = 13.dp),
-            verticalArrangement = Arrangement.Top
-        ) {
-            Text(
-                text = name,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
+        Text(
+            text = name,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
+        )
 
         OutlinedTextField(
-            modifier = Modifier.weight(0.65f).height(150.dp),
+            modifier = Modifier.fillMaxWidth().height(150.dp),
             value = value,
             onValueChange = { onValueChange(it) },
             singleLine = false,
@@ -335,16 +387,16 @@ fun BigEditBar(
 
 /* 정보 수정 바 - 라디오 버튼 */
 @Composable
-fun RadioEditBar(
+fun TwoLineRadioEditBar(
     name: String,
     selected: String,
     isRequired: Boolean = false
 ) {
     val options = listOf("사용", "미사용")
 
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         Text(
             text = buildAnnotatedString {
@@ -356,13 +408,12 @@ fun RadioEditBar(
                     }
                 }
             },
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(0.35f)
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
         )
 
         Row(
-            Modifier.weight(0.65f).padding(end = 10.dp),
+            Modifier.fillMaxWidth().padding(end = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             options.forEach { info ->
@@ -387,7 +438,7 @@ fun RadioEditBar(
 
 /* 정보 수정 바 - 검색 */
 @Composable
-fun SearchEditBar(
+fun TwoLineSearchEditBar(
     name: String,
     value: String,
     onClick: () -> Unit,
@@ -395,9 +446,9 @@ fun SearchEditBar(
     enabled: Boolean = false,
     icon: ImageVector = Icons.Default.Search
 ) {
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         Text(
             text = buildAnnotatedString {
@@ -409,53 +460,56 @@ fun SearchEditBar(
                     }
                 }
             },
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(0.35f)
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
         )
 
-        OutlinedTextField(
-            modifier = Modifier.weight(
-                0.5f),
-            value = value,
-            onValueChange = {},
-            singleLine = true,
-            readOnly = true,
-            shape = RoundedCornerShape(5.dp),
-            colors = BasicOutlinedTextFieldColors(),
-            placeholder = {
-                Text(
-                    text = value,
-                    fontSize = 16.sp
-                )
-            },
-            enabled = enabled
-        )
-
-        IconButton(
-            onClick = { onClick() }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = "검색",
-                tint = MainBlue
+            OutlinedTextField(
+                modifier = Modifier.weight(0.95f),
+                value = value,
+                onValueChange = {},
+                singleLine = true,
+                readOnly = true,
+                shape = RoundedCornerShape(5.dp),
+                colors = BasicOutlinedTextFieldColors(),
+                placeholder = {
+                    Text(
+                        text = value,
+                        fontSize = 16.sp
+                    )
+                },
+                enabled = enabled
             )
+
+            IconButton(
+                onClick = { onClick() }
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = "검색",
+                    tint = MainBlue
+                )
+            }
         }
     }
 }
 
 /* 정보 수정 바 - 드롭다운 */
 @Composable
-fun DropdownEditBar(
-    name: String,                           // 이름
-    isRequired: Boolean = false,             // 필수 여부
+fun TwoLineDropdownEditBar(
+    name: String,
+    isRequired: Boolean = false,
     options: List<String>,
     selected: String,
     onSelected: (String) -> Unit
 ) {
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         Text(
             text = buildAnnotatedString {
@@ -467,13 +521,12 @@ fun DropdownEditBar(
                     }
                 }
             },
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(0.35f)
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
         )
 
         DropDownField(
-            modifier = Modifier.weight(0.65f),
+            modifier = Modifier.fillMaxWidth(),
             options = options,
             selected = selected,
             onSelected = onSelected
@@ -483,16 +536,16 @@ fun DropdownEditBar(
 
 /* 정보 수정 바 - 전화번호 */
 @Composable
-fun PhoneEditBar(
+fun TwoLinePhoneEditBar(
     name: String,                           // 이름
     value: String,                          // 값
     onValueChange: (String) -> Unit = {},   // 값 변경 시 실행 함수
     enabled: Boolean = true,                // 이용 가능 여부
     isRequired: Boolean = false             // 필수 여부
 ) {
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         Text(
             text = buildAnnotatedString {
@@ -504,13 +557,12 @@ fun PhoneEditBar(
                     }
                 }
             },
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(0.35f)
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
         )
 
         OutlinedTextField(
-            modifier = Modifier.weight(0.65f),
+            modifier = Modifier.fillMaxWidth(),
             value = value,
             onValueChange = { onValueChange(it) },
             singleLine = true,
@@ -635,10 +687,116 @@ fun DateEditBar(
     }
 }
 
+/* 정보 수정 바 - 날짜 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TwoLineDateEditBar(
+    name: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    enabled: Boolean = true,                // 이용 가능 여부
+    isRequired: Boolean = false
+) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    val fmt = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.KOREA) }
+
+    val parsed = remember(value) { runCatching { LocalDate.parse(value, fmt) }.getOrNull() }
+    val initialMillis = remember(parsed) { parsed?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli() }
+    val pickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+
+    if (open) {
+        DatePickerDialog(
+            colors = DatePickerDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.background
+            ),
+            onDismissRequest = { open = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { millis ->
+                        val picked = Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
+                        onValueChange(picked.format(fmt))
+                    }
+                    open = false
+                }) {
+                    Text(
+                        text = "확인",
+                        color = MainBlue
+                    )
+                }
+            },
+            dismissButton = { TextButton({ open = false }) { Text(text = "취소", color = TextGray) } }
+        ) {
+            DatePicker(
+                state = pickerState,
+                showModeToggle = true,
+                colors = DatePickerDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    selectedDayContainerColor = MainBlue,
+                    todayDateBorderColor = MainBlue,
+                    todayContentColor = MainBlue
+                )
+            )
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                append(name)
+                if (isRequired) {
+                    append(" ")
+                    withStyle(style = SpanStyle(color = Color.Red)) {
+                        append("*")
+                    }
+                }
+            },
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = {},
+                singleLine = true,
+                readOnly = true,
+                shape = RoundedCornerShape(5.dp),
+                colors = BasicOutlinedTextFieldColors(),
+                placeholder = {
+                    Text(
+                        text = value.ifBlank { "연도-월-일" },
+                        fontSize = 16.sp
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "캘린더 열기",
+                        modifier = Modifier.then(
+                            if (enabled) {
+                                Modifier.clickable(
+                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() }
+                                ) { open = true }
+                            } else {
+                                Modifier
+                            }
+                        )
+                    )
+                },
+                enabled = enabled
+            )
+        }
+    }
+}
+
 /* 정보 수정 바 - 날짜, 삭제 아이콘 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateEditDeleteBar(
+fun TwoLineDateEditDeleteBar(
     name: String,
     value: String,
     onClick: () -> Unit,
@@ -687,9 +845,9 @@ fun DateEditDeleteBar(
         }
     }
 
-    Row(
+    Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         Text(
             text = buildAnnotatedString {
@@ -701,13 +859,16 @@ fun DateEditDeleteBar(
                     }
                 }
             },
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(0.35f)
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
         )
 
-        Box(modifier = Modifier.weight(0.5f)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             OutlinedTextField(
+                modifier = Modifier.weight(0.95f),
                 value = value,
                 onValueChange = {},
                 singleLine = true,
@@ -732,16 +893,16 @@ fun DateEditDeleteBar(
                     )
                 }
             )
-        }
 
-        IconButton(
-            onClick = { onClick() }
-        ) {
-            Icon(
-                imageVector = Icons.Default.Clear,
-                contentDescription = "날짜 삭제",
-                tint = MainBlue
-            )
+            IconButton(
+                onClick = { onClick() }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "날짜 삭제",
+                    tint = MainBlue
+                )
+            }
         }
     }
 }

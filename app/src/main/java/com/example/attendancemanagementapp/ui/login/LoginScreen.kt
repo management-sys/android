@@ -28,6 +28,7 @@ import com.example.attendancemanagementapp.R
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.EditBar
+import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 
 /* 로그인 화면 */
 @Composable
@@ -69,14 +70,14 @@ fun LoginCard(loginState: LoginState, navController: NavController, onEvent: (Lo
                 modifier = Modifier.padding(bottom = 15.dp)
             )
 
-            EditBar(
+            TwoLineEditBar(
                 name = "아이디",
                 value = loginState.id,
                 onValueChange = { onEvent(LoginEvent.ChangedValueWith(LoginField.ID, it)) },
                 hint = "아이디를 입력하세요."
             )
 
-            EditBar(
+            TwoLineEditBar(
                 name = "비밀번호",
                 value = loginState.password,
                 onValueChange = { onEvent(LoginEvent.ChangedValueWith(LoginField.PASSWORD, it)) },

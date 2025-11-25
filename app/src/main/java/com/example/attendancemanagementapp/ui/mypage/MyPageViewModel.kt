@@ -35,14 +35,11 @@ class MyPageViewModel @Inject constructor(private val employeeRepository: Employ
         _myPageState.update { MyPageReducer.reduce(it, e) }
 
         when (e) {
-            MyPageEvent.ClickedUpdate -> { updateMyInfo() }
-            MyPageEvent.ClickedLogout -> { logout() }
+            MyPageEvent.Init -> getMyInfo()
+            MyPageEvent.ClickedUpdate -> updateMyInfo()
+            MyPageEvent.ClickedLogout -> logout()
             else -> Unit
         }
-    }
-
-    fun init() {
-        getMyInfo()
     }
 
     /* 내 정보 조회 */

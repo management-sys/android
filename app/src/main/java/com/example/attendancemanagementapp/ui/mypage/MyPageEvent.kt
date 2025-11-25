@@ -3,6 +3,9 @@ package com.example.attendancemanagementapp.ui.mypage
 enum class MyPageField { NAME, PHONE, BIRTHDATE, CUR_PASSWORD, NEW_PASSWORD }
 
 sealed interface MyPageEvent {
+    // 초기화
+    data object Init: MyPageEvent
+
     // 수정 버튼 클릭 이벤트
     data object ClickedUpdate: MyPageEvent
 

@@ -145,7 +145,7 @@ fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (
                         NavigationDrawerItem(
                             label = { Text("프로젝트 등록") },
                             selected = false,
-                            onClick = { /* Handle click */ }
+                            onClick = { onItemClick("projectAdd") }
                         )
                         NavigationDrawerItem(
                             label = { Text("투입현황") },

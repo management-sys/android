@@ -119,7 +119,7 @@ fun EmployeeSearchScreen(navController: NavController, employeeViewModel: Employ
 
 /* 직원 목록 아이템 */
 @Composable
-private fun EmployeeInfoItem(name: String, deptGradeTitle: String, onClick: () -> Unit) {
+fun EmployeeInfoItem(name: String, deptGradeTitle: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),

@@ -1,12 +1,17 @@
 package com.example.attendancemanagementapp.ui.commoncode.add
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
@@ -32,10 +37,11 @@ import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel.CodeScree
 import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditEvent
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
-import com.example.attendancemanagementapp.ui.components.BigEditBar
+import com.example.attendancemanagementapp.ui.components.TwoLineBigEditBar
 import com.example.attendancemanagementapp.ui.components.EditBar
-import com.example.attendancemanagementapp.ui.components.RadioEditBar
-import com.example.attendancemanagementapp.ui.components.SearchEditBar
+import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
+import com.example.attendancemanagementapp.ui.components.TwoLineRadioEditBar
+import com.example.attendancemanagementapp.ui.components.TwoLineSearchEditBar
 import com.example.attendancemanagementapp.ui.components.search.CodeSearchState
 import com.example.attendancemanagementapp.ui.components.search.SearchCommonCodeDialog
 import com.example.attendancemanagementapp.ui.components.search.SearchState
@@ -107,7 +113,7 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp),
+            modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
             CodeAddCard(
@@ -117,6 +123,10 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
                     onEvent(CodeAddEvent.InitSearch) // 검색 관련 초기화
                     openDialog = true
                 }
+            )
+
+            Box(
+                modifier = Modifier.height(40.dp)
             )
         }
     }
@@ -140,40 +150,56 @@ private fun CodeAddCard(codeAddState: CodeAddState, onEvent: (CodeAddEvent) -> U
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            SearchEditBar(name = "상위코드", value = codeAddState.inputData.upperCode ?: "", onClick = { onClickOpenDialog() } )
+            TwoLineSearchEditBar(
+                name = "상위코드",
+                value = codeAddState.inputData.upperCode ?: "",
+                onClick = { onClickOpenDialog() }
+            )
 
-            EditBar(name = "상위코드명", value = codeAddState.inputData.upperCodeName ?: "", enabled = false)
+            TwoLineEditBar(
+                name = "상위코드명",
+                value = codeAddState.inputData.upperCodeName ?: "",
+                enabled = false
+            )
 
-            EditBar(
+            TwoLineEditBar(
                 name = "코드",
                 value = codeAddState.inputData.code,
                 onValueChange = { onEvent(CodeAddEvent.ChangedValueWith(CodeAddField.CODE, it)) },
                 isRequired = true
             )
-            EditBar(
+
+            TwoLineEditBar(
                 name = "코드명",
                 value = codeAddState.inputData.codeName,
                 onValueChange = { onEvent(CodeAddEvent.ChangedValueWith(CodeAddField.CODENAME, it)) },
                 isRequired = true
             )
-            EditBar(
+
+            TwoLineEditBar(
                 name = "코드 설정값",
                 value = codeAddState.inputData.codeValue ?: "",
                 onValueChange = { onEvent(CodeAddEvent.ChangedValueWith(CodeAddField.CODEVALUE, it)) }
             )
-            RadioEditBar(name = "사용여부", selected = "사용", isRequired = true)
-            BigEditBar(
+
+            TwoLineRadioEditBar(
+                name = "사용여부",
+                selected = "사용",
+                isRequired = true
+            )
+
+            TwoLineBigEditBar(
                 name = "설명",
                 value = codeAddState.inputData.description ?: "",
                 onValueChange = { onEvent(CodeAddEvent.ChangedValueWith(CodeAddField.DESCRIPTION, it)) }
             )
-        }
 
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            BasicLongButton(name = "등록", onClick = { onEvent(CodeAddEvent.ClickedAdd) })
+            Spacer(modifier = Modifier.height(20.dp))
+
+            BasicLongButton(
+                name = "등록",
+                onClick = { onEvent(CodeAddEvent.ClickedAdd) }
+            )
         }
     }
 }

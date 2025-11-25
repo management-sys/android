@@ -30,6 +30,7 @@ import com.example.attendancemanagementapp.ui.components.DateEditBar
 import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
+import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 import com.example.attendancemanagementapp.util.rememberOnce
 
 /* 마이페이지 화면 */
@@ -40,7 +41,7 @@ fun MyPageScreen(navController: NavController, myPageViewModel: MyPageViewModel)
     val myPageState by myPageViewModel.myPageState.collectAsState()
 
     LaunchedEffect(Unit) {
-        myPageViewModel.init()
+        onEvent(MyPageEvent.Init)
     }
 
     Scaffold(
@@ -123,9 +124,9 @@ private fun PasswordEditCard(myPageState: MyPageState, onEvent: (MyPageEvent) ->
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            EditBar(name = "현재 비밀번호", value = myPageState.curPassword, isPassword = true, onValueChange = { onEvent(
+            TwoLineEditBar(name = "현재 비밀번호", value = myPageState.curPassword, isPassword = true, onValueChange = { onEvent(
                 MyPageEvent.ChangedValueWith(MyPageField.CUR_PASSWORD, it)) })
-            EditBar(name = "새 비밀번호", value = myPageState.newPassword, isPassword = true, onValueChange = { onEvent(
+            TwoLineEditBar(name = "새 비밀번호", value = myPageState.newPassword, isPassword = true, onValueChange = { onEvent(
                 MyPageEvent.ChangedValueWith(MyPageField.NEW_PASSWORD, it)) })
 
             Text(
