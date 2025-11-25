@@ -41,6 +41,8 @@ import com.example.attendancemanagementapp.ui.login.LoginScreen
 import com.example.attendancemanagementapp.ui.login.LoginViewModel
 import com.example.attendancemanagementapp.ui.mypage.MyPageScreen
 import com.example.attendancemanagementapp.ui.mypage.MyPageViewModel
+import com.example.attendancemanagementapp.ui.project.ProjectViewModel
+import com.example.attendancemanagementapp.ui.project.add.ProjectAddScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -60,6 +62,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
     val attendanceViewModel: AttendanceViewModel = hiltViewModel()
     val loginViewModel: LoginViewModel = hiltViewModel()
     val myPageViewModel: MyPageViewModel = hiltViewModel()
+    val projectViewModel: ProjectViewModel = hiltViewModel()
 
     val logoutFlag by tokenDataStore.logoutFlagFlow.collectAsState(initial = false)
 
@@ -116,6 +119,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
                 composable("departmentAdd") { DepartmentAddScreen(navController, departmentViewModel) }         // 부서 등록 화면
                 composable("departmentDetail") { DepartmentDetailScreen(navController, departmentViewModel) }   // 부서 상세 화면
                 composable("departmentManage") { DepartmentManageScreen(navController, departmentViewModel) }   // 부서 관리 화면
+
+                composable("projectAdd") { ProjectAddScreen(navController, projectViewModel) }  // 프로젝트 등록 화면
             }
         }
     }
