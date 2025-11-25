@@ -4,6 +4,7 @@ object AttendanceReducer {
     fun reduce(s: AttendanceState, e: AttendanceEvent): AttendanceState = when (e) {
         AttendanceEvent.ClickedFinishWork -> handleWork(s)
         AttendanceEvent.ClickedStartWork -> handleWork(s)
+        else -> s
     }
 
     private fun handleWork(

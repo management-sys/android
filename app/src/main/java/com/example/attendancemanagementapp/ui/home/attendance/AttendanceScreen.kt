@@ -71,6 +71,10 @@ fun AttendanceScreen(navController: NavController, attendanceViewModel: Attendan
     val onEvent = attendanceViewModel::onEvent
     val attendanceState by attendanceViewModel.attendanceState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        onEvent(AttendanceEvent.Init)
+    }
+
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 26.dp).padding(bottom = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
