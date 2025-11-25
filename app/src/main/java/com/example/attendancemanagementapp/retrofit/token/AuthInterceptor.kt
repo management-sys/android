@@ -13,8 +13,6 @@ class AuthInterceptor(private val tokenDataStore: TokenDataStore): Interceptor {
         val request = chain.request()
         val path = request.url().encodedPath()
 
-        Log.d("AuthInterceptor", "path = ${path}")
-
         // 토큰 제외할 요청 리스트
         val noAuthPaths = listOf(
             "/api/auth/login",  // 로그인
@@ -22,14 +20,14 @@ class AuthInterceptor(private val tokenDataStore: TokenDataStore): Interceptor {
         )
 
         // 제외 대상이면 그대로 진행
-        if (noAuthPaths.any { path == it }) {
+        if (noAuthPaths.contains(path)) {
             return chain.proceed(request)
         }
 
         // 그 외 요청은 토큰 추가
         val accessToken = runBlocking { tokenDataStore.accessTokenFlow.first() }
 
-        val newRequest = chain.request().newBuilder()
+        val newRequest = request.newBuilder()
             .addHeader("Authorization", "Bearer ${accessToken}")
             .build()
 
