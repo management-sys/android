@@ -183,12 +183,13 @@ private fun ScheduleItem(scheduleInfo: ScheduleInfo) {
         withStyle(style = SpanStyle(color = color, fontWeight = FontWeight.SemiBold)) {
             append("[${scheduleInfo.type}]")
         }
-        append(" ${scheduleInfo.title} (${scheduleInfo.employeeName} ${scheduleInfo.employeeGrade})")
+        append("  ${scheduleInfo.title} (${scheduleInfo.employeeName} ${scheduleInfo.employeeGrade})")
     }
 
     Card(
         colors = (CardDefaults.cardColors(containerColor = Color.White)),
-        shape = RoundedCornerShape(14.dp)
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(color = color, width = 0.5.dp)
     ) {
         Row(
             modifier = Modifier.padding(15.dp).fillMaxWidth().clickable(
