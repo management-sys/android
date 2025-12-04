@@ -26,3 +26,7 @@ val AttendanceInfoItem_Blue = Color(0xFF3c97ab)
 val YearMonthBtn = Color(0xFF2c3e50)
 val EmptyDayBlockColor = Color(0xFFf1f1f1)
 val TodayBlockColor = Color(0xFFfffadf)
+
+val Schedule_Yellow = Color(0xffffd60a) // 회의
+val Schedule_Green = Color(0xff2a9d8f)  // 무급휴가
+val Schedule_Blue = Color(0xff487d9e)   // 국내 출장

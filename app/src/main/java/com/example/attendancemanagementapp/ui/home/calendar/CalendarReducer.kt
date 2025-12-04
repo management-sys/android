@@ -24,8 +24,15 @@ object CalendarReducer {
 
     private fun handleClickedDate(
         state: CalendarState,
-        date: Int
+        date: LocalDate
     ): CalendarState {
-        return state.copy(selectedDate = date, openSheet = true)
+        val filteredSchedules = state.schedules.filter { schedule ->
+            // 일정 기간에 현재 날짜가 포함되는 일정만 필터링
+            val startDate = LocalDate.parse(schedule.startDateTime.substring(0, 10))
+            val endDate = LocalDate.parse(schedule.endDateTime.substring(0, 10))
+
+            !date.isBefore(startDate) && !date.isAfter(endDate)
+        }
+        return state.copy(selectedDate = date, openSheet = true, filteredSchedules = filteredSchedules)
     }
 }

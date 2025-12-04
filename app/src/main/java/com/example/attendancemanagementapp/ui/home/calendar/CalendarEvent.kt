@@ -11,6 +11,6 @@ sealed interface CalendarEvent {
 
     // 날짜 클릭 이벤트
     data class ClickedDateWith(
-        val date: Int
+        val date: LocalDate
     ): CalendarEvent
 }

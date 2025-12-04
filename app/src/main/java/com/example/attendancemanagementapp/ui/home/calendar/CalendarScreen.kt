@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -55,8 +56,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -69,8 +73,13 @@ import com.example.attendancemanagementapp.ui.theme.AttendanceInfoItem_Blue
 import com.example.attendancemanagementapp.ui.theme.AttendanceInfoItem_Gray
 import com.example.attendancemanagementapp.ui.theme.BackgroundColor
 import com.example.attendancemanagementapp.ui.theme.EmptyDayBlockColor
+import com.example.attendancemanagementapp.ui.theme.Schedule_Blue
+import com.example.attendancemanagementapp.ui.theme.Schedule_Green
+import com.example.attendancemanagementapp.ui.theme.Schedule_Yellow
+import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.theme.TodayBlockColor
 import com.example.attendancemanagementapp.ui.theme.YearMonthBtn
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -92,8 +101,8 @@ fun CalendarScreen(navController: NavController, calendarViewModel: CalendarView
 
     if (showSheet) {
         SchedulesBottomSheet(
-            schedules = calendarState.schedules,
-            onDismiss = { showSheet = false }
+            schedules = calendarState.filteredSchedules,
+            onDismiss = { showSheet = false },
         )
     }
 
@@ -109,6 +118,7 @@ fun CalendarScreen(navController: NavController, calendarViewModel: CalendarView
         Divider()
         Calendar(
             yearMonth = yearMonth,
+            schedules = calendarState.schedules,
             onEvent = onEvent
         )
     }
@@ -117,7 +127,7 @@ fun CalendarScreen(navController: NavController, calendarViewModel: CalendarView
 /* 일정 목록 바텀 시트 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SchedulesBottomSheet(schedules: List<List<String>>, onDismiss: () -> Unit) {
+private fun SchedulesBottomSheet(schedules: List<ScheduleInfo>, onDismiss: () -> Unit) {
     val sheetState = rememberModalBottomSheetState()
 
     ModalBottomSheet(
@@ -132,8 +142,24 @@ private fun SchedulesBottomSheet(schedules: List<List<String>>, onDismiss: () ->
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(schedules) { schedule ->
-                ScheduleItem(schedule)
+            if (schedules.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "일정 내역이 없습니다",
+                            color = TextGray,
+                            fontSize = 15.sp
+                        )
+                    }
+                }
+            }
+            else {
+                items(schedules) { schedule ->
+                    ScheduleItem(schedule)
+                }
             }
 
             item {
@@ -145,7 +171,21 @@ private fun SchedulesBottomSheet(schedules: List<List<String>>, onDismiss: () ->
 
 /* 일정 목록 아이템 */
 @Composable
-private fun ScheduleItem(scheduleInfo: List<String>) {
+private fun ScheduleItem(scheduleInfo: ScheduleInfo) {
+    val color = when (scheduleInfo.type) {
+        "국내 출장" -> Schedule_Blue
+        "무급휴가" -> Schedule_Green
+        "회의" -> Schedule_Yellow
+        else -> Color.Black
+    }
+
+    val styledText = buildAnnotatedString {
+        withStyle(style = SpanStyle(color = color, fontWeight = FontWeight.SemiBold)) {
+            append("[${scheduleInfo.type}]")
+        }
+        append(" ${scheduleInfo.title} (${scheduleInfo.employeeName} ${scheduleInfo.employeeGrade})")
+    }
+
     Card(
         colors = (CardDefaults.cardColors(containerColor = Color.White)),
         shape = RoundedCornerShape(14.dp)
@@ -154,11 +194,11 @@ private fun ScheduleItem(scheduleInfo: List<String>) {
             modifier = Modifier.padding(15.dp).fillMaxWidth().clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
-            ) { /* TODO: 일정 종류에 따라 조회 */ },
+            ) { /* TODO: 일정 종류에 따라 이동 화면 다르게 조회 */ },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "[${scheduleInfo[0]}] ${scheduleInfo[1]} (${scheduleInfo[2]} ${scheduleInfo[3]})",
+                text = styledText,
                 fontSize = 15.sp
             )
         }
@@ -167,7 +207,7 @@ private fun ScheduleItem(scheduleInfo: List<String>) {
 
 /* 캘린더 */
 @Composable
-fun Calendar(yearMonth: YearMonth, onEvent: (CalendarEvent) -> Unit) {
+fun Calendar(yearMonth: YearMonth, schedules: List<ScheduleInfo>, onEvent: (CalendarEvent) -> Unit) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM")
     val ymStr = remember(yearMonth) { yearMonth.format(formatter) }
 
@@ -186,7 +226,7 @@ fun Calendar(yearMonth: YearMonth, onEvent: (CalendarEvent) -> Unit) {
             Spacer(modifier = Modifier.height(15.dp))
 
             WeekBar()
-            Month(Modifier.weight(1f), yearMonth, onEvent)
+            Month(Modifier.weight(1f), yearMonth, schedules, onEvent)
         }
     }
 }
@@ -262,11 +302,11 @@ fun WeekBar() {
 
 /* 한 달 출력 */
 @Composable
-fun Month(modifier: Modifier, yearMonth: YearMonth, onEvent: (CalendarEvent) -> Unit) {
+fun Month(modifier: Modifier, yearMonth: YearMonth, schedules: List<ScheduleInfo>, onEvent: (CalendarEvent) -> Unit) {
     val firstDayOfWeek = yearMonth.atDay(1).dayOfWeek   // 해당 월에서 1일의 요일
     val offset = firstDayOfWeek.value % 7       // 해당 월에서 1일의 요일 인덱스화 (일=0, 월=1, ..., 토=6)
     val lastDate = yearMonth.lengthOfMonth()    // 해당 월의 총 일수
-    val weeks = ((offset + lastDate + 6) / 7)   // 주수rrr
+    val weeks = ((offset + lastDate + 6) / 7)   // 주수
     var date = 1 - offset
 
     Column(
@@ -282,12 +322,25 @@ fun Month(modifier: Modifier, yearMonth: YearMonth, onEvent: (CalendarEvent) -> 
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 repeat(7) { col ->
-                    val isToday = date in 1..lastDate && YearMonth.from(LocalDate.now()) == yearMonth && LocalDate.now().dayOfMonth == date
-
                     if (date < 1 || date > lastDate) {
                         EmptyDayBlock()
                     } else {
-                        DayBlock(date, isToday, onEvent)
+                        val currentDate = yearMonth.atDay(date)
+                        val isToday = currentDate == LocalDate.now()
+                        val filteredSchedule = schedules
+                            .filter { schedule ->
+                                // 일정 기간에 현재 날짜가 포함되는 일정만 필터링
+                                val startDate = LocalDate.parse(schedule.startDateTime.substring(0, 10))
+                                val endDate = LocalDate.parse(schedule.endDateTime.substring(0, 10))
+
+                                !currentDate.isBefore(startDate) && !currentDate.isAfter(endDate)
+                            }
+                            .sortedByDescending { schedule ->
+                                // 끝 날짜 기준 내림차순 정렬 (늦은 일정이 우선순위)
+                                LocalDate.parse(schedule.endDateTime.substring(0, 10))
+                            }
+
+                        DayBlock(currentDate, isToday, filteredSchedule, onEvent)
                     }
                     date++
 
@@ -317,7 +370,7 @@ fun RowScope.EmptyDayBlock() {
 
 /* 날짜 블럭 */
 @Composable
-fun RowScope.DayBlock(date: Int, isToday: Boolean, onEvent: (CalendarEvent) -> Unit) {
+fun RowScope.DayBlock(date: LocalDate, isToday: Boolean, schedules: List<ScheduleInfo>, onEvent: (CalendarEvent) -> Unit) {
     Box(
         modifier = Modifier
             .weight(1f)
@@ -326,23 +379,111 @@ fun RowScope.DayBlock(date: Int, isToday: Boolean, onEvent: (CalendarEvent) -> U
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(true)
-            ) { onEvent(CalendarEvent.ClickedDateWith(date)) }
-            .padding(top = 5.dp, end = 3.dp),
+            ) { onEvent(CalendarEvent.ClickedDateWith(date)) },
         contentAlignment = Alignment.TopEnd
     ) {
-        Column {
-            Text(
-                text = "$date",
-                fontSize = 13.sp
-            )
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(top = 5.dp, end = 3.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Text(
+                    text = "${date.dayOfMonth}",
+                    fontSize = 13.sp,
+                    color = if (date.dayOfWeek == DayOfWeek.SATURDAY || date.dayOfWeek == DayOfWeek.SUNDAY) ApprovalInfoItem_Red else Color.Black
+                )
+            }
+
+            schedules.take(3).forEach { schedule ->
+                DayBlockScheduleItem(currentDate = date, scheduleInfo = schedule)
+                Spacer(modifier = Modifier.height(3.dp))
+            }
+
+            Box(
+                modifier = Modifier.fillMaxSize().padding(end = 3.dp),
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                // 일정 개수가 4개 이상이면 +N으로 표시
+                val remain = schedules.size - 3
+                if (remain > 0) {
+                    Text(
+                        text = "+${remain}",
+                        fontSize = 10.sp,
+                        color = TextGray
+                    )
+                }
+            }
         }
     }
+}
+
+/* 날짜 블럭 일정 아이템 */
+@Composable
+fun DayBlockScheduleItem(currentDate: LocalDate, scheduleInfo: ScheduleInfo) {
+    val startDate = LocalDate.parse(scheduleInfo.startDateTime.substring(0, 10))
+    val endDate = LocalDate.parse(scheduleInfo.endDateTime.substring(0, 10))
+
+    val paddingModifier = when {
+        // 일정이 오늘 시작하고 오늘 끝남
+        startDate == endDate -> Modifier.padding(horizontal = 2.dp)
+        // 일정이 오늘 시작했지만, 오늘 끝나지 않음
+        startDate == currentDate && endDate != currentDate -> Modifier.padding(start = 2.dp)
+        // 일정이 이전에 시작했고, 오늘 끝남
+        startDate.isBefore(currentDate) && currentDate == endDate -> Modifier.padding(end = 2.dp)
+        // 일정 진행 중임
+        else -> Modifier
+    }
+
+    val shape = when {
+        // 일정이 오늘 시작하고 오늘 끝남
+        startDate == endDate -> {
+            RoundedCornerShape(CornerSize(percent = 90))
+        }
+        // 일정이 오늘 시작했지만, 오늘 끝나지 않음
+        startDate == currentDate && endDate != currentDate -> {
+            RoundedCornerShape(
+                topStart = CornerSize(percent = 90),
+                topEnd = CornerSize(percent = 0),
+                bottomEnd = CornerSize(percent = 0),
+                bottomStart = CornerSize(percent = 90)
+            )
+        }
+        // 일정이 이전에 시작했고, 오늘 끝남
+        startDate.isBefore(currentDate) && currentDate == endDate -> {
+            RoundedCornerShape(
+                topStart = CornerSize(percent = 0),
+                topEnd = CornerSize(percent = 90),
+                bottomEnd = CornerSize(percent = 90),
+                bottomStart = CornerSize(percent = 0)
+            )
+        }
+        // 일정 진행 중임
+        else -> {
+            RoundedCornerShape(CornerSize(percent = 0))
+        }
+    }
+
+    val color = when (scheduleInfo.type) {
+        "국내 출장" -> Schedule_Blue
+        "무급휴가" -> Schedule_Green
+        "회의" -> Schedule_Yellow
+        else -> Color.Black
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(5.dp)
+            .then(paddingModifier)
+            .background(color = color, shape = shape)
+    ) {}
 }
 
 /* 월 현황 */
 @Composable
 fun MonthInfo(month: Int, openMonthInfo: Boolean, onClick: () -> Unit) {
-//    var openMonthInfo by remember { mutableStateOf(false) } // 월 현황 열림 여부
     val rotation by animateFloatAsState(targetValue = if (openMonthInfo) 90f else 0f)
 
     Card(
