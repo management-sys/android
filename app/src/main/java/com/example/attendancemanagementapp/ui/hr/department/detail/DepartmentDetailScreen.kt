@@ -73,6 +73,7 @@ import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.department.DepartmentViewModel
 import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Yellow
 import com.example.attendancemanagementapp.ui.theme.DarkBlue
+import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.util.rememberOnce
 
@@ -177,6 +178,7 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
                 onClickUpdate = { departmentViewModel.updateDepartment() },
                 onFieldChange = { field, input -> onEvent(DepartmentDetailEvent.ChangedValueWith(field, input)) }
             )
+
             DepartmentUserInfoCard(
                 state = departmentDetailState,
                 openDepartmentInfo = openDepartmentUserInfo,
@@ -238,42 +240,69 @@ private fun EmployeesBottomSheet(
                 hint = "직원명"
             )
 
-            Spacer(Modifier.height(15.dp))
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(bottom = 70.dp)
+            if (departmentDetailState.employees.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    departmentDetailState.employees.forEach { employeeInfo ->
-                        item {
-                            val isContain = departmentDetailState.users.any { it.id == employeeInfo.id }
+                    Text(
+                        text = "조회된 결과가 없습니다",
+                        color = TextGray,
+                        fontSize = 15.sp
+                    )
+                }
+            }
+            else {
+                Spacer(Modifier.height(15.dp))
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(bottom = 70.dp)
+                    ) {
+                        departmentDetailState.employees.forEach { employeeInfo ->
+                            item {
+                                val isContain =
+                                    departmentDetailState.users.any { it.id == employeeInfo.id }
 
-                            EmployeeInfoItem(
-                                name = employeeInfo.name,
-                                deptGradeTitle = formatDeptGradeTitle(departmentDetailState.info.name, employeeInfo.grade, employeeInfo.title),
-                                isContain = isContain,  // 사용자가 부서에 포함되어 있는지
-                                isChecked = if (isContain) true else employeeInfo in departmentDetailState.selectedEmployees,
-                                onChecked = { onEvent(DepartmentDetailEvent.SelectedAddEmployeeWith(it, employeeInfo)) }
-                            )
+                                EmployeeInfoItem(
+                                    name = employeeInfo.name,
+                                    deptGradeTitle = formatDeptGradeTitle(
+                                        departmentDetailState.info.name,
+                                        employeeInfo.grade,
+                                        employeeInfo.title
+                                    ),
+                                    isContain = isContain,  // 사용자가 부서에 포함되어 있는지
+                                    isChecked = if (isContain) true else employeeInfo in departmentDetailState.selectedEmployees,
+                                    onChecked = {
+                                        onEvent(
+                                            DepartmentDetailEvent.SelectedAddEmployeeWith(
+                                                it,
+                                                employeeInfo
+                                            )
+                                        )
+                                    }
+                                )
+                            }
+                        }
+
+                        item {
+                            Spacer(Modifier.height(70.dp))
                         }
                     }
 
-                    item {
-                        Spacer(Modifier.height(70.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().align(Alignment.BottomEnd)
+                            .padding(vertical = 15.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) { // TODO: 확인 버튼 삭제, 그냥 체크하는대로 바로 반영
+                        BasicButton(
+                            name = "확인",
+                            onClick = { onSaveAdd() }
+                        )
                     }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomEnd).padding(vertical = 15.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    BasicButton(
-                        name = "확인",
-                        onClick = { onSaveAdd() }
-                    )
                 }
             }
         }

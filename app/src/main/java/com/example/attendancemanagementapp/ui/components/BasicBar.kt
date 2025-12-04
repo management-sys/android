@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -205,19 +207,51 @@ fun BasicBottomBar(
 fun InfoBar(name: String, value: String) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 13.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = name,
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(end = 10.dp).width(80.dp)
         )
 
         Text(
             text = value,
-            fontSize = 16.sp
+            fontSize = 16.sp,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f)
         )
+    }
+}
+
+/* 두 줄 정보 출력 바 */
+@Composable
+fun TowLineInfoBar(name: String, value: String) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 13.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Text(
+                text = name,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = value,
+                fontSize = 15.sp
+            )
+        }
     }
 }
 
@@ -273,21 +307,13 @@ fun EditBar(
             modifier = Modifier.weight(0.35f)
         )
 
-        OutlinedTextField(
+        BasicOutlinedTextField(
             modifier = Modifier.weight(0.65f),
             value = value,
             onValueChange = { onValueChange(it) },
-            singleLine = true,
-            shape = RoundedCornerShape(5.dp),
-            colors = BasicOutlinedTextFieldColors(),
-            placeholder = {
-                Text(
-                    text = value.ifBlank { hint },
-                    fontSize = 16.sp
-                )
-            },
             enabled = enabled,
-            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
+            hint = hint,
+            isPassword = isPassword
         )
     }
 }
@@ -322,7 +348,7 @@ fun TwoLineEditBar(
             fontWeight = FontWeight.SemiBold
         )
 
-        OutlinedTextField(
+        BasicOutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = value,
             onValueChange = { newValue ->
@@ -334,17 +360,9 @@ fun TwoLineEditBar(
                     onValueChange(newValue)
                 }
             },
-            singleLine = true,
-            shape = RoundedCornerShape(5.dp),
-            colors = BasicOutlinedTextFieldColors(),
-            placeholder = {
-                Text(
-                    text = value.ifBlank { hint },
-                    fontSize = 16.sp
-                )
-            },
+            hint = hint,
             enabled = enabled,
-            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
+            isPassword = isPassword
         )
     }
 }
@@ -367,19 +385,10 @@ fun TwoLineBigEditBar(
             fontWeight = FontWeight.SemiBold
         )
 
-        OutlinedTextField(
+        BasicOutlinedTextField(
             modifier = Modifier.fillMaxWidth().height(150.dp),
             value = value,
             onValueChange = { onValueChange(it) },
-            singleLine = false,
-            shape = RoundedCornerShape(5.dp),
-            colors = BasicOutlinedTextFieldColors(),
-            placeholder = {
-                Text(
-                    text = value,
-                    fontSize = 16.sp
-                )
-            },
             enabled = enabled
         )
     }
@@ -468,20 +477,11 @@ fun TwoLineSearchEditBar(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
+            BasicOutlinedTextField(
                 modifier = Modifier.weight(0.95f),
                 value = value,
                 onValueChange = {},
-                singleLine = true,
                 readOnly = true,
-                shape = RoundedCornerShape(5.dp),
-                colors = BasicOutlinedTextFieldColors(),
-                placeholder = {
-                    Text(
-                        text = value,
-                        fontSize = 16.sp
-                    )
-                },
                 enabled = enabled
             )
 

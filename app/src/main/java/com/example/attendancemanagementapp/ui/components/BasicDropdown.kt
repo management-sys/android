@@ -92,10 +92,11 @@ fun DropDownField(modifier: Modifier = Modifier, options: List<String>, selected
 /* 계층 드롭다운 필드 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DepthDropDownField(options: List<DepartmentDTO.DepartmentsInfo>, selected: String, onSelected: (String) -> Unit) {
+fun DepthDropDownField(modifier: Modifier, options: List<DepartmentDTO.DepartmentsInfo>, selected: String, onSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }  // 열림 여부
 
     ExposedDropdownMenuBox(
+        modifier = modifier,
         expanded = expanded,
         onExpandedChange = { expanded = !expanded }
     ) {
@@ -105,7 +106,7 @@ fun DepthDropDownField(options: List<DepartmentDTO.DepartmentsInfo>, selected: S
             readOnly = true,
             singleLine = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier.menuAnchor().width(110.dp),
+            modifier = Modifier.menuAnchor(),
             shape = RoundedCornerShape(5.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = Color.White,

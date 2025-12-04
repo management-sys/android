@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -28,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.retrofit.param.SearchType
@@ -109,33 +112,47 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                 )
             )
 
-            Spacer(Modifier.height(15.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                state = listState
-            ) {
-                items(codeManageState.codes) { item ->
-                    CodeInfoItem(
-                        upperCodeInfo = item,
-                        onClick = {
-                            onEvent(CodeManageEvent.SelectedCode(item.code))
-                            navController.navigate("codeDetail")
-                        }
+            if (codeManageState.codes.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "조회된 결과가 없습니다",
+                        color = TextGray,
+                        fontSize = 15.sp
                     )
                 }
-
-                if (codeManageState.paginationState.isLoading) {
-                    item {
-                        Box(
-                            Modifier.fillMaxWidth().padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) { CircularProgressIndicator() }
+            }
+            else {
+                Spacer(Modifier.height(15.dp))
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    state = listState
+                ) {
+                    items(codeManageState.codes) { item ->
+                        CodeInfoItem(
+                            upperCodeInfo = item,
+                            onClick = {
+                                onEvent(CodeManageEvent.SelectedCode(item.code))
+                                navController.navigate("codeDetail")
+                            }
+                        )
                     }
-                }
 
-                item {
-                    Spacer(Modifier.height(70.dp))
+                    if (codeManageState.paginationState.isLoading) {
+                        item {
+                            Box(
+                                Modifier.fillMaxWidth().padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) { CircularProgressIndicator() }
+                        }
+                    }
+
+                    item {
+                        Spacer(Modifier.height(70.dp))
+                    }
                 }
             }
         }

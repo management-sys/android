@@ -5,6 +5,7 @@ import com.example.attendancemanagementapp.retrofit.service.AuthorService
 import com.example.attendancemanagementapp.retrofit.service.CommonCodeService
 import com.example.attendancemanagementapp.retrofit.service.DepartmentService
 import com.example.attendancemanagementapp.retrofit.service.EmployeeService
+import com.example.attendancemanagementapp.retrofit.service.MeetingService
 import com.example.attendancemanagementapp.retrofit.service.ProjectService
 import com.example.attendancemanagementapp.retrofit.token.AuthInterceptor
 import com.example.attendancemanagementapp.retrofit.token.TokenAuthenticator
@@ -104,4 +105,9 @@ object NetworkModule {
     @Singleton
     fun provideProjectService(retrofit: Retrofit): ProjectService =
         retrofit.create(ProjectService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideMeetingService(retrofit: Retrofit): MeetingService =
+        retrofit.create(MeetingService::class.java)
 }

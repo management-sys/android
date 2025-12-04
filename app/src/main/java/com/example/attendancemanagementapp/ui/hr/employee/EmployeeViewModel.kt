@@ -223,44 +223,42 @@ class EmployeeViewModel @Inject constructor(
 
     /* 새로운 직원 등록 */
     fun addEmployee() {
+        val inputData = employeeAddState.value.inputData
+        val request = EmployeeDTO.AddEmployeeRequest(
+            id = inputData.loginId,
+            name = inputData.name,
+            departmentId = employeeAddState.value.selectDepartmentId, // 부서 아이디
+            grade = inputData.grade,
+            title = if (inputData.title == "직책") "" else inputData.title!!,
+            phone = formatPhone(inputData.phone ?: ""), // 전화번호 형식으로 포맷팅 (000-0000-0000)
+            birthDate = formatDateTime(inputData.birthDate),
+            hireDate = formatDateTime(inputData.hireDate),
+            authors = employeeAddState.value.selectAuthor.map { it.code }, // 권한 코드
+            careers = inputData.careers
+                .filter { it.name.isNotBlank() && it.hireDate.isNotBlank() }
+                .map { it.copy(
+                    hireDate = formatDateTime(it.hireDate),
+                    resignDate = formatDateTime(it.resignDate)
+                )},
+            salaries = inputData.salaries.filter { it.year != "" && it.amount != 0 } // 연봉 정보를 입력하지 않았으면 제거
+        )
+        Log.d(TAG, "직원 등록 요청\n${request}")
+
         viewModelScope.launch {
-            val inputData = employeeAddState.value.inputData
-            val request = EmployeeDTO.AddEmployeeRequest(
-                id = inputData.loginId,
-                name = inputData.name,
-                departmentId = employeeAddState.value.selectDepartmentId, // 부서 아이디
-                grade = inputData.grade,
-                title = if (inputData.title == "직책") "" else inputData.title!!,
-                phone = formatPhone(inputData.phone ?: ""), // 전화번호 형식으로 포맷팅 (000-0000-0000)
-                birthDate = formatDateTime(inputData.birthDate),
-                hireDate = formatDateTime(inputData.hireDate),
-                authors = employeeAddState.value.selectAuthor.map { it.code }, // 권한 코드
-                careers = inputData.careers
-                    .filter { it.name.isNotBlank() && it.hireDate.isNotBlank() }
-                    .map { it.copy(
-                        hireDate = formatDateTime(it.hireDate),
-                        resignDate = formatDateTime(it.resignDate)
-                    )},
-                salaries = inputData.salaries.filter { it.year != "" && it.amount != 0 } // 연봉 정보를 입력하지 않았으면 제거
-            )
+            employeeRepository.addEmployee(request).collect { result ->
+                result
+                    .onSuccess { data ->
+                        _employeeDetailState.update { it.copy(employeeInfo = data) }
 
-            Log.d(TAG, "직원 등록 요청\n${request}")
-            viewModelScope.launch {
-                employeeRepository.addEmployee(request).collect { result ->
-                    result
-                        .onSuccess { data ->
-                            _employeeDetailState.update { it.copy(employeeInfo = data) }
+                        _uiEffect.emit(ShowToast("등록이 완료되었습니다."))
+                        _uiEffect.emit(UiEffect.NavigateBack)
+                        _uiEffect.emit(UiEffect.Navigate("employeeDetail")) // 등록한 직원 상세 조회 화면으로 이동
 
-                            _uiEffect.emit(ShowToast("등록이 완료되었습니다."))
-                            _uiEffect.emit(UiEffect.NavigateBack)
-                            _uiEffect.emit(UiEffect.Navigate("employeeDetail")) // 등록한 직원 상세 조회 화면으로 이동
-
-                            Log.d(TAG, "[addEmployee] 직원 등록 성공: ${data}")
-                        }
-                        .onFailure { e ->
-                            ErrorHandler.handle(e, TAG, "addEmployee")
-                        }
-                }
+                        Log.d(TAG, "[addEmployee] 직원 등록 성공: ${data}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "addEmployee")
+                    }
             }
         }
     }
@@ -322,7 +320,7 @@ class EmployeeViewModel @Inject constructor(
                             dropDownMenu = it.dropDownMenu.copy(departmentMenu = listOf(DepartmentDTO.DepartmentsInfo(name = "부서")) + departments)
                         ) }
 
-                        Log.d(TAG, "[getAllDepartments] 전체 부서 조회 성공: 검색(${employeeManageState.value.searchText})\n${departments}")
+                        Log.d(TAG, "[getAllDepartments] 전체 부서 조회 성공\n${departments}")
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "getAllDepartments")
@@ -421,8 +419,8 @@ class EmployeeViewModel @Inject constructor(
     fun getGradeTitle() {
         viewModelScope.launch {
             commonCodeRepository.getCommonCodes(
-                searchType = SearchType.UPPER_CODE_NM,
-                searchKeyword = "직급",
+                searchType = SearchType.UPPER_CODE,
+                searchKeyword = "clsf_code",
                 page = 0    // 개수가 더 늘어나면 페이지 관리도 해야함 지금은 필요 없음
             ).collect { result ->
                 result
@@ -440,8 +438,8 @@ class EmployeeViewModel @Inject constructor(
             }
 
             commonCodeRepository.getCommonCodes(
-                searchType = SearchType.UPPER_CODE_NM,
-                searchKeyword = "직책",
+                searchType = SearchType.UPPER_CODE,
+                searchKeyword = "rspofc_code",
                 page = 0    // 개수가 더 늘어나면 페이지 관리도 해야함 지금은 필요 없음
             ).collect { result ->
                 result

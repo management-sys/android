@@ -85,6 +85,7 @@ import com.example.attendancemanagementapp.ui.hr.employee.edit.SalaryField
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
+import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.util.calculateCareerPeriod
 import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -620,25 +621,39 @@ private fun DepartmentDialog(
                 hint = "부서명"
             )
 
-            Spacer(Modifier.height(15.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                state = listState
-            ) {
-                items(employeeAddState.dropDownMenu.departmentMenu) { item ->
-                    DepartmentInfoItem(
-                        name = item.name,
-                        head = item.headName ?: "",
-                        onClick = {
-                            onEvent(EmployeeAddEvent.SelectedDepartmentWith(item.name, item.id))
-                            onDismiss()
-                        }
+            if (employeeAddState.dropDownMenu.departmentMenu.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "조회된 결과가 없습니다",
+                        color = TextGray,
+                        fontSize = 15.sp
                     )
                 }
+            }
+            else {
+                Spacer(Modifier.height(15.dp))
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    state = listState
+                ) {
+                    items(employeeAddState.dropDownMenu.departmentMenu) { item ->
+                        DepartmentInfoItem(
+                            name = item.name,
+                            head = item.headName ?: "",
+                            onClick = {
+                                onEvent(EmployeeAddEvent.SelectedDepartmentWith(item.name, item.id))
+                                onDismiss()
+                            }
+                        )
+                    }
 
-                item {
-                    Spacer(Modifier.height(5.dp))
+                    item {
+                        Spacer(Modifier.height(5.dp))
+                    }
                 }
             }
         }

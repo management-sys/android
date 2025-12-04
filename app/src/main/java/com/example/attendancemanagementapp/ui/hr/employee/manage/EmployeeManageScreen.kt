@@ -1,9 +1,11 @@
 package com.example.attendancemanagementapp.ui.hr.employee.manage
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,6 +17,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -26,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
@@ -94,6 +98,7 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 DepthDropDownField( // 부서 선택 드롭다운
+                    modifier = Modifier.width(110.dp),
                     options = employeeManageState.dropDownMenu.departmentMenu,
                     selected = employeeManageState.dropDownState.department,
                     onSelected = { onEvent(EmployeeManageEvent.SelectedDropDownWith(DropDownField.DEPARTMENT, it)) }
@@ -130,30 +135,52 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
                 hint = "직원명"
             )
 
-            Spacer(Modifier.height(15.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                state = listState
-            ) {
-                employeeManageState.employees.forEach { employeeInfo ->
-                    item {
-                        EmployeeInfoItem(
-                            employeeInfo = employeeInfo,
-                            deptGradeTitle = formatDeptGradeTitle(employeeInfo.department, employeeInfo.grade, employeeInfo.title),
-                            onClick = {
-                                onEvent(EmployeeManageEvent.SelectedEmployeeWith(EmployeeTarget.MANAGE, employeeInfo.userId))
-                                navController.navigate("employeeDetail")
-                            }
-                        )
-                    }
-                }
-
-                item {
-                    Spacer(Modifier.height(70.dp))
+            if (employeeManageState.employees.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "조회된 결과가 없습니다",
+                        color = TextGray,
+                        fontSize = 15.sp
+                    )
                 }
             }
+            else {
+                Spacer(Modifier.height(15.dp))
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    state = listState
+                ) {
+                    employeeManageState.employees.forEach { employeeInfo ->
+                        item {
+                            EmployeeInfoItem(
+                                employeeInfo = employeeInfo,
+                                deptGradeTitle = formatDeptGradeTitle(
+                                    employeeInfo.department,
+                                    employeeInfo.grade,
+                                    employeeInfo.title
+                                ),
+                                onClick = {
+                                    onEvent(
+                                        EmployeeManageEvent.SelectedEmployeeWith(
+                                            EmployeeTarget.MANAGE,
+                                            employeeInfo.userId
+                                        )
+                                    )
+                                    navController.navigate("employeeDetail")
+                                }
+                            )
+                        }
+                    }
 
+                    item {
+                        Spacer(Modifier.height(70.dp))
+                    }
+                }
+            }
         }
     }
 }

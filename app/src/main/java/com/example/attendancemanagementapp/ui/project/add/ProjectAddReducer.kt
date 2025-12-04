@@ -12,6 +12,9 @@ object ProjectAddReducer {
         is ProjectAddEvent.SelectedDepartmentWith -> handleSelectedDepartment(s, e.department)
         is ProjectAddEvent.SelectedManagerWith -> handleSelectedManager(s, e.manager)
         is ProjectAddEvent.CheckedAssignedPersonnelWith -> handleCheckedAssignedPersonnel(s, e.checked, e.employee)
+        is ProjectAddEvent.SelectedPersonnelTypeWith -> handleSelectedPersonnelType(s, e.id, e.type)
+        is ProjectAddEvent.ChangedSearchValueWith -> handleChangedSearchValue(s, e.field, e.value)
+        is ProjectAddEvent.ClickedSearchInitWith -> handleClickedSearchInit(s, e.field)
         else -> s
     }
 
@@ -57,19 +60,58 @@ object ProjectAddReducer {
 
     private fun handleSelectedManager(
         state: ProjectAddState,
-        manager: EmployeeDTO.EmployeesInfo
+        manager: EmployeeDTO.ManageEmployeesInfo
     ): ProjectAddState {
-        return state.copy(inputData = state.inputData.copy(managerId = manager.id), managerName = manager.name)
+        return state.copy(inputData = state.inputData.copy(managerId = manager.userId), managerName = manager.name)
     }
 
     private fun handleCheckedAssignedPersonnel(
         state: ProjectAddState,
         checked: Boolean,
-        employee: EmployeeDTO.EmployeesInfo
+        employee: EmployeeDTO.ManageEmployeesInfo
     ): ProjectAddState {
-        val updatedList = if (checked) state.checkedAssignedPersonnel + employee else state.checkedAssignedPersonnel - employee
-        val sortedList = updatedList.sortedBy { employee -> state.employees.indexOfFirst { it.id == employee.id } }
+        val newPersonnel = ProjectDTO.AssignedPersonnelRequestInfo(chargerId = employee.userId, type = "선택")
+        val updatedList = if (checked) state.inputData.assignedPersonnels + newPersonnel else state.inputData.assignedPersonnels - newPersonnel
+        val sortedList = updatedList.sortedBy { personnel -> state.employeeState.employees.indexOfFirst { it.userId == personnel.chargerId } }
 
-        return state.copy(checkedAssignedPersonnel = sortedList)
+        return state.copy(inputData = state.inputData.copy(assignedPersonnels = sortedList))
+    }
+
+    private fun handleSelectedPersonnelType(
+        state: ProjectAddState,
+        id: String,
+        type: String
+    ): ProjectAddState {
+        val updatedList = state.inputData.assignedPersonnels!!.map { personnel ->
+            if (personnel.chargerId == id) {
+                personnel.copy(type = type)
+            }
+            else {
+                personnel
+            }
+        }
+
+        return state.copy(inputData = state.inputData.copy(assignedPersonnels = updatedList))
+    }
+
+    private fun handleChangedSearchValue(
+        state: ProjectAddState,
+        field: ProjectAddSearchField,
+        value: String
+    ): ProjectAddState {
+        return when (field) {
+            ProjectAddSearchField.DEPARTMENT -> state.copy(departmentState = state.departmentState.copy(searchText = value, paginationState = state.departmentState.paginationState.copy(currentPage = 0)))
+            ProjectAddSearchField.EMPLOYEE -> state.copy(employeeState = state.employeeState.copy(searchText = value, paginationState = state.employeeState.paginationState.copy(currentPage = 0)))
+        }
+    }
+
+    private fun handleClickedSearchInit(
+        state: ProjectAddState,
+        field: ProjectAddSearchField
+    ): ProjectAddState {
+        return when (field) {
+            ProjectAddSearchField.DEPARTMENT -> state.copy(departmentState = state.departmentState.copy(searchText = "", paginationState = state.departmentState.paginationState.copy(currentPage = 0)))
+            ProjectAddSearchField.EMPLOYEE -> state.copy(employeeState = state.employeeState.copy(searchText = "", paginationState = state.employeeState.paginationState.copy(currentPage = 0)))
+        }
     }
 }

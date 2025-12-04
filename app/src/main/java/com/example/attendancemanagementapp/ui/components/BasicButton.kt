@@ -91,7 +91,7 @@ fun SubButton(name: String, onClick: () -> Unit) {
 
 /* 기본 긴 버튼 */
 @Composable
-fun BasicLongButton(name: String, onClick: () -> Unit) {
+fun BasicLongButton(name: String, onClick: () -> Unit, enabled: Boolean = true) {
     Button(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp).height(40.dp),
         contentPadding = PaddingValues(0.dp),
@@ -100,7 +100,8 @@ fun BasicLongButton(name: String, onClick: () -> Unit) {
         colors = ButtonDefaults.buttonColors(
             containerColor = MainBlue,
             contentColor = Color.White
-        )
+        ),
+        enabled = enabled
     ) {
         Text(
             text = name,

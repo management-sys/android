@@ -8,6 +8,10 @@ enum class ProjectAddField {
     BUSINESS_START, BUSINESS_END, PLAN_START, PLAN_END, REAL_START, REAL_END, REMARK
 }
 
+enum class ProjectAddSearchField {
+    DEPARTMENT, EMPLOYEE
+}
+
 sealed interface ProjectAddEvent {
     // 초기화
     data object Init: ProjectAddEvent
@@ -33,12 +37,39 @@ sealed interface ProjectAddEvent {
 
     // 프로젝트 책임자 선택 이벤트
     data class SelectedManagerWith(
-        val manager: EmployeeDTO.EmployeesInfo
+        val manager: EmployeeDTO.ManageEmployeesInfo
     ): ProjectAddEvent
 
     // 투입인력 체크박스 클릭 이벤트
     data class CheckedAssignedPersonnelWith(
         val checked: Boolean,
-        val employee: EmployeeDTO.EmployeesInfo
+        val employee: EmployeeDTO.ManageEmployeesInfo
+    ): ProjectAddEvent
+
+    // 투입인력 구분 선택 이벤트
+    data class SelectedPersonnelTypeWith(
+        val id: String,
+        val type: String
+    ): ProjectAddEvent
+
+    // 검색어 필드 값 변경 이벤트
+    data class ChangedSearchValueWith(
+        val field: ProjectAddSearchField,
+        val value: String
+    ): ProjectAddEvent
+
+    // 검색 버튼 클릭 이벤트
+    data class ClickedSearchWith(
+        val field: ProjectAddSearchField
+    ): ProjectAddEvent
+
+    // 검색어 초기화 버튼 클릭 이벤트
+    data class ClickedSearchInitWith(
+        val field: ProjectAddSearchField
+    ): ProjectAddEvent
+
+    // 다음 페이지 조회 이벤트
+    data class LoadNextPage(
+        val field: ProjectAddSearchField
     ): ProjectAddEvent
 }

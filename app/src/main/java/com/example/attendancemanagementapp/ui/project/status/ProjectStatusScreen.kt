@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -64,7 +65,9 @@ import com.example.attendancemanagementapp.ui.theme.BackgroundColor
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.MiddleBlue
+import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.util.rememberOnce
+import java.util.Locale
 
 /* 프로젝트 현황 화면 */
 @Composable
@@ -160,7 +163,7 @@ private fun ProjectList(projectStatusState: ProjectStatusState, onEvent: (Projec
                         },
                         onClickInit = { onEvent(ProjectStatusEvent.ClickedInitSearchText) }
                     ),
-                    hint = "직원명"
+                    hint = "검색어를 입력하세요"
                 )
 
                 IconButton(
@@ -176,34 +179,67 @@ private fun ProjectList(projectStatusState: ProjectStatusState, onEvent: (Projec
             }
 
             // 프로젝트 목록 TODO: 목록 조회 기능 생기면 구현, 임시로 1번 아이디 프로젝트만 생성해 상세 화면 이동하게 함
-            Spacer(modifier = Modifier.height(15.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                item {
-                    ProjectListItem(
-                        projectInfo = ProjectDTO.GetProjectResponse(
-                            projectName = "내부시스템",
-                            departmentName = "테이큰소프트-개발팀",
-                            managerName = "테스트원",
-                            businessExpense = 1000000,
-                            businessStartDate = "2025.09.01.",
-                            businessEndDate = "2025.09.30.",
-                            status = "진행",
-                            type = "내부"
-                        ),
-                        onClick = {
-                            onEvent(ProjectStatusEvent.SelectedProjectWith("PRJT_000000000000001"))
-                            navController.navigate("projectDetail")
-                        }
-                    )
-                }
+//            if (employeeEditState.dropDownMenu.departmentMenu.isEmpty()) {
+//                Box(
+//                    modifier = Modifier.fillMaxSize(),
+//                    contentAlignment = Alignment.Center
+//                ) {
+//                    Text(
+//                        text = "조회된 결과가 없습니다",
+//                        color = TextGray,
+//                        fontSize = 15.sp
+//                    )
+//                }
+//            }
+//            else {
+                Spacer(modifier = Modifier.height(15.dp))
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    item {
+                        ProjectListItem(
+                            projectInfo = ProjectDTO.GetProjectResponse(
+                                projectName = "차세대 모니터링 시스템 구축",
+                                departmentName = "개발팀",
+                                managerName = "관리자",
+                                businessExpense = 75000000,
+                                businessStartDate = "2025-08-01",
+                                businessEndDate = "2026-01-31",
+                                status = "진행",
+                                type = "내부"
+                            ),
+                            onClick = {
+                                onEvent(ProjectStatusEvent.SelectedProjectWith("PRJT_000000000000001"))
+                                navController.navigate("projectDetail")
+                            }
+                        )
+                    }
 
-                item {
-                    Spacer(Modifier.height(15.dp))
+                    item {
+                        ProjectListItem(
+                            projectInfo = ProjectDTO.GetProjectResponse(
+                                projectName = "AI 기반 데이터 분석 고도화 과제",
+                                departmentName = "기획팀",
+                                managerName = "홍길둥",
+                                businessExpense = 300000000,
+                                businessStartDate = "2026-01-01",
+                                businessEndDate = "2027-12-31",
+                                status = "진행",
+                                type = "국가과제"
+                            ),
+                            onClick = {
+                                onEvent(ProjectStatusEvent.SelectedProjectWith("PRJT_000000000000002ㅁ"))
+                                navController.navigate("projectDetail")
+                            }
+                        )
+                    }
+
+                    item {
+                        Spacer(Modifier.height(15.dp))
+                    }
                 }
-            }
+//            }
         }
     }
 }
@@ -221,9 +257,9 @@ private fun ProjectListItem(projectInfo: ProjectDTO.GetProjectResponse, onClick:
         Spacer(modifier = Modifier.height(12.dp))
         ProjectTypeStatusBar(projectInfo.type, projectInfo.status)
         TwoInfoBar(projectInfo.projectName, "")
-        TwoInfoBar(projectInfo.departmentName, projectInfo.managerName)
-        TwoInfoBar(projectInfo.businessExpense.toString(), "")
-        TwoInfoBar("${projectInfo.businessStartDate} ~ ${projectInfo.businessEndDate}", "")
+        TwoInfoBar(projectInfo.departmentName, projectInfo.managerName, fontSize = 15.sp)
+        TwoInfoBar("${"%,d".format(projectInfo.businessExpense ?: 0)}원", "", fontSize = 14.sp)
+        TwoInfoBar("${projectInfo.businessStartDate} ~ ${projectInfo.businessEndDate}", "", fontSize = 14.sp, color = TextGray)
         Spacer(modifier = Modifier.height(14.dp))
     }
 }
@@ -247,7 +283,8 @@ private fun ProjectTypeStatusBar(type: String, status: String) {
             text = type,
             modifier = Modifier
                 .background(color = MiddleBlue.copy(alpha = 0.3f), shape = RoundedCornerShape(20.dp))
-                .padding(horizontal = 15.dp, vertical = 3.dp)
+                .padding(horizontal = 15.dp, vertical = 3.dp),
+            fontSize = 14.sp
         )
 
         Text(
@@ -255,7 +292,8 @@ private fun ProjectTypeStatusBar(type: String, status: String) {
             color = statusColor,
             modifier = Modifier
                 .border(color = statusColor, width = 0.5.dp, shape = RoundedCornerShape(90.dp))
-                .padding(horizontal = 15.dp, vertical = 3.dp)
+                .padding(horizontal = 15.dp, vertical = 3.dp),
+            fontSize = 14.sp
         )
     }
 }
@@ -280,14 +318,14 @@ private fun ProjectSearchBottomSheet(projectStatusState: ProjectStatusState, onE
         ) {
             TwoLineDropdownEditBar(
                 name = "연도",
-                options = listOf("전체", "2025", "2024", "2023", "2022", "2021"),   // TODO: 웹 확인 후 옵션 변경 필요
+                options = listOf("전체", "2025", "2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016"),
                 selected = projectStatusState.selectedYear,
                 onSelected = { onEvent(ProjectStatusEvent.SelectedSearchFilterWith(ProjectStatusField.YEAR, it)) }
             )
 
             TwoLineDropdownEditBar(
                 name = "월",
-                options = listOf("전체", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"),
+                options = listOf("전체", "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"),
                 selected = projectStatusState.selectedMonth,
                 onSelected = { onEvent(ProjectStatusEvent.SelectedSearchFilterWith(ProjectStatusField.MONTH, it)) }
             )

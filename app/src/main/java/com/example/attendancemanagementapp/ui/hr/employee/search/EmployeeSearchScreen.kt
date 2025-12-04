@@ -1,8 +1,10 @@
 package com.example.attendancemanagementapp.ui.hr.employee.search
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -13,6 +15,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -37,6 +41,7 @@ import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeTarget
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
+import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.util.rememberOnce
 
@@ -48,13 +53,13 @@ fun EmployeeSearchScreen(navController: NavController, employeeViewModel: Employ
     val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
     val onEvent = employeeViewModel::onSearchEvent
-    val employeeSearchUiState by employeeViewModel.employeeSearchState.collectAsState()
+    val employeeSearchState by employeeViewModel.employeeSearchState.collectAsState()
 
     var openBottomSheet by remember { mutableStateOf(false) }   // 직원 정보 바텀 시트 열림 상태
 
     if (openBottomSheet) {
         EmployeeInfoBottomSheet(
-            employeeInfo = employeeSearchUiState.employeeInfo,
+            employeeInfo = employeeSearchState.employeeInfo,
             onDismiss = { openBottomSheet = false }
         )
     }
@@ -77,7 +82,7 @@ fun EmployeeSearchScreen(navController: NavController, employeeViewModel: Employ
         ) {
             SearchBar(
                 searchState = SearchState(
-                    value = employeeSearchUiState.searchText,
+                    value = employeeSearchState.searchText,
                     onValueChange = { onEvent(EmployeeSearchEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
                         // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
@@ -90,29 +95,51 @@ fun EmployeeSearchScreen(navController: NavController, employeeViewModel: Employ
                 hint = "직원명"
             )
 
-            Spacer(Modifier.height(15.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                employeeSearchUiState.employees.forEach { employeeInfo ->
-                    item {
-                        EmployeeInfoItem(
-                            name = employeeInfo.name,
-                            deptGradeTitle = formatDeptGradeTitle(employeeInfo.department, employeeInfo.grade, employeeInfo.title),
-                            onClick = {
-                                onEvent(EmployeeSearchEvent.SelectedEmployeeWith(EmployeeTarget.SEARCH, employeeInfo.id))
-                                openBottomSheet = true
-                            }
-                        )
-                    }
-                }
-
-                item {
-                    Spacer(Modifier.height(5.dp))
+            if (employeeSearchState.employees.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "조회된 결과가 없습니다",
+                        color = TextGray,
+                        fontSize = 15.sp
+                    )
                 }
             }
+            else {
+                Spacer(Modifier.height(15.dp))
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    employeeSearchState.employees.forEach { employeeInfo ->
+                        item {
+                            EmployeeInfoItem(
+                                name = employeeInfo.name,
+                                deptGradeTitle = formatDeptGradeTitle(
+                                    employeeInfo.department,
+                                    employeeInfo.grade,
+                                    employeeInfo.title
+                                ),
+                                onClick = {
+                                    onEvent(
+                                        EmployeeSearchEvent.SelectedEmployeeWith(
+                                            EmployeeTarget.SEARCH,
+                                            employeeInfo.id
+                                        )
+                                    )
+                                    openBottomSheet = true
+                                }
+                            )
+                        }
+                    }
 
+                    item {
+                        Spacer(Modifier.height(5.dp))
+                    }
+                }
+            }
         }
     }
 }

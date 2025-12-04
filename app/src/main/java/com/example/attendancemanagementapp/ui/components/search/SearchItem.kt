@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -46,12 +47,13 @@ import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.LightBlue
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.MiddleBlue
+import com.example.attendancemanagementapp.ui.theme.TextGray
 
 /* 검색바 */
 @Composable
-fun SearchBar(searchState: SearchState, hint: String = "검색어를 입력하세요") {
+fun SearchBar(modifier: Modifier = Modifier.fillMaxWidth(), searchState: SearchState, hint: String = "검색어를 입력하세요") {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
@@ -173,33 +175,47 @@ fun SearchCommonCodeDialog(
         ) {
             CategorySearchBar(codeSearchState = codeSearchState)
 
-            Spacer(Modifier.height(15.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                state = listState
-            ) {
-                items(commonCodes) { item ->
-                    CodeInfoItem(
-                        upperCodeInfo = item,
-                        onClick = {
-                            onClickItem(item)
-                            onDismiss()
-                        }
+            if (commonCodes.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "조회된 결과가 없습니다",
+                        color = TextGray,
+                        fontSize = 15.sp
                     )
                 }
-
-                if (isLoading) {
-                    item {
-                        Box(
-                            Modifier.fillMaxWidth().padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) { CircularProgressIndicator() }
+            }
+            else {
+                Spacer(Modifier.height(15.dp))
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    state = listState
+                ) {
+                    items(commonCodes) { item ->
+                        CodeInfoItem(
+                            upperCodeInfo = item,
+                            onClick = {
+                                onClickItem(item)
+                                onDismiss()
+                            }
+                        )
                     }
-                }
 
-                item {
-                    Spacer(Modifier.height(5.dp))
+                    if (isLoading) {
+                        item {
+                            Box(
+                                Modifier.fillMaxWidth().padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) { CircularProgressIndicator() }
+                        }
+                    }
+
+                    item {
+                        Spacer(Modifier.height(5.dp))
+                    }
                 }
             }
         }

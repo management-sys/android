@@ -39,10 +39,16 @@ import com.example.attendancemanagementapp.ui.hr.employee.manage.EmployeeManageS
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeSearchScreen
 import com.example.attendancemanagementapp.ui.login.LoginScreen
 import com.example.attendancemanagementapp.ui.login.LoginViewModel
+import com.example.attendancemanagementapp.ui.meeting.MeetingViewModel
+import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddScreen
 import com.example.attendancemanagementapp.ui.mypage.MyPageScreen
 import com.example.attendancemanagementapp.ui.mypage.MyPageViewModel
 import com.example.attendancemanagementapp.ui.project.ProjectViewModel
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddScreen
+import com.example.attendancemanagementapp.ui.project.detail.ProjectDetailScreen
+import com.example.attendancemanagementapp.ui.meeting.detail.MeetingDetailScreen
+import com.example.attendancemanagementapp.ui.project.personnel.ProjectPersonnelScreen
+import com.example.attendancemanagementapp.ui.project.status.ProjectStatusScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -63,6 +69,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
     val loginViewModel: LoginViewModel = hiltViewModel()
     val myPageViewModel: MyPageViewModel = hiltViewModel()
     val projectViewModel: ProjectViewModel = hiltViewModel()
+    val meetingViewModel: MeetingViewModel = hiltViewModel()
 
     val logoutFlag by tokenDataStore.logoutFlagFlow.collectAsState(initial = false)
 
@@ -82,7 +89,9 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
         attendanceViewModel.uiEffect,
         loginViewModel.uiEffect,
         myPageViewModel.uiEffect,
-        tokenDataStore.uiEffect
+        tokenDataStore.uiEffect,
+        projectViewModel.uiEffect,
+        meetingViewModel.uiEffect
     )
 
     BasicDrawer(
@@ -120,7 +129,13 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
                 composable("departmentDetail") { DepartmentDetailScreen(navController, departmentViewModel) }   // 부서 상세 화면
                 composable("departmentManage") { DepartmentManageScreen(navController, departmentViewModel) }   // 부서 관리 화면
 
-                composable("projectAdd") { ProjectAddScreen(navController, projectViewModel) }  // 프로젝트 등록 화면
+                composable("projectAdd") { ProjectAddScreen(navController, projectViewModel) }                          // 프로젝트 등록 화면
+                composable("projectDetail") { ProjectDetailScreen(navController, projectViewModel, meetingViewModel) }  // 프로젝트 상세 화면
+                composable("projectPersonnel") { ProjectPersonnelScreen(navController, projectViewModel) }              // 프로젝트 투입 현황 화면
+                composable("projectStatus") { ProjectStatusScreen(navController, projectViewModel) }                    // 프로젝트 현황 화면
+
+                composable("meetingAdd") { MeetingAddScreen(navController, meetingViewModel) }          // 회의록 등록 화면
+                composable("meetingDetail") { MeetingDetailScreen(navController, meetingViewModel) }    // 회의록 상세 화면
             }
         }
     }

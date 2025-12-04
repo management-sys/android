@@ -504,7 +504,7 @@ private fun SalaryInfoCard(salaries: List<EmployeeDTO.SalaryInfo>) {
                             fontSize = 16.sp
                         )
                         Text(
-                            text = "${String.format(Locale.getDefault(), "%,d", salary.amount)}원",
+                            text = "${"%,d".format(salary.amount)}원",
                             fontSize = 16.sp
                         )
                     }
