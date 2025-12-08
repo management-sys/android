@@ -79,6 +79,10 @@ import com.example.attendancemanagementapp.ui.theme.Schedule_Yellow
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.theme.TodayBlockColor
 import com.example.attendancemanagementapp.ui.theme.YearMonthBtn
+import com.example.attendancemanagementapp.util.formatDateTime
+import com.example.attendancemanagementapp.util.formatDateYY
+import com.example.attendancemanagementapp.util.formatShowDateTime
+import com.example.attendancemanagementapp.util.formatTime
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -179,11 +183,10 @@ private fun ScheduleItem(scheduleInfo: ScheduleInfo) {
         else -> Color.Black
     }
 
-    val styledText = buildAnnotatedString {
-        withStyle(style = SpanStyle(color = color, fontWeight = FontWeight.SemiBold)) {
-            append("[${scheduleInfo.type}]")
-        }
-        append("  ${scheduleInfo.title} (${scheduleInfo.employeeName} ${scheduleInfo.employeeGrade})")
+    val dateTime = if (scheduleInfo.startDateTime.substring(0, 10) == scheduleInfo.endDateTime.substring(0, 10)) {
+        "${formatTime(scheduleInfo.startDateTime)} ~ ${formatTime(scheduleInfo.endDateTime)}"
+    } else {
+        "${formatShowDateTime(scheduleInfo.startDateTime)} ~ ${formatShowDateTime(scheduleInfo.endDateTime)}"
     }
 
     Card(
@@ -196,12 +199,31 @@ private fun ScheduleItem(scheduleInfo: ScheduleInfo) {
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) { /* TODO: 일정 종류에 따라 이동 화면 다르게 조회 */ },
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
             Text(
-                text = styledText,
-                fontSize = 15.sp
+                text = "[${scheduleInfo.type}]",
+                fontSize = 15.sp,
+                color = color,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(end = 10.dp)
             )
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = "${scheduleInfo.title} (${scheduleInfo.employeeName} ${scheduleInfo.employeeGrade})",
+                    fontSize = 15.sp
+                )
+
+                Text(
+                    text = dateTime,
+                    fontSize = 14.sp,
+                    color = TextGray
+                )
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface MeetingService {
@@ -18,6 +19,13 @@ interface MeetingService {
     @GET("/api/mtgs/{mtgRcordId}")
     suspend fun getMeeting(
         @Path("mtgRcordId") meetingId: Long
+    ): MeetingDTO.GetMeetingResponse
+
+    // 회의록 수정
+    @PUT("/api/mtgs/{mtgRcordId}")
+    suspend fun updateMeeting(
+        @Path("mtgRcordId") meetingId: Long,
+        @Body request: MeetingDTO.UpdateMeetingRequest
     ): MeetingDTO.GetMeetingResponse
 
     // 회의록 삭제

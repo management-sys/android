@@ -83,7 +83,7 @@ fun ProjectDetailScreen(navController: NavController, projectViewModel: ProjectV
         floatingActionButton = {
             BasicFloatingButton(
                 onClick = {
-                    meetingViewModel.onAddEvent(MeetingAddEvent.InitWith(projectDetailState.projectInfo.projectId, projectDetailState.projectInfo.projectName, projectDetailState.projectInfo.assignedPersonnels ?: emptyList()))
+                    meetingViewModel.onAddEvent(MeetingAddEvent.InitWith(projectDetailState.projectInfo.projectId, projectDetailState.projectInfo.projectName))
                     navController.navigate("meetingAdd")
                 }
             )

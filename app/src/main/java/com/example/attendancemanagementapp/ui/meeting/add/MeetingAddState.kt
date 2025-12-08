@@ -7,6 +7,8 @@ import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 data class MeetingAddState(
     val inputData: MeetingDTO.AddMeetingRequest = MeetingDTO.AddMeetingRequest(),   // 입력 데이터
     val projectName: String = "",                                                   // 프로젝트명
-    val assignedPersonnels: List<AssignedPersonnelInfo>? = emptyList(),             // 투입 인력 리스트
     val employeeState: EmployeeSearchState = EmployeeSearchState(),                 // 직원 검색 관련 상태
 )
+
+// 회의록 상세 화면 내용 없는 것들 '없음'으로 표시
+// 회의록 등록, 수정 화면 직원 검색 안됨

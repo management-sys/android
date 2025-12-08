@@ -47,6 +47,7 @@ import com.example.attendancemanagementapp.ui.project.ProjectViewModel
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddScreen
 import com.example.attendancemanagementapp.ui.project.detail.ProjectDetailScreen
 import com.example.attendancemanagementapp.ui.meeting.detail.MeetingDetailScreen
+import com.example.attendancemanagementapp.ui.meeting.edit.MeetingEditScreen
 import com.example.attendancemanagementapp.ui.project.personnel.ProjectPersonnelScreen
 import com.example.attendancemanagementapp.ui.project.status.ProjectStatusScreen
 import kotlinx.coroutines.launch
@@ -136,6 +137,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
 
                 composable("meetingAdd") { MeetingAddScreen(navController, meetingViewModel) }          // 회의록 등록 화면
                 composable("meetingDetail") { MeetingDetailScreen(navController, meetingViewModel) }    // 회의록 상세 화면
+                composable("meetingEdit") { MeetingEditScreen(navController, meetingViewModel) }        // 회의록 수정 화면
             }
         }
     }

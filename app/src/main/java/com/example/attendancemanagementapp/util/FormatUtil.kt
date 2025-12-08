@@ -31,10 +31,21 @@ fun formatDateTime(date: String?): String {
     return if (date.isNullOrBlank()) "" else "${date}T00:00:00"
 }
 
-/* 날짜 형식 포맷: yyyy-MM-dd */
-fun formatDate(dateTime: String): String {
+/* 날짜 형식 포맷: yy-MM-dd */
+fun formatDateYY(dateTime: String): String {
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val dateFormatter = DateTimeFormatter.ofPattern("yy-MM-dd")
+
+    if (dateTime.isBlank()) return ""
+    return runCatching {
+        LocalDateTime.parse(dateTime, dateTimeFormatter).format(dateFormatter)
+    }.getOrDefault("")
+}
+
+/* 날짜 형식 포맷: MM월 dd일 HH:mm */
+fun formatShowDateTime(dateTime: String): String {
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+    val dateFormatter = DateTimeFormatter.ofPattern("MM월 dd일 HH:mm")
 
     if (dateTime.isBlank()) return ""
     return runCatching {

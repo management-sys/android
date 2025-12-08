@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.meeting.add
+package com.example.attendancemanagementapp.ui.meeting.edit
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -28,7 +28,6 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,7 +45,6 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,8 +59,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -72,7 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.MeetingDTO
-import com.example.attendancemanagementapp.data.dto.MeetingDTO.AddAttendeesInfo
+import com.example.attendancemanagementapp.data.dto.MeetingDTO.AttendeesInfo
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDatePickerDialog
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
@@ -84,6 +80,9 @@ import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.meeting.MeetingViewModel
+import com.example.attendancemanagementapp.ui.meeting.add.AttendeeTypeDialog
+import com.example.attendancemanagementapp.ui.meeting.add.ExpenseField
+import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddField
 import com.example.attendancemanagementapp.ui.project.add.EmployeeItem
 import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Red
 import com.example.attendancemanagementapp.ui.theme.BackgroundColor
@@ -96,11 +95,11 @@ import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-/* 회의록 등록 화면 */
+/* 회의록 수정 화면 */
 @Composable
-fun MeetingAddScreen(navController: NavController, meetingViewModel: MeetingViewModel) {
-    val onEvent = meetingViewModel::onAddEvent
-    val meetingAddState by meetingViewModel.meetingAddState.collectAsState()
+fun MeetingEditScreen(navController: NavController, meetingViewModel: MeetingViewModel) {
+    val onEvent = meetingViewModel::onEditEvent
+    val meetingEditState by meetingViewModel.meetingEditState.collectAsState()
 
     val tabs = listOf("회의록 정보", "참석자", "회의비")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
@@ -109,7 +108,7 @@ fun MeetingAddScreen(navController: NavController, meetingViewModel: MeetingView
     Scaffold(
         topBar = {
             BasicTopBar(
-                title = "회의록 등록",
+                title = "회의록 수정",
                 onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         }
@@ -155,8 +154,8 @@ fun MeetingAddScreen(navController: NavController, meetingViewModel: MeetingView
                     ) {
                         when (page) {
                             0 -> {  // 회의록 정보
-                                AddMeetingCard(
-                                    meetingAddState = meetingAddState,
+                                EditMeetingCard(
+                                    meetingEditState = meetingEditState,
                                     onEvent = onEvent
                                 )
 
@@ -172,7 +171,7 @@ fun MeetingAddScreen(navController: NavController, meetingViewModel: MeetingView
                             }
                             1 -> {  // 참석자
                                 AttendeeEditCard(
-                                    meetingAddState = meetingAddState,
+                                    meetingEditState = meetingEditState,
                                     onEvent = onEvent
                                 )
 
@@ -193,7 +192,7 @@ fun MeetingAddScreen(navController: NavController, meetingViewModel: MeetingView
                             }
                             2 -> {  // 회의비
                                 ExpenseEditCard(
-                                    expenses = meetingAddState.inputData.expenses,
+                                    expenses = meetingEditState.inputData.expenses,
                                     onEvent = onEvent
                                 )
 
@@ -207,8 +206,8 @@ fun MeetingAddScreen(navController: NavController, meetingViewModel: MeetingView
                                     )
 
                                     BasicButton(
-                                        name = "저장",
-                                        onClick = { onEvent(MeetingAddEvent.ClickedAdd) }
+                                        name = "수정",
+                                        onClick = { onEvent(MeetingEditEvent.ClickedUpdate) }
                                     )
                                 }
                             }
@@ -224,11 +223,11 @@ fun MeetingAddScreen(navController: NavController, meetingViewModel: MeetingView
     }
 }
 
-/* 회의록 등록 카드 */
+/* 회의록 수정 카드 */
 @Composable
-private fun AddMeetingCard(
-    meetingAddState: MeetingAddState,
-    onEvent: (MeetingAddEvent) -> Unit
+private fun EditMeetingCard(
+    meetingEditState: MeetingEditState,
+    onEvent: (MeetingEditEvent) -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -241,41 +240,41 @@ private fun AddMeetingCard(
         ) {
             TwoLineEditBar(
                 name = "프로젝트명",
-                value = meetingAddState.projectName,
+                value = meetingEditState.projectName,
                 enabled = false,
                 isRequired = true
             )
 
             TwoLineEditBar(
                 name = "회의록 제목",
-                value = meetingAddState.inputData.title,
+                value = meetingEditState.inputData.title,
                 isRequired = true,
-                onValueChange = { onEvent(MeetingAddEvent.ChangedValueWith(MeetingAddField.TITLE, it)) }
+                onValueChange = { onEvent(MeetingEditEvent.ChangedValueWith(MeetingAddField.TITLE, it)) }
             )
 
             StartEndDateTimeEditItem(
-                startDateTime = meetingAddState.inputData.startDate,
-                endDateTime = meetingAddState.inputData.endDate,
+                startDateTime = meetingEditState.inputData.startDate,
+                endDateTime = meetingEditState.inputData.endDate,
                 onEvent = onEvent
             )
 
             TwoLineEditBar(
                 name = "장소",
-                value = meetingAddState.inputData.place,
+                value = meetingEditState.inputData.place,
                 isRequired = true,
-                onValueChange = { onEvent(MeetingAddEvent.ChangedValueWith(MeetingAddField.PLACE, it)) }
+                onValueChange = { onEvent(MeetingEditEvent.ChangedValueWith(MeetingAddField.PLACE, it)) }
             )
 
             TwoLineEditBar(
                 name = "회의내용",
-                value = meetingAddState.inputData.content ?: "",
-                onValueChange = { onEvent(MeetingAddEvent.ChangedValueWith(MeetingAddField.CONTENT, it)) }
+                value = meetingEditState.inputData.content ?: "",
+                onValueChange = { onEvent(MeetingEditEvent.ChangedValueWith(MeetingAddField.CONTENT, it)) }
             )
 
             TwoLineEditBar(
                 name = "비고",
-                value = meetingAddState.inputData.remark ?: "",
-                onValueChange = { onEvent(MeetingAddEvent.ChangedValueWith(MeetingAddField.REMARK, it)) }
+                value = meetingEditState.inputData.remark ?: "",
+                onValueChange = { onEvent(MeetingEditEvent.ChangedValueWith(MeetingAddField.REMARK, it)) }
             )
         }
     }
@@ -287,7 +286,7 @@ private fun AddMeetingCard(
 private fun StartEndDateTimeEditItem(
     startDateTime: String,
     endDateTime: String,
-    onEvent: (MeetingAddEvent) -> Unit
+    onEvent: (MeetingEditEvent) -> Unit
 ) {
     var openStartDate by rememberSaveable { mutableStateOf(false) }
     var openEndDate by rememberSaveable { mutableStateOf(false) }
@@ -298,7 +297,7 @@ private fun StartEndDateTimeEditItem(
         BasicDatePickerDialog(
             initialDateTime = startDateTime,
             onDismiss = { openStartDate = false },
-            onConfirm = { onEvent(MeetingAddEvent.ChangedValueWith(MeetingAddField.START, it)) }
+            onConfirm = { onEvent(MeetingEditEvent.ChangedValueWith(MeetingAddField.START, it)) }
         )
     }
 
@@ -306,7 +305,7 @@ private fun StartEndDateTimeEditItem(
         BasicDatePickerDialog(
             initialDateTime = endDateTime,
             onDismiss = { openEndDate = false },
-            onConfirm = { onEvent(MeetingAddEvent.ChangedValueWith(MeetingAddField.END, it)) }
+            onConfirm = { onEvent(MeetingEditEvent.ChangedValueWith(MeetingAddField.END, it)) }
         )
     }
 
@@ -314,7 +313,7 @@ private fun StartEndDateTimeEditItem(
         BasicTimePickerDialog(
             initialDateTime = startDateTime,
             onDismiss = { openStartTime = false },
-            onConfirm = { onEvent(MeetingAddEvent.ChangedValueWith(MeetingAddField.START, it)) }
+            onConfirm = { onEvent(MeetingEditEvent.ChangedValueWith(MeetingAddField.START, it)) }
         )
     }
 
@@ -322,7 +321,7 @@ private fun StartEndDateTimeEditItem(
         BasicTimePickerDialog(
             initialDateTime = endDateTime,
             onDismiss = { openEndTime = false },
-            onConfirm = { onEvent(MeetingAddEvent.ChangedValueWith(MeetingAddField.END, it)) }
+            onConfirm = { onEvent(MeetingEditEvent.ChangedValueWith(MeetingAddField.END, it)) }
         )
     }
 
@@ -472,8 +471,8 @@ private fun StartEndDateTimeEditItem(
 /* 참석자 정보 수정 카드 */
 @Composable
 private fun AttendeeEditCard(
-    meetingAddState: MeetingAddState,
-    onEvent: (MeetingAddEvent) -> Unit
+    meetingEditState: MeetingEditState,
+    onEvent: (MeetingEditEvent) -> Unit
 ) {
     var openSelectType by rememberSaveable { mutableStateOf(false) }
     var openSelectInternalAttendee by rememberSaveable { mutableStateOf(false) }
@@ -489,7 +488,7 @@ private fun AttendeeEditCard(
 
     if (openSelectInternalAttendee) {
         EmployeeBottomSheet(
-            meetingAddState = meetingAddState,
+            meetingEditState = meetingEditState,
             onEvent = onEvent,
             onDismiss = { openSelectInternalAttendee = false }
         )
@@ -535,10 +534,10 @@ private fun AttendeeEditCard(
                 }
             }
 
-            meetingAddState.inputData.attendees.forEachIndexed { idx, attendee ->
+            meetingEditState.inputData.attendees.forEachIndexed { idx, attendee ->
                 AttendeeItem(
                     attendee = attendee,
-                    onClickDelete = { onEvent(MeetingAddEvent.ClickedDeleteAttendeeWith(idx)) }
+                    onClickDelete = { onEvent(MeetingEditEvent.ClickedDeleteAttendeeWith(idx)) }
                 )
                 Spacer(modifier = Modifier.height(1.dp))
             }
@@ -546,220 +545,10 @@ private fun AttendeeEditCard(
     }
 }
 
-/* 참석자 구분 선택 디알로그 */
-@Composable
-fun AttendeeTypeDialog(
-    onDismiss: () -> Unit,
-    onClickConfirm: () -> Unit,
-    onClickDismiss: () -> Unit = onDismiss
-) {
-    AlertDialog(
-        title = {
-            Text(
-                text = "참석자 구분을 선택해주세요",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        },
-        onDismissRequest = {
-            onDismiss()
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onClickConfirm()
-                    onDismiss()
-                }
-            ) {
-                Text(
-                    text = "내부",
-                    fontSize = 16.sp,
-                    color = MainBlue,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onClickDismiss()
-                    onDismiss()
-                }
-            ) {
-                Text(
-                    text = "외부",
-                    fontSize = 16.sp,
-                    color = Color.Red,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        },
-        containerColor = Color.White
-    )
-}
-
-/* 직원 목록 바텀 시트 */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun EmployeeBottomSheet(
-    meetingAddState: MeetingAddState,
-    onEvent: (MeetingAddEvent) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val focusManager = LocalFocusManager.current                        // 포커스 관리
-    val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
-
-    val sheetState = rememberModalBottomSheetState()
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(listState) {
-        snapshotFlow {
-            val info = listState.layoutInfo
-            val lastVisibleIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
-            val total = info.totalItemsCount
-            lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
-        }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !meetingAddState.employeeState.paginationState.isLoading && meetingAddState.employeeState.paginationState.currentPage < meetingAddState.employeeState.paginationState.totalPage) {
-                onEvent(MeetingAddEvent.LoadNextPage)
-            }
-        }
-    }
-
-    ModalBottomSheet(
-        modifier = Modifier.fillMaxSize(),
-        onDismissRequest = { onDismiss() },
-        sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
-        containerColor = BackgroundColor
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            SearchBar(
-                modifier = Modifier.fillMaxWidth(),
-                searchState = SearchState(
-                    value = meetingAddState.employeeState.searchText,
-                    onValueChange = { onEvent(MeetingAddEvent.ChangedSearchValueWith(it)) },
-                    onClickSearch = {
-                        if (meetingAddState.employeeState.paginationState.currentPage <= meetingAddState.employeeState.paginationState.totalPage) {
-                            onEvent(MeetingAddEvent.ClickedSearch)
-                            keyboardController?.hide()
-                            focusManager.clearFocus(force = true)
-                        }
-                    },
-                    onClickInit = { onEvent(MeetingAddEvent.ClickedInitSearch) }
-                ),
-                hint = "직원명"
-            )
-
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                state = listState
-            ) {
-                items(meetingAddState.employeeState.employees) { item ->
-                    val isChecked = meetingAddState.inputData.attendees.any { it.userId == item.userId }
-                    EmployeeItem(
-                        info = item,
-                        isChecked = isChecked,
-                        onChecked = { onEvent(MeetingAddEvent.CheckedAttendeeWith(it, item)) }
-                    )
-                }
-
-                if (meetingAddState.employeeState.paginationState.isLoading) {
-                    item {
-                        Box(
-                            Modifier.fillMaxWidth().padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) { CircularProgressIndicator() }
-                    }
-                }
-
-                item {
-                    Spacer(Modifier.height(5.dp))
-                }
-            }
-        }
-    }
-}
-
-/* 외부 직원 등록 바텀 시트 */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ExternalAttendeeBottomSheet(
-    onEvent: (MeetingAddEvent) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var newAttendee by remember { mutableStateOf(AddAttendeesInfo(
-        type = "O",
-        name = "",
-        grade = "",
-        department = "",
-        userId = null
-    )) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    ModalBottomSheet(
-        modifier = Modifier.fillMaxSize(),
-        onDismissRequest = { onDismiss() },
-        sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
-        containerColor = BackgroundColor
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            Text(
-                text = "외부 참석자 정보를 입력해주세요.",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            TwoLineEditBar(
-                name = "이름",
-                value = newAttendee.name ?: "",
-                onValueChange = { newAttendee = newAttendee.copy(name = it) },
-                isRequired = true
-            )
-
-            TwoLineEditBar(
-                name = "소속",
-                value = newAttendee.department ?: "",
-                onValueChange = { newAttendee = newAttendee.copy(department = it) },
-                isRequired = true
-            )
-
-            TwoLineEditBar(
-                name = "직위",
-                value = newAttendee.grade ?: "",
-                onValueChange = { newAttendee = newAttendee.copy(grade = it) },
-                isRequired = true
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            BasicLongButton(
-                name = "추가",
-                onClick = {
-                    onEvent(MeetingAddEvent.ClickedAddExternalAttendeeWith(newAttendee))
-                    onDismiss()
-                },
-                enabled = newAttendee.name!!.isNotBlank() && newAttendee.department!!.isNotBlank() && newAttendee.grade!!.isNotBlank()
-            )
-        }
-    }
-}
-
 /* 참석자 목록 아이템 */
 @Composable
 private fun AttendeeItem(
-    attendee: AddAttendeesInfo,
+    attendee: MeetingDTO.AttendeesInfo,
     onClickDelete: () -> Unit
 ) {
     Card(
@@ -815,8 +604,8 @@ private fun AttendeeItem(
 /* 회의비 정보 수정 카드 */
 @Composable
 private fun ExpenseEditCard(
-    expenses: List<MeetingDTO.AddExpensesInfo>,
-    onEvent: (MeetingAddEvent) -> Unit
+    expenses: List<MeetingDTO.ExpensesInfo>,
+    onEvent: (MeetingEditEvent) -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -841,7 +630,7 @@ private fun ExpenseEditCard(
                 )
 
                 IconButton(
-                    onClick = { onEvent(MeetingAddEvent.ClickedAddExpense) }
+                    onClick = { onEvent(MeetingEditEvent.ClickedAddExpense) }
                 ) {
                     Icon(
                         imageVector = Icons.Default.AddCircle,
@@ -871,7 +660,7 @@ private fun ExpenseEditCard(
                         OutlinedTextField(
                             modifier = Modifier.weight(0.6f),
                             value = expense.type,
-                            onValueChange = { onEvent(MeetingAddEvent.ChangedExpenseWith(ExpenseField.TYPE, it, idx)) },
+                            onValueChange = { onEvent(MeetingEditEvent.ChangedExpenseWith(ExpenseField.TYPE, it, idx)) },
                             singleLine = true,
                             shape = RoundedCornerShape(5.dp),
                             colors = OutlinedTextFieldDefaults.colors(
@@ -896,7 +685,7 @@ private fun ExpenseEditCard(
                             value = if (expense.amount == 0) "" else "${expense.amount}",
                             onValueChange = { newValue ->
                                 if (newValue.length <= 9 && newValue.matches(Regex("^[0-9]*$"))) {
-                                    onEvent(MeetingAddEvent.ChangedExpenseWith(ExpenseField.AMOUNT, newValue, idx))
+                                    onEvent(MeetingEditEvent.ChangedExpenseWith(ExpenseField.AMOUNT, newValue, idx))
                                 }
                             },
                             singleLine = true,
@@ -920,7 +709,7 @@ private fun ExpenseEditCard(
                         )
 
                         IconButton(
-                            onClick = { onEvent(MeetingAddEvent.ClickedDeleteExpenseWith(idx)) },
+                            onClick = { onEvent(MeetingEditEvent.ClickedDeleteExpenseWith(idx)) },
                             modifier = Modifier.weight(0.1f)
                         ) {
                             Icon(
@@ -931,6 +720,159 @@ private fun ExpenseEditCard(
                     }
                 }
             }
+        }
+    }
+}
+
+/* 직원 목록 바텀 시트 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EmployeeBottomSheet(
+    meetingEditState: MeetingEditState,
+    onEvent: (MeetingEditEvent) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val lastVisibleIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
+        }.distinctUntilChanged().collect { shouldLoad ->
+            if (shouldLoad && !meetingEditState.employeeState.paginationState.isLoading && meetingEditState.employeeState.paginationState.currentPage < meetingEditState.employeeState.paginationState.totalPage) {
+                onEvent(MeetingEditEvent.LoadNextPage)
+            }
+        }
+    }
+
+    ModalBottomSheet(
+        modifier = Modifier.fillMaxSize(),
+        onDismissRequest = { onDismiss() },
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+        containerColor = BackgroundColor
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            SearchBar(
+                modifier = Modifier.fillMaxWidth(),
+                searchState = SearchState(
+                    value = meetingEditState.employeeState.searchText,
+                    onValueChange = { onEvent(MeetingEditEvent.ChangedSearchValueWith(it)) },
+                    onClickSearch = {
+                        if (meetingEditState.employeeState.paginationState.currentPage <= meetingEditState.employeeState.paginationState.totalPage) {
+                            onEvent(MeetingEditEvent.ClickedSearch) }
+                    },
+                    onClickInit = { onEvent(MeetingEditEvent.ClickedInitSearch) }
+                ),
+                hint = "직원명"
+            )
+
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                state = listState
+            ) {
+                items(meetingEditState.employeeState.employees) { item ->
+                    val isChecked = meetingEditState.inputData.attendees.any { it.userId == item.userId }
+                    EmployeeItem(
+                        info = item,
+                        isChecked = isChecked,
+                        onChecked = { onEvent(MeetingEditEvent.CheckedAttendeeWith(it, item)) }
+                    )
+                }
+
+                if (meetingEditState.employeeState.paginationState.isLoading) {
+                    item {
+                        Box(
+                            Modifier.fillMaxWidth().padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) { CircularProgressIndicator() }
+                    }
+                }
+
+                item {
+                    Spacer(Modifier.height(5.dp))
+                }
+            }
+        }
+    }
+}
+
+/* 외부 직원 등록 바텀 시트 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExternalAttendeeBottomSheet(
+    onEvent: (MeetingEditEvent) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var newAttendee by remember { mutableStateOf(AttendeesInfo(
+        type = "O",
+        name = "",
+        grade = "",
+        department = "",
+        userId = null,
+        id = null
+    )) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        modifier = Modifier.fillMaxSize(),
+        onDismissRequest = { onDismiss() },
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+        containerColor = BackgroundColor
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            Text(
+                text = "외부 참석자 정보를 입력해주세요.",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            TwoLineEditBar(
+                name = "이름",
+                value = newAttendee.name ?: "",
+                onValueChange = { newAttendee = newAttendee.copy(name = it) },
+                isRequired = true
+            )
+
+            TwoLineEditBar(
+                name = "소속",
+                value = newAttendee.department ?: "",
+                onValueChange = { newAttendee = newAttendee.copy(department = it) },
+                isRequired = true
+            )
+
+            TwoLineEditBar(
+                name = "직위",
+                value = newAttendee.grade ?: "",
+                onValueChange = { newAttendee = newAttendee.copy(grade = it) },
+                isRequired = true
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            BasicLongButton(
+                name = "추가",
+                onClick = {
+                    onEvent(MeetingEditEvent.ClickedAddExternalAttendeeWith(newAttendee))
+                    onDismiss()
+                },
+                enabled = newAttendee.name!!.isNotBlank() && newAttendee.department!!.isNotBlank() && newAttendee.grade!!.isNotBlank()
+            )
         }
     }
 }

@@ -1,32 +1,43 @@
-package com.example.attendancemanagementapp.ui.meeting.add
+package com.example.attendancemanagementapp.ui.meeting.edit
 
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.dto.MeetingDTO
-import com.example.attendancemanagementapp.data.dto.MeetingDTO.AddAttendeesInfo
+import com.example.attendancemanagementapp.data.dto.MeetingDTO.AttendeesInfo
+import com.example.attendancemanagementapp.ui.meeting.add.ExpenseField
+import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddField
 
-object MeetingAddReducer {
-    fun reduce(s: MeetingAddState, e: MeetingAddEvent): MeetingAddState = when (e) {
-        is MeetingAddEvent.InitWith -> handleInit(e.projectId, e.projectName)
-        is MeetingAddEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
-        is MeetingAddEvent.ClickedAddExternalAttendeeWith -> handleClickedAddExternalAttendee(s, e.newAttendee)
-        MeetingAddEvent.ClickedAddExpense -> handleClickedAddExpense(s)
-        is MeetingAddEvent.ChangedExpenseWith -> handleChangedExpense(s, e.field, e.value, e.idx)
-        is MeetingAddEvent.ClickedDeleteExpenseWith -> handleClickedDeleteExpense(s, e.idx)
-        is MeetingAddEvent.CheckedAttendeeWith -> handleCheckedAttendee(s, e.checked, e.employee)
-        is MeetingAddEvent.ClickedDeleteAttendeeWith -> handleCheckedDeleteAttendee(s, e.idx)
-        is MeetingAddEvent.ChangedSearchValueWith -> handleChangedSearchValue(s, e.value)
-        MeetingAddEvent.ClickedInitSearch -> handleClickedSearchInit(s)
+object MeetingEditReducer {
+    fun reduce(s: MeetingEditState, e: MeetingEditEvent): MeetingEditState = when (e) {
+        is MeetingEditEvent.InitWith -> handleInit(e.data)
+        is MeetingEditEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
+        is MeetingEditEvent.ClickedAddExternalAttendeeWith -> handleClickedAddExternalAttendee(s, e.newAttendee)
+        MeetingEditEvent.ClickedAddExpense -> handleClickedAddExpense(s)
+        is MeetingEditEvent.ChangedExpenseWith -> handleChangedExpense(s, e.field, e.value, e.idx)
+        is MeetingEditEvent.ClickedDeleteExpenseWith -> handleClickedDeleteExpense(s, e.idx)
+        is MeetingEditEvent.CheckedAttendeeWith -> handleCheckedAttendee(s, e.checked, e.employee)
+        is MeetingEditEvent.ClickedDeleteAttendeeWith -> handleCheckedDeleteAttendee(s, e.idx)
+        is MeetingEditEvent.ChangedSearchValueWith -> handleChangedSearchValue(s, e.value)
+        MeetingEditEvent.ClickedInitSearch -> handleClickedSearchInit(s)
         else -> s
     }
 
     private fun handleInit(
-        projectId: String,
-        projectName: String
-    ): MeetingAddState {
-        return MeetingAddState(inputData = MeetingDTO.AddMeetingRequest(projectId = projectId), projectName = projectName)
+        data: MeetingDTO.GetMeetingResponse
+    ): MeetingEditState {
+        val initData = MeetingDTO.UpdateMeetingRequest(
+            startDate = data.startDate,
+            endDate = data.endDate,
+            attendees = data.attendees,
+            content = data.content,
+            expenses = data.expenses,
+            place = data.place,
+            remark = data.remark,
+            title = data.title
+        )
+        return MeetingEditState(inputData = initData, projectName = data.projectName, meetingId = data.id)
     }
 
-    private val meetingUpdaters: Map<MeetingAddField, (MeetingDTO.AddMeetingRequest, String) -> MeetingDTO.AddMeetingRequest> =
+    private val meetingUpdaters: Map<MeetingAddField, (MeetingDTO.UpdateMeetingRequest, String) -> MeetingDTO.UpdateMeetingRequest> =
         mapOf(
             MeetingAddField.TITLE   to { s, v -> s.copy(title = v) },
             MeetingAddField.START   to { s, v -> s.copy(startDate = v) },
@@ -37,35 +48,35 @@ object MeetingAddReducer {
         )
 
     private fun handleChangedValue(
-        state: MeetingAddState,
+        state: MeetingEditState,
         field: MeetingAddField,
         value: String
-    ): MeetingAddState {
+    ): MeetingEditState {
         val updater = meetingUpdaters[field] ?: return state
         return state.copy(inputData = updater(state.inputData, value))
     }
 
     private fun handleClickedAddExternalAttendee(
-        state: MeetingAddState,
-        newAttendee: AddAttendeesInfo
-    ): MeetingAddState {
+        state: MeetingEditState,
+        newAttendee: MeetingDTO.AttendeesInfo
+    ): MeetingEditState {
         return state.copy(inputData = state.inputData.copy(attendees = state.inputData.attendees + newAttendee))
     }
 
     private fun handleClickedAddExpense(
-        state: MeetingAddState
-    ): MeetingAddState {
+        state: MeetingEditState
+    ): MeetingEditState {
         return state.copy(inputData = state.inputData.copy(
-            expenses = state.inputData.expenses + MeetingDTO.AddExpensesInfo(0, "")
+            expenses = state.inputData.expenses + MeetingDTO.ExpensesInfo(0, null, "")
         ))
     }
 
     private fun handleChangedExpense(
-        state: MeetingAddState,
+        state: MeetingEditState,
         field: ExpenseField,
         value: String,
         idx: Int
-    ): MeetingAddState {
+    ): MeetingEditState {
         val type = if (field == ExpenseField.TYPE) value else state.inputData.expenses[idx].type
         val amount = if (field == ExpenseField.AMOUNT) value.filter(Char::isDigit).toInt() else state.inputData.expenses[idx].amount
         val updated = state.inputData.expenses.mapIndexed { i, s -> // 수정한 인덱스의 값을 입력한 값으로 변경
@@ -76,9 +87,9 @@ object MeetingAddReducer {
     }
 
     private fun handleClickedDeleteExpense(
-        state: MeetingAddState,
+        state: MeetingEditState,
         idx: Int
-    ): MeetingAddState {
+    ): MeetingEditState {
         val expenses = state.inputData.expenses
         val updated = expenses.toMutableList().apply { removeAt(idx) }
 
@@ -86,11 +97,11 @@ object MeetingAddReducer {
     }
 
     private fun handleCheckedAttendee(
-        state: MeetingAddState,
+        state: MeetingEditState,
         checked: Boolean,
         employee: EmployeeDTO.ManageEmployeesInfo
-    ): MeetingAddState {
-        val newAttendee = AddAttendeesInfo(type = "I", name = employee.name, grade = employee.grade, department = employee.department, userId = employee.userId)
+    ): MeetingEditState {
+        val newAttendee = AttendeesInfo(type = "I", name = employee.name, grade = employee.grade, department = employee.department, userId = employee.userId, id = null)
         val updatedList = if (checked) state.inputData.attendees + newAttendee else state.inputData.attendees - newAttendee
         val sortedList = updatedList.sortedBy { attendee -> state.employeeState.employees.indexOfFirst { it.userId == attendee.userId } }
 
@@ -98,9 +109,9 @@ object MeetingAddReducer {
     }
 
     private fun handleCheckedDeleteAttendee(
-        state: MeetingAddState,
+        state: MeetingEditState,
         idx: Int
-    ): MeetingAddState {
+    ): MeetingEditState {
         val attendees = state.inputData.attendees
         val updated = attendees.toMutableList().apply { removeAt(idx) }
 
@@ -108,15 +119,15 @@ object MeetingAddReducer {
     }
 
     private fun handleChangedSearchValue(
-        state: MeetingAddState,
+        state: MeetingEditState,
         value: String
-    ): MeetingAddState {
+    ): MeetingEditState {
         return state.copy(employeeState = state.employeeState.copy(searchText = value, paginationState = state.employeeState.paginationState.copy(currentPage = 0)))
     }
 
     private fun handleClickedSearchInit(
-        state: MeetingAddState
-    ): MeetingAddState {
+        state: MeetingEditState
+    ): MeetingEditState {
         return state.copy(employeeState = state.employeeState.copy(searchText = "", paginationState = state.employeeState.paginationState.copy(currentPage = 0)))
     }
 }

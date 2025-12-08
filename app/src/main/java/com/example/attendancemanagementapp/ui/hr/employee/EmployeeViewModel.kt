@@ -40,6 +40,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class EmployeeTarget { MANAGE, SEARCH }
+enum class EmployeeScreenType { ADD, EDIT }
 
 @HiltViewModel
 class EmployeeViewModel @Inject constructor(
@@ -50,10 +51,6 @@ class EmployeeViewModel @Inject constructor(
 ) : ViewModel() {
     companion object {
         private const val TAG = "EmployeeViewModel"
-    }
-
-    enum class EmployeeScreenType {
-        ADD, EDIT
     }
 
     private val _uiEffect = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)

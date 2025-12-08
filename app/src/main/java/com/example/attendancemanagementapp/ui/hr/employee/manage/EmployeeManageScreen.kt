@@ -61,9 +61,9 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
     LaunchedEffect(listState) {
         snapshotFlow {
             val info = listState.layoutInfo
-            val lastVisiblaIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val lastVisibleIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
             val total = info.totalItemsCount
-            lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
+            lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
             if (shouldLoad && !employeeManageState.paginationState.isLoading && employeeManageState.paginationState.currentPage < employeeManageState.paginationState.totalPage) {
                 employeeViewModel.getManageEmployees()

@@ -40,8 +40,8 @@ import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.TowLineInfoBar
-import com.example.attendancemanagementapp.ui.hr.employee.detail.EmployeeDetailEvent
 import com.example.attendancemanagementapp.ui.meeting.MeetingViewModel
+import com.example.attendancemanagementapp.ui.meeting.edit.MeetingEditEvent
 import com.example.attendancemanagementapp.util.formatDateRangeWithTime
 import com.example.attendancemanagementapp.util.rememberOnce
 
@@ -83,7 +83,7 @@ fun MeetingDetailScreen(navController: NavController, meetingViewModel: MeetingV
             modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
-            MeetingInfoCard(meetingInfo = meetingDetailState.meetingInfo)
+            MeetingInfoCard(meetingInfo = meetingDetailState.info)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -91,7 +91,10 @@ fun MeetingDetailScreen(navController: NavController, meetingViewModel: MeetingV
             ) {
                 BasicButton(
                     name = "수정",
-                    onClick = { /* TODO: 회의록 수정 */ }
+                    onClick = {
+                        meetingViewModel.onEditEvent(MeetingEditEvent.InitWith(meetingDetailState.info))
+                        navController.navigate("meetingEdit")
+                    }
                 )
             }
 
@@ -117,7 +120,7 @@ private fun MeetingInfoCard(meetingInfo: MeetingDTO.GetMeetingResponse) {
             TowLineInfoBar(name = "장소", value = meetingInfo.place)
             ViewAttendeesItem(attendeesInfo = meetingInfo.attendees)
             TowLineInfoBar(name = "회의내용", value = meetingInfo.content)
-            TowLineInfoBar(name = "비고", value = meetingInfo.remark ?: "비고 없음")
+            TowLineInfoBar(name = "비고", value = if (meetingInfo.remark.isNullOrBlank()) "비고 없음" else meetingInfo.remark)
             ViewExpensesItem(expensesInfo = meetingInfo.expenses)
         }
     }
@@ -171,15 +174,15 @@ private fun AttendeesItem(attendeeInfo: MeetingDTO.AttendeesInfo, modifier: Modi
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = attendeeInfo.department,
+                text = attendeeInfo.department ?: "",
                 fontSize = 13.sp
             )
             Text(
-                text = attendeeInfo.grade,
+                text = attendeeInfo.grade ?: "",
                 fontSize = 13.sp
             )
             Text(
-                text = attendeeInfo.name,
+                text = attendeeInfo.name ?: "",
                 fontSize = 13.sp
             )
         }
