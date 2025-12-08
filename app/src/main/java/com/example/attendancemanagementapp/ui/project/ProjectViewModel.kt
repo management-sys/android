@@ -108,7 +108,7 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
 
         when (e) {
             ProjectStatusEvent.Init -> getAllDepartments()
-            is ProjectStatusEvent.SelectedProjectWith -> getProjectStatus(e.projectId)
+//            is ProjectStatusEvent.SelectedProjectWith -> getProjectStatus(e.projectId)
             else -> Unit
         }
     }
@@ -179,9 +179,9 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
     }
 
     /* 프로젝트 현황 조회 */
-    fun getProjectStatus(projectId: String) {
+    fun getProjectStatus() {
         viewModelScope.launch {
-            projectRepository.getProjectStatus(projectId = projectId).collect { result ->
+            projectRepository.getProjectStatus(projectId = projectStatusState.value.selectedProjectId).collect { result ->
                 result
                     .onSuccess { data ->
                         _projectDetailState.update { it.copy(projectInfo = data) }

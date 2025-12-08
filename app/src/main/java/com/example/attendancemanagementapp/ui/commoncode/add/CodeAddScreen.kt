@@ -125,6 +125,13 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
                 }
             )
 
+            Spacer(modifier = Modifier.height(20.dp))
+
+            BasicLongButton(
+                name = "등록",
+                onClick = { onEvent(CodeAddEvent.ClickedAdd) }
+            )
+
             Box(
                 modifier = Modifier.height(40.dp)
             )
@@ -192,13 +199,6 @@ private fun CodeAddCard(codeAddState: CodeAddState, onEvent: (CodeAddEvent) -> U
                 name = "설명",
                 value = codeAddState.inputData.description ?: "",
                 onValueChange = { onEvent(CodeAddEvent.ChangedValueWith(CodeAddField.DESCRIPTION, it)) }
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            BasicLongButton(
-                name = "등록",
-                onClick = { onEvent(CodeAddEvent.ClickedAdd) }
             )
         }
     }

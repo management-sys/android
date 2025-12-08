@@ -5,6 +5,7 @@ object ProjectStatusReducer {
         is ProjectStatusEvent.ChangedSearchTextWith -> handleChangedSearchText(s, e.value)
         ProjectStatusEvent.ClickedInitSearchText -> handleClickedInitSearchText(s)
         is ProjectStatusEvent.SelectedSearchFilterWith -> handleSelectedSearchFilter(s, e.field, e.value)
+        is ProjectStatusEvent.SelectedProjectWith -> handleSelectedProject(s, e.projectId)
         else -> s
     }
 
@@ -36,5 +37,12 @@ object ProjectStatusReducer {
     ): ProjectStatusState {
         val updater = projectUpdaters[field] ?: return state
         return updater(state, value)
+    }
+
+    private fun handleSelectedProject(
+        state: ProjectStatusState,
+        projectId: String
+    ): ProjectStatusState {
+        return state.copy(selectedProjectId = projectId)
     }
 }

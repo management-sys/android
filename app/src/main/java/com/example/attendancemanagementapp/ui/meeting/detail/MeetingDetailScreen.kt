@@ -61,6 +61,9 @@ fun MeetingDetailScreen(navController: NavController, meetingViewModel: MeetingV
             onClickConfirm = {
                 onEvent(MeetingDetailEvent.ClickedDelete)
                 openDeleteDialog = false
+            },
+            onClickDismiss = {
+                openDeleteDialog = false
             }
         )
     }
@@ -72,7 +75,7 @@ fun MeetingDetailScreen(navController: NavController, meetingViewModel: MeetingV
                 actIcon = Icons.Default.Delete,
                 actTint = Color.Red,
                 onClickNavIcon = rememberOnce { navController.popBackStack() },
-                onClickActIcon = rememberOnce { openDeleteDialog = true }
+                onClickActIcon = { openDeleteDialog = true }
             )
         }
     ) { paddingValues ->

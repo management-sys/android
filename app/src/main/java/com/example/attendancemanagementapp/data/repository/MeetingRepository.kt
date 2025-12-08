@@ -27,4 +27,14 @@ class MeetingRepository @Inject constructor(private val service: MeetingService)
     }.catch { e ->
         emit(Result.failure(e))
     }
+
+    // 회의록 삭제
+    fun deleteMeeting(meetingId: Long): Flow<Result<Unit>> = flow {
+        val response = service.deleteMeeting(
+            meetingId = meetingId
+        )
+        emit(Result.success(Unit))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
 }

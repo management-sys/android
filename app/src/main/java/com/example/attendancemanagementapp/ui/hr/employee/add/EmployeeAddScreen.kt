@@ -72,6 +72,7 @@ import com.example.attendancemanagementapp.ui.components.TwoLineDateEditDeleteBa
 import com.example.attendancemanagementapp.ui.components.TwoLineDropdownEditBar
 import com.example.attendancemanagementapp.ui.components.TwoLinePhoneEditBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
+import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TwoLineDateEditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineSearchEditBar
@@ -82,6 +83,7 @@ import com.example.attendancemanagementapp.ui.hr.employee.edit.AuthItem
 import com.example.attendancemanagementapp.ui.hr.employee.edit.CareerField
 import com.example.attendancemanagementapp.ui.hr.employee.edit.DepartmentInfoItem
 import com.example.attendancemanagementapp.ui.hr.employee.edit.SalaryField
+import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddEvent
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
@@ -129,10 +131,7 @@ fun EmployeeAddScreen(navController: NavController, employeeViewModel: EmployeeV
         topBar = {
             BasicTopBar(
                 title = "직원 등록",
-                actIcon = Icons.Default.Add,
-                actTint = MainBlue,
-                onClickNavIcon = rememberOnce { navController.popBackStack() },
-                onClickActIcon = { onEvent(EmployeeAddEvent.ClickedAdd) }
+                onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         }
     ) { paddingValues ->
@@ -183,18 +182,58 @@ fun EmployeeAddScreen(navController: NavController, employeeViewModel: EmployeeV
                                     onOpenAuth = { openAuthDialog = true },
                                     onOpenDept = { openDeptDialog = true }
                                 )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    BasicButton(
+                                        name = "다음",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
+                                    )
+                                }
                             }
                             1 -> {  // 경력 정보
                                 CareerEditCard(
                                     careers = employeeAddState.inputData.careers,
                                     onEvent = onEvent
                                 )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    SubButton(
+                                        name = "이전",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
+                                    )
+
+                                    BasicButton(
+                                        name = "다음",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } }
+                                    )
+                                }
                             }
                             2 -> {  // 연봉 정보
                                 SalaryEditCard(
                                     salaries = employeeAddState.inputData.salaries,
                                     onEvent = onEvent
                                 )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    SubButton(
+                                        name = "이전",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
+                                    )
+
+                                    BasicButton(
+                                        name = "추가",
+                                        onClick = { onEvent(EmployeeAddEvent.ClickedAdd) }
+                                    )
+                                }
                             }
                         }
 

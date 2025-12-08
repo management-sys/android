@@ -2,6 +2,7 @@ package com.example.attendancemanagementapp.retrofit.service
 
 import com.example.attendancemanagementapp.data.dto.MeetingDTO
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -18,4 +19,10 @@ interface MeetingService {
     suspend fun getMeeting(
         @Path("mtgRcordId") meetingId: Long
     ): MeetingDTO.GetMeetingResponse
+
+    // 회의록 삭제
+    @DELETE("/api/mtgs/{mtgRcordId}")
+    suspend fun deleteMeeting(
+        @Path("mtgRcordId") meetingId: Long
+    )
 }

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -79,6 +80,7 @@ import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.components.TwoLinePhoneEditBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
+import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TwoLineSearchEditBar
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.TwoLineDateEditBar
@@ -86,6 +88,8 @@ import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
+import com.example.attendancemanagementapp.ui.project.add.ProjectAddEvent
+import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Red
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
@@ -134,13 +138,7 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
         topBar = {
             BasicTopBar(
                 title = "직원 수정",
-                actIcon = Icons.Default.Edit,
-                actTint = MainBlue,
-                onClickNavIcon = rememberOnce { navController.popBackStack() },
-                onClickActIcon = {
-                    onEvent(EmployeeEditEvent.ChangedPage(pagerState.currentPage))
-                    onEvent(EmployeeEditEvent.ClickedUpdate)
-                }
+                onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         }
     ) { paddingValues ->
@@ -191,24 +189,82 @@ fun EmployeeEditScreen(navController: NavController, employeeViewModel: Employee
                                     onOpenAuth = { openAuthDialog = true },
                                     onOpenDept = { openDeptDialog = true }
                                 )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    BasicButton(
+                                        name = "다음",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
+                                    )
+                                }
                             }
                             1 -> {  // 연차 정보
                                 AnnualLeaveEditCard(
                                     annualLeaves = employeeEditState.inputData.annualLeaves,
                                     onEvent = onEvent
                                 )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    SubButton(
+                                        name = "이전",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
+                                    )
+
+                                    BasicButton(
+                                        name = "다음",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } }
+                                    )
+                                }
                             }
                             2 -> {  // 경력 정보
                                 CareerEditCard(
                                     careers = employeeEditState.inputData.careers,
                                     onEvent = onEvent
                                 )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    SubButton(
+                                        name = "이전",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
+                                    )
+
+                                    BasicButton(
+                                        name = "다음",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(3) } }
+                                    )
+                                }
                             }
                             3 -> {  // 연봉 정보
                                 SalaryEditCard(
                                     salaries = employeeEditState.inputData.salaries,
                                     onEvent = onEvent
                                 )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    SubButton(
+                                        name = "이전",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } }
+                                    )
+
+                                    BasicButton(
+                                        name = "저장",
+                                        onClick = {
+                                            onEvent(EmployeeEditEvent.ChangedPage(pagerState.currentPage))
+                                            onEvent(EmployeeEditEvent.ClickedUpdate)
+                                        }
+                                    )
+                                }
                             }
                         }
 
@@ -545,8 +601,10 @@ private fun CareerInfoEditItem(info: CareerInfo, idx: Int, onEvent: (EmployeeEdi
                             modifier = Modifier.weight(0.1f)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "경력 아이템 삭제 버튼"
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "경력 아이템 삭제 버튼",
+                                modifier = Modifier.size(20.dp),
+                                tint = ApprovalInfoItem_Red
                             )
                         }
                     }
@@ -666,8 +724,10 @@ private fun SalaryEditCard(salaries: List<EmployeeDTO.SalaryInfo>, onEvent: (Emp
                             modifier = Modifier.weight(0.1f)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "연봉 아이템 삭제 버튼"
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "연봉 아이템 삭제 버튼",
+                                modifier = Modifier.size(20.dp),
+                                tint = ApprovalInfoItem_Red
                             )
                         }
                     }

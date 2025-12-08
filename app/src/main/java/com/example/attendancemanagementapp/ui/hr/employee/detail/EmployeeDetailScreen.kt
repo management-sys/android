@@ -63,6 +63,7 @@ import com.example.attendancemanagementapp.ui.components.BasicTextButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.InfoBar
 import com.example.attendancemanagementapp.ui.components.ProfileImage
+import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.LightBlue
@@ -193,8 +194,37 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                         verticalArrangement = Arrangement.Top
                     ) {
                         when (page) {
-                            0 -> EmployeeInfoCard(employeeDetailState)
-                            1 -> AnnualLeaveInfoCard(employeeDetailState.employeeInfo.annualLeaves)
+                            0 -> {
+                                EmployeeInfoCard(employeeDetailState)
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.End
+                                ) {
+                                    BasicButton(
+                                        name = "다음",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
+                                    )
+                                }
+                            }
+                            1 -> {
+                                AnnualLeaveInfoCard(employeeDetailState.employeeInfo.annualLeaves)
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    SubButton(
+                                        name = "이전",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
+                                    )
+
+                                    BasicButton(
+                                        name = "다음",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } }
+                                    )
+                                }
+                            }
                             2 -> {
                                 if (employeeDetailState.employeeInfo.annualLeaves.isNotEmpty()) {
                                     Row(
@@ -230,8 +260,35 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                                 }
 
                                 CareerInfoCard(employeeDetailState.employeeInfo.careers)
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    SubButton(
+                                        name = "이전",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
+                                    )
+
+                                    BasicButton(
+                                        name = "다음",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(3) } }
+                                    )
+                                }
                             }
-                            3 -> SalaryInfoCard(employeeDetailState.employeeInfo.salaries)
+                            3 -> {
+                                SalaryInfoCard(employeeDetailState.employeeInfo.salaries)
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    SubButton(
+                                        name = "이전",
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
+                                    )
+                                }
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(15.dp))

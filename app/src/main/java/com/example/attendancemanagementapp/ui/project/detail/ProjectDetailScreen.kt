@@ -28,6 +28,7 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,9 +41,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.data.dto.ProjectDTO.MeetingsInfo
+import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.InfoBar
+import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TowLineInfoBar
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.meeting.MeetingViewModel
@@ -65,6 +68,10 @@ fun ProjectDetailScreen(navController: NavController, projectViewModel: ProjectV
     val tabs = listOf("프로젝트 정보", "회의록 정보")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        projectViewModel.getProjectStatus()
+    }
 
     Scaffold(
         topBar = {
@@ -128,8 +135,6 @@ fun ProjectDetailScreen(navController: NavController, projectViewModel: ProjectV
                                     ProjectInfoCard(
                                         projectInfo = projectDetailState.projectInfo
                                     )
-
-                                    Spacer(modifier = Modifier.height(70.dp))
                                 }
                             }
 
@@ -150,6 +155,8 @@ fun ProjectDetailScreen(navController: NavController, projectViewModel: ProjectV
                                 )
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
             }

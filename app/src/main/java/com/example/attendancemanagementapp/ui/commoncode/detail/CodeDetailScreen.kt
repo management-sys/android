@@ -79,16 +79,22 @@ fun CodeDetailScreen(navController: NavController, codeViewModel: CodeViewModel)
             modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp)
         ) {
             CodeInfoCard(
-                infos = infos,
-                onClick = { navController.navigate("codeEdit") }
+                infos = infos
             )
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                BasicButton(name = "수정", onClick = { navController.navigate("codeEdit") })
+            }
         }
     }
 }
 
 /* 공통코드 정보 카드 */
 @Composable
-private fun CodeInfoCard(infos: List<Pair<String, String?>>, onClick: () -> Unit) {
+private fun CodeInfoCard(infos: List<Pair<String, String?>>) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -100,13 +106,6 @@ private fun CodeInfoCard(infos: List<Pair<String, String?>>, onClick: () -> Unit
             for (info in infos) {
                 InfoBar(name = info.first, value = info.second ?: "")
                 Spacer(modifier = Modifier.height(10.dp))
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 90.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
-                BasicButton(name = "수정", onClick = { onClick() })
             }
         }
     }

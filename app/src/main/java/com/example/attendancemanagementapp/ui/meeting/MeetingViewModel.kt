@@ -52,7 +52,7 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
         _meetingDetailState.update { MeetingDetailReducer.reduce(it, e) }
 
         when (e) {
-            MeetingDetailEvent.ClickedDelete -> {/* TODO: 회의록 삭제 기능 추가 */}
+            MeetingDetailEvent.ClickedDelete -> deleteMeeting()
             else -> Unit
         }
     }
@@ -96,6 +96,24 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "getMeeting")
+                    }
+            }
+        }
+    }
+
+    /* 회의록 삭제 */
+    fun deleteMeeting() {
+        viewModelScope.launch {
+            meetingRepository.deleteMeeting(meetingId = meetingDetailState.value.meetingInfo.id).collect { result ->
+                result
+                    .onSuccess {
+                        _uiEffect.emit(UiEffect.NavigateBack)
+                        _uiEffect.emit(UiEffect.ShowToast("회의록이 성공적으로 삭제되었습니다"))
+
+                        Log.d(TAG, "[deleteMeeting] 회의록 삭제 성공")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "deleteMeeting")
                     }
             }
         }
