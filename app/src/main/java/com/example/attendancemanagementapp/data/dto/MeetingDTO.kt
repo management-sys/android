@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.data.dto
 
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO.ManageEmployeesInfo
 import com.squareup.moshi.Json
 
 object MeetingDTO {
@@ -72,5 +73,21 @@ object MeetingDTO {
         @Json(name = "place")               val place: String = "",                             // 장소
         @Json(name = "rm")                  val remark: String? = "",                           // 비고
         @Json(name = "sj")                  val title: String = ""                              // 제목
+    )
+
+    /* 회의록 목록 조회 응답 */
+    data class GetMeetingsResponse(
+        @Json(name = "content")     val content: List<MeetingsInfo>,    // 회의록 관리 목록
+        @Json(name = "totalPages")  val totalPages: Int                 // 총 페이지 개수
+    )
+
+    /* 회의록 목록 조회 응답 */
+    data class MeetingsInfo(
+        @Json(name = "bgnde")           val startDate: String,      // 회의 시작 일시
+        @Json(name = "endde")           val endDate: String,        // 회의 종료 일시
+        @Json(name = "mtgRcordId")      val id: Long,               // 회의록 아이디
+        @Json(name = "prjctNm")         val projectName: String,    // 프로젝트명
+        @Json(name = "sj")              val title: String,          // 회의명
+        @Json(name = "totalMtgCost")    val totalExpense: Int       // 총 회의비
     )
 }

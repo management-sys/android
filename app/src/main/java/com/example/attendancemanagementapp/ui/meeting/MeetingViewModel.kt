@@ -14,6 +14,9 @@ import com.example.attendancemanagementapp.ui.meeting.detail.MeetingDetailState
 import com.example.attendancemanagementapp.ui.meeting.edit.MeetingEditEvent
 import com.example.attendancemanagementapp.ui.meeting.edit.MeetingEditReducer
 import com.example.attendancemanagementapp.ui.meeting.edit.MeetingEditState
+import com.example.attendancemanagementapp.ui.meeting.status.MeetingStatusEvent
+import com.example.attendancemanagementapp.ui.meeting.status.MeetingStatusReducer
+import com.example.attendancemanagementapp.ui.meeting.status.MeetingStatusState
 import com.example.attendancemanagementapp.util.ErrorHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -41,6 +44,8 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
     val meetingDetailState = _meetingDetailState.asStateFlow()
     private val _meetingEditState = MutableStateFlow(MeetingEditState())
     val meetingEditState = _meetingEditState.asStateFlow()
+    private val _meetingStatusState = MutableStateFlow(MeetingStatusState())
+    val meetingStatusState = _meetingStatusState.asStateFlow()
 
     fun onAddEvent(e: MeetingAddEvent) {
         _meetingAddState.update { MeetingAddReducer.reduce(it, e) }
@@ -75,6 +80,24 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
             MeetingEditEvent.LoadNextPage -> getEmployees(MeetingTarget.EDIT)
             MeetingEditEvent.ClickedSearch -> getEmployees(MeetingTarget.EDIT)
             MeetingEditEvent.ClickedInitSearch -> getEmployees(MeetingTarget.EDIT)
+            else -> Unit
+        }
+    }
+
+    fun onStatusEvent(e: MeetingStatusEvent) {
+        _meetingStatusState.update { MeetingStatusReducer.reduce(it, e) }
+
+        when (e) {
+            MeetingStatusEvent.Init -> getMeetings()
+            MeetingStatusEvent.LoadNextPage -> getMeetings()
+            MeetingStatusEvent.ClickedSearch -> getMeetings()
+            MeetingStatusEvent.ClickedInitSearch -> getMeetings()
+            is MeetingStatusEvent.ClickedMeeting -> {
+                getMeeting(e.id)
+                _uiEffect.tryEmit(UiEffect.Navigate("meetingDetail"))
+            }
+            MeetingStatusEvent.ClickedInitFilter -> getMeetings()
+            is MeetingStatusEvent.ClickedUseFilter -> getMeetings()
             else -> Unit
         }
     }
@@ -159,6 +182,50 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "deleteMeeting")
+                    }
+            }
+        }
+    }
+
+    /* 회의록 목록 조회 및 검색 */
+    fun getMeetings() {
+        val state = meetingStatusState.value
+
+        viewModelScope.launch {
+            _meetingStatusState.update { it.copy(paginationState = it.paginationState.copy(isLoading = true)) }
+
+            meetingRepository.getMeetings(
+                startDate = state.startDate,
+                endDate = state.endDate,
+                searchText = state.searchText,
+                type = state.type,
+                page = state.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        if (state.paginationState.currentPage == 0) {
+                            _meetingStatusState.update { it.copy(
+                                meetings = data.content,
+                                paginationState = it.paginationState.copy(
+                                    currentPage = it.paginationState.currentPage + 1,
+                                    totalPage = data.totalPages,
+                                    isLoading = false
+                                ))
+                            }
+                        } else {
+                            _meetingStatusState.update { it.copy(
+                                meetings = it.meetings + data.content,
+                                paginationState = it.paginationState.copy(
+                                    currentPage = it.paginationState.currentPage + 1,
+                                    isLoading = false
+                                ))
+                            }
+                        }
+
+                        Log.d(TAG, "[getMeetings] 회의록 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.startDate}~${state.endDate}/${state.type})\n${data.content}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "getMeetings")
                     }
             }
         }

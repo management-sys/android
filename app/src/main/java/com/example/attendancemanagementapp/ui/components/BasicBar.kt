@@ -257,7 +257,7 @@ fun TowLineInfoBar(name: String, value: String) {
 
 /* 두가지 정보 출력 바 */
 @Composable
-fun TwoInfoBar(value1: String, value2: String, color: Color = Color.Black, fontSize: TextUnit = 16.sp) {
+fun TwoInfoBar(value1: String, value2: String, color: Color = Color.Black, fontSize: TextUnit = 16.sp, fontWeight: FontWeight = FontWeight.Normal) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -266,7 +266,8 @@ fun TwoInfoBar(value1: String, value2: String, color: Color = Color.Black, fontS
         Text(
             text = value1,
             fontSize = fontSize,
-            color = color
+            color = color,
+            fontWeight = fontWeight
         )
 
         Text(
@@ -695,7 +696,8 @@ fun TwoLineDateEditBar(
     value: String,
     onValueChange: (String) -> Unit,
     enabled: Boolean = true,                // 이용 가능 여부
-    isRequired: Boolean = false
+    isRequired: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
     var open by rememberSaveable { mutableStateOf(false) }
     val fmt = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.KOREA) }
@@ -759,6 +761,7 @@ fun TwoLineDateEditBar(
 
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
+                modifier = modifier,
                 value = value,
                 onValueChange = {},
                 singleLine = true,

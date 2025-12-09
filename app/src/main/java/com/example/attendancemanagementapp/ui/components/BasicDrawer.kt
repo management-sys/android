@@ -152,6 +152,16 @@ fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (
                             selected = false,
                             onClick = { onItemClick("projectPersonnel") }
                         )
+                        NavigationDrawerItem(
+                            label = { Text("회의록 현황") },
+                            selected = false,
+                            onClick = { onItemClick("meetingStatus") }
+                        )
+                        NavigationDrawerItem(
+                            label = { Text("회의록 등록") },
+                            selected = false,
+                            onClick = {  }
+                        )
                     }
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
