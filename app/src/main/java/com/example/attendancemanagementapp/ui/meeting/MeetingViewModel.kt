@@ -3,8 +3,10 @@ package com.example.attendancemanagementapp.ui.meeting
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.attendancemanagementapp.data.param.ProjectStatusQuery
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.data.repository.MeetingRepository
+import com.example.attendancemanagementapp.data.repository.ProjectRepository
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddEvent
 import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddReducer
@@ -30,7 +32,7 @@ import javax.inject.Inject
 enum class MeetingTarget { ADD, EDIT }
 
 @HiltViewModel
-class MeetingViewModel @Inject constructor(private val meetingRepository: MeetingRepository, private val employeeRepository: EmployeeRepository) : ViewModel() {
+class MeetingViewModel @Inject constructor(private val meetingRepository: MeetingRepository, private val employeeRepository: EmployeeRepository, private val projectRepository: ProjectRepository) : ViewModel() {
     companion object {
         private const val TAG = "MeetingViewModel"
     }
@@ -51,11 +53,17 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
         _meetingAddState.update { MeetingAddReducer.reduce(it, e) }
 
         when (e) {
-            is MeetingAddEvent.InitWith -> getEmployees(MeetingTarget.ADD)
+            MeetingAddEvent.Init -> {
+                getProjects()
+                getEmployees(MeetingTarget.ADD)
+            }
             MeetingAddEvent.ClickedAdd -> addMeeting()
-            MeetingAddEvent.LoadNextPage -> getEmployees(MeetingTarget.ADD)
-            MeetingAddEvent.ClickedSearch -> getEmployees(MeetingTarget.ADD)
-            MeetingAddEvent.ClickedInitSearch -> getEmployees(MeetingTarget.ADD)
+            MeetingAddEvent.LoadNextEmployeePage -> getEmployees(MeetingTarget.ADD)
+            MeetingAddEvent.ClickedEmployeeSearch -> getEmployees(MeetingTarget.ADD)
+            MeetingAddEvent.ClickedEmployeeInitSearch -> getEmployees(MeetingTarget.ADD)
+            MeetingAddEvent.LoadNextProjectPage -> getProjects()
+            MeetingAddEvent.ClickedProjectSearch -> getProjects()
+            MeetingAddEvent.ClickedProjectInitSearch -> getProjects()
             else -> Unit
         }
     }
@@ -317,6 +325,59 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "getEmployees")
+                    }
+            }
+        }
+    }
+
+    /* 프로젝트 목록 조회 */
+    fun getProjects() {
+        val state = meetingAddState.value.projectState
+
+        viewModelScope.launch {
+            _meetingAddState.update { it.copy(
+                projectState = it.projectState.copy(
+                    paginationState = it.projectState.paginationState.copy(
+                        isLoading = true
+                    )
+                )
+            ) }
+
+            projectRepository.getProjectStatus(
+                query = ProjectStatusQuery(
+                    searchText = state.searchText
+                ),
+                page = state.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        if (state.paginationState.currentPage == 0) {
+                            _meetingAddState.update { it.copy(
+                                projectState = it.projectState.copy(
+                                    projects = data.projects.content,
+                                    paginationState = it.projectState.paginationState.copy(
+                                        currentPage = it.projectState.paginationState.currentPage + 1,
+                                        totalPage = data.projects.totalpages,
+                                        isLoading = false
+                                    )
+                                ))
+                            }
+                        } else {
+                            _meetingAddState.update { it.copy(
+                                projectState = it.projectState.copy(
+                                    projects = it.projectState.projects + data.projects.content,
+                                    paginationState = it.projectState.paginationState.copy(
+                                        currentPage = it.projectState.paginationState.currentPage + 1,
+                                        isLoading = false
+                                    )
+                                ))
+                            }
+                        }
+
+                        Log.d(TAG, "[getProjects] 프로젝트 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.projects.totalpages}, 검색(${state.searchText})\n${data.projects.content}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "getProjects")
                     }
             }
         }

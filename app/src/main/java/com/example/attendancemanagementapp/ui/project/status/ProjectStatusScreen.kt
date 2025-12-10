@@ -160,6 +160,11 @@ private fun ProjectList(projectStatusState: ProjectStatusState, onEvent: (Projec
         }
     }
 
+    // 부서 목록 조회될 때마다 첫번째 아이템으로 이동 (최상단으로 이동)
+    LaunchedEffect(projectStatusState.projects) {
+        listState.scrollToItem(0)
+    }
+
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -205,7 +210,7 @@ private fun ProjectList(projectStatusState: ProjectStatusState, onEvent: (Projec
                 }
             }
 
-            if (projectStatusState.departments.isEmpty()) {
+            if (projectStatusState.projects.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

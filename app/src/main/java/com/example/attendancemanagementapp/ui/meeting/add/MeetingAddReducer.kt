@@ -6,7 +6,8 @@ import com.example.attendancemanagementapp.data.dto.MeetingDTO.AddAttendeesInfo
 
 object MeetingAddReducer {
     fun reduce(s: MeetingAddState, e: MeetingAddEvent): MeetingAddState = when (e) {
-        is MeetingAddEvent.InitWith -> handleInit(e.projectId, e.projectName)
+        is MeetingAddEvent.InitWith -> handleInit(e.projectId, e.projectName, e.fixedProject)
+        MeetingAddEvent.InitLast -> handleInitLast()
         is MeetingAddEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
         is MeetingAddEvent.ClickedAddExternalAttendeeWith -> handleClickedAddExternalAttendee(s, e.newAttendee)
         MeetingAddEvent.ClickedAddExpense -> handleClickedAddExpense(s)
@@ -14,16 +15,24 @@ object MeetingAddReducer {
         is MeetingAddEvent.ClickedDeleteExpenseWith -> handleClickedDeleteExpense(s, e.idx)
         is MeetingAddEvent.CheckedAttendeeWith -> handleCheckedAttendee(s, e.checked, e.employee)
         is MeetingAddEvent.ClickedDeleteAttendeeWith -> handleCheckedDeleteAttendee(s, e.idx)
-        is MeetingAddEvent.ChangedSearchValueWith -> handleChangedSearchValue(s, e.value)
-        MeetingAddEvent.ClickedInitSearch -> handleClickedSearchInit(s)
+        is MeetingAddEvent.ChangedEmployeeSearchValueWith -> handleChangedEmployeeSearchValue(s, e.value)
+        MeetingAddEvent.ClickedEmployeeInitSearch -> handleClickedEmployeeSearchInit(s)
+        is MeetingAddEvent.SelectedProjectWith -> handleSelectedProject(s, e.id, e.name)
+        is MeetingAddEvent.ChangedProjectSearchValueWith -> handleChangedProjectSearchValue(s, e.value)
+        MeetingAddEvent.ClickedProjectInitSearch -> handleClickedProjectInitSearch(s)
         else -> s
     }
 
     private fun handleInit(
         projectId: String,
-        projectName: String
+        projectName: String,
+        fixedProject: Boolean
     ): MeetingAddState {
-        return MeetingAddState(inputData = MeetingDTO.AddMeetingRequest(projectId = projectId), projectName = projectName)
+        return MeetingAddState(inputData = MeetingDTO.AddMeetingRequest(projectId = projectId), projectName = projectName, fixedProject = fixedProject)
+    }
+
+    private fun handleInitLast(): MeetingAddState {
+        return MeetingAddState()
     }
 
     private val meetingUpdaters: Map<MeetingAddField, (MeetingDTO.AddMeetingRequest, String) -> MeetingDTO.AddMeetingRequest> =
@@ -107,16 +116,37 @@ object MeetingAddReducer {
         return state.copy(inputData = state.inputData.copy(attendees = updated))
     }
 
-    private fun handleChangedSearchValue(
+    private fun handleChangedEmployeeSearchValue(
         state: MeetingAddState,
         value: String
     ): MeetingAddState {
         return state.copy(employeeState = state.employeeState.copy(searchText = value, paginationState = state.employeeState.paginationState.copy(currentPage = 0)))
     }
 
-    private fun handleClickedSearchInit(
+    private fun handleClickedEmployeeSearchInit(
         state: MeetingAddState
     ): MeetingAddState {
         return state.copy(employeeState = state.employeeState.copy(searchText = "", paginationState = state.employeeState.paginationState.copy(currentPage = 0)))
+    }
+
+    private fun handleSelectedProject(
+        state: MeetingAddState,
+        id: String,
+        name: String
+    ): MeetingAddState {
+        return state.copy(inputData = state.inputData.copy(projectId = id), projectName = name)
+    }
+
+    private fun handleChangedProjectSearchValue(
+        state: MeetingAddState,
+        value: String
+    ): MeetingAddState {
+        return state.copy(projectState = state.projectState.copy(searchText = value, paginationState = state.projectState.paginationState.copy(currentPage = 0)))
+    }
+
+    private fun handleClickedProjectInitSearch(
+        state: MeetingAddState
+    ): MeetingAddState {
+        return state.copy(projectState = state.projectState.copy(searchText = "", paginationState = state.projectState.paginationState.copy(currentPage = 0)))
     }
 }

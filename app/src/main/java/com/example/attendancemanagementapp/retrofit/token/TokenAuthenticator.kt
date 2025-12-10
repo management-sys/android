@@ -16,7 +16,6 @@ class TokenAuthenticator(
     private val tokenDataStore: TokenDataStore,
     private val authRetrofit: Retrofit
 ) : Authenticator {
-
     override fun authenticate(route: Route?, response: Response): Request? {
 
         // 1) refresh API 자체에서 401 나오면 재시도 금지
@@ -25,7 +24,7 @@ class TokenAuthenticator(
         }
 
         // 2) 재시도 횟수 제한 (안 하면 무한루프)
-        if (responseCount(response) >= 2) {
+        if (responseCount(response) >= 1) {
             return null
         }
 

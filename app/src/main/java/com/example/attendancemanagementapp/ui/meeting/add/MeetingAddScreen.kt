@@ -49,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -73,6 +74,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.MeetingDTO
 import com.example.attendancemanagementapp.data.dto.MeetingDTO.AddAttendeesInfo
+import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDatePickerDialog
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
@@ -80,16 +82,22 @@ import com.example.attendancemanagementapp.ui.components.BasicOutlinedTextFieldC
 import com.example.attendancemanagementapp.ui.components.BasicTimePickerDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.SubButton
+import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
+import com.example.attendancemanagementapp.ui.components.TwoLineSearchEditBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
+import com.example.attendancemanagementapp.ui.hr.employee.edit.DepartmentInfoItem
 import com.example.attendancemanagementapp.ui.meeting.MeetingViewModel
 import com.example.attendancemanagementapp.ui.project.add.EmployeeItem
+import com.example.attendancemanagementapp.ui.project.add.ProjectAddEvent
+import com.example.attendancemanagementapp.ui.project.add.ProjectAddSearchField
 import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Red
 import com.example.attendancemanagementapp.ui.theme.BackgroundColor
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
+import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.util.formatDateYY
 import com.example.attendancemanagementapp.util.formatTime
 import com.example.attendancemanagementapp.util.rememberOnce
@@ -105,6 +113,10 @@ fun MeetingAddScreen(navController: NavController, meetingViewModel: MeetingView
     val tabs = listOf("회의록 정보", "참석자", "회의비")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        onEvent(MeetingAddEvent.Init)
+    }
 
     Scaffold(
         topBar = {
@@ -222,6 +234,12 @@ fun MeetingAddScreen(navController: NavController, meetingViewModel: MeetingView
             }
         }
     }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            onEvent(MeetingAddEvent.InitLast)
+        }
+    }
 }
 
 /* 회의록 등록 카드 */
@@ -230,6 +248,16 @@ private fun AddMeetingCard(
     meetingAddState: MeetingAddState,
     onEvent: (MeetingAddEvent) -> Unit
 ) {
+    var openSheet by remember { mutableStateOf(false) }
+
+    if (openSheet) {
+        ProjectBottomSheet(
+            meetingAddState = meetingAddState,
+            onEvent = onEvent,
+            onDismiss = { openSheet = false }
+        )
+    }
+
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -239,12 +267,22 @@ private fun AddMeetingCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            TwoLineEditBar(
-                name = "프로젝트명",
-                value = meetingAddState.projectName,
-                enabled = false,
-                isRequired = true
-            )
+            if (meetingAddState.fixedProject) {
+                TwoLineEditBar(
+                    name = "프로젝트명",
+                    value = meetingAddState.projectName,
+                    enabled = false,
+                    isRequired = true
+                )
+            } else {
+                TwoLineSearchEditBar(
+                    name = "프로젝트명",
+                    value = meetingAddState.projectName,
+                    onClick = { openSheet = true },
+                    isRequired = true,
+                    enabled = false
+                )
+            }
 
             TwoLineEditBar(
                 name = "회의록 제목",
@@ -278,6 +316,109 @@ private fun AddMeetingCard(
                 onValueChange = { onEvent(MeetingAddEvent.ChangedValueWith(MeetingAddField.REMARK, it)) }
             )
         }
+    }
+}
+
+/* 프로젝트 선택 바텀 시트 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProjectBottomSheet(
+    meetingAddState: MeetingAddState,
+    onEvent: (MeetingAddEvent) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val lastVisibleIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
+        }.distinctUntilChanged().collect { shouldLoad ->
+            if (shouldLoad && !meetingAddState.projectState.paginationState.isLoading && meetingAddState.projectState.paginationState.currentPage < meetingAddState.projectState.paginationState.totalPage) {
+                onEvent(MeetingAddEvent.LoadNextEmployeePage)
+            }
+        }
+    }
+
+    ModalBottomSheet(
+        modifier = Modifier.fillMaxSize(),
+        onDismissRequest = { onDismiss() },
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+        containerColor = BackgroundColor
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            SearchBar(
+                modifier = Modifier.fillMaxWidth(),
+                searchState = SearchState(
+                    value = meetingAddState.projectState.searchText,
+                    onValueChange = { onEvent(MeetingAddEvent.ChangedProjectSearchValueWith(it)) },
+                    onClickSearch = {
+                        if (meetingAddState.projectState.paginationState.currentPage <= meetingAddState.projectState.paginationState.totalPage) {
+                            onEvent(MeetingAddEvent.ClickedProjectSearch)
+                        }
+                    },
+                    onClickInit = { onEvent(MeetingAddEvent.ClickedProjectInitSearch) }
+                ),
+                hint = "프로젝트명"
+            )
+
+            if (meetingAddState.projectState.projects.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "조회된 결과가 없습니다",
+                        color = TextGray,
+                        fontSize = 15.sp
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    state = listState
+                ) {
+                    items(meetingAddState.projectState.projects) { projectInfo ->
+                        ProjectInfoItem(
+                            projectInfo = projectInfo,
+                            onClick = {
+                                onEvent(MeetingAddEvent.SelectedProjectWith(projectInfo.projectId, projectInfo.projectName))
+                                onDismiss()
+                            }
+                        )
+                    }
+
+                    item {
+                        Spacer(Modifier.height(5.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* 프로젝트 목록 아이템 */
+@Composable
+private fun ProjectInfoItem(projectInfo: ProjectDTO.ProjectStatusInfo, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(1.dp),
+        onClick = onClick
+    ) {
+        Spacer(modifier = Modifier.height(12.dp))
+        TwoInfoBar(projectInfo.projectName, "")
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }
 
@@ -620,7 +761,7 @@ private fun EmployeeBottomSheet(
             lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
             if (shouldLoad && !meetingAddState.employeeState.paginationState.isLoading && meetingAddState.employeeState.paginationState.currentPage < meetingAddState.employeeState.paginationState.totalPage) {
-                onEvent(MeetingAddEvent.LoadNextPage)
+                onEvent(MeetingAddEvent.LoadNextEmployeePage)
             }
         }
     }
@@ -641,15 +782,15 @@ private fun EmployeeBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 searchState = SearchState(
                     value = meetingAddState.employeeState.searchText,
-                    onValueChange = { onEvent(MeetingAddEvent.ChangedSearchValueWith(it)) },
+                    onValueChange = { onEvent(MeetingAddEvent.ChangedEmployeeSearchValueWith(it)) },
                     onClickSearch = {
                         if (meetingAddState.employeeState.paginationState.currentPage <= meetingAddState.employeeState.paginationState.totalPage) {
-                            onEvent(MeetingAddEvent.ClickedSearch)
+                            onEvent(MeetingAddEvent.ClickedEmployeeSearch)
                             keyboardController?.hide()
                             focusManager.clearFocus(force = true)
                         }
                     },
-                    onClickInit = { onEvent(MeetingAddEvent.ClickedInitSearch) }
+                    onClickInit = { onEvent(MeetingAddEvent.ClickedEmployeeInitSearch) }
                 ),
                 hint = "직원명"
             )
