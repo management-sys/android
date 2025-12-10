@@ -1,6 +1,7 @@
 package com.example.attendancemanagementapp.data.repository
 
 import com.example.attendancemanagementapp.data.dto.ProjectDTO
+import com.example.attendancemanagementapp.data.param.ProjectStatusQuery
 import com.example.attendancemanagementapp.retrofit.service.ProjectService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -18,8 +19,8 @@ class ProjectRepository @Inject constructor(private val service: ProjectService)
         emit(Result.failure(e))
     }
 
-    // 프로젝트 현황 조회
-    fun getProjectStatus(projectId: String): Flow<Result<ProjectDTO.GetProjectResponse>> = flow {
+    // 프로젝트 상세 조회
+    fun getProject(projectId: String): Flow<Result<ProjectDTO.GetProjectResponse>> = flow {
         val response = service.getProject(
             projectId = projectId
         )
@@ -32,6 +33,21 @@ class ProjectRepository @Inject constructor(private val service: ProjectService)
     fun getPersonnel(projectId: String, page: Int): Flow<Result<ProjectDTO.GetPersonnelResponse>> = flow {
         val response = service.getPersonnel(
             projectId = projectId,
+            page = page
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 프로젝트 현황 조회
+    fun getProjectStatus(query: ProjectStatusQuery, page: Int): Flow<Result<ProjectDTO.GetProjectStatusResponse>> = flow {
+        val response = service.getProjectStatus(
+            year = if (query.year == 0) null else query.year,
+            month = if (query.month == 0) null else query.month,
+            departmentId = query.departmentId,
+            type = query.searchType.toKey(),
+            searchText = query.searchText,
             page = page
         )
         emit(Result.success(response))

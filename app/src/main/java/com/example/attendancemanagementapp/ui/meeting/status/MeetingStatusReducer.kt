@@ -3,7 +3,7 @@ package com.example.attendancemanagementapp.ui.meeting.status
 object MeetingStatusReducer {
     fun reduce(s: MeetingStatusState, e: MeetingStatusEvent): MeetingStatusState = when (e) {
         MeetingStatusEvent.Init -> handleInit()
-        is MeetingStatusEvent.ChangedSearchValue -> handleSearchValue(s, e.value)
+        is MeetingStatusEvent.ChangedSearchValue -> handleChangedSearchValue(s, e.value)
         MeetingStatusEvent.ClickedInitSearch -> handleClickedInitSearch(s)
         MeetingStatusEvent.ClickedInitFilter -> handleClickedInitFilter(s)
         is MeetingStatusEvent.ClickedUseFilter -> handleClickedUseFilter(s, e.startDate, e.endDate, e.type)
@@ -14,7 +14,7 @@ object MeetingStatusReducer {
         return MeetingStatusState()
     }
 
-    private fun handleSearchValue(
+    private fun handleChangedSearchValue(
         state: MeetingStatusState,
         value: String
     ): MeetingStatusState {

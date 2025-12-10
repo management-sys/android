@@ -199,7 +199,8 @@ private fun MeetingList(meetingStatusState: MeetingStatusState, onEvent: (Meetin
         else {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                state = listState
             ) {
                 items(meetingStatusState.meetings) { meetingInfo ->
                     MeetingInfoItem(

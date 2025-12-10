@@ -160,7 +160,7 @@ fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (
                         NavigationDrawerItem(
                             label = { Text("회의록 등록") },
                             selected = false,
-                            onClick = {  }
+                            onClick = { onItemClick("meetingAdd") }
                         )
                     }
 

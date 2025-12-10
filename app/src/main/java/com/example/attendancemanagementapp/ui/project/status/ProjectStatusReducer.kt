@@ -1,48 +1,44 @@
 package com.example.attendancemanagementapp.ui.project.status
 
+import com.example.attendancemanagementapp.data.param.ProjectStatusQuery
+
 object ProjectStatusReducer {
     fun reduce(s: ProjectStatusState, e: ProjectStatusEvent): ProjectStatusState = when (e) {
+        ProjectStatusEvent.InitLast -> handleInitLast()
         is ProjectStatusEvent.ChangedSearchTextWith -> handleChangedSearchText(s, e.value)
         ProjectStatusEvent.ClickedInitSearchText -> handleClickedInitSearchText(s)
-        is ProjectStatusEvent.SelectedSearchFilterWith -> handleSelectedSearchFilter(s, e.field, e.value)
-        is ProjectStatusEvent.SelectedProjectWith -> handleSelectedProject(s, e.projectId)
+        is ProjectStatusEvent.ClickedUseFilter -> handleClickedUseFilter(s, e.filter)
+        ProjectStatusEvent.ClickedInitFilter -> handleClickedInitFilter(s)
         else -> s
+    }
+
+    private fun handleInitLast(): ProjectStatusState {
+        return ProjectStatusState()
     }
 
     private fun handleChangedSearchText(
         state: ProjectStatusState,
         value: String
     ): ProjectStatusState {
-        return state.copy(searchText = value)
+        return state.copy(filter = state.filter.copy(searchText = value), paginationState = state.paginationState.copy(currentPage = 0))
     }
 
     private fun handleClickedInitSearchText(
         state: ProjectStatusState
     ): ProjectStatusState {
-        return state.copy(searchText = "")
+        return state.copy(filter = state.filter.copy(searchText = ""), paginationState = state.paginationState.copy(currentPage = 0))
     }
 
-    private val projectUpdaters: Map<ProjectStatusField, (ProjectStatusState, String) -> ProjectStatusState> =
-        mapOf(
-            ProjectStatusField.YEAR         to { s, v -> s.copy(selectedYear = v) },
-            ProjectStatusField.MONTH        to { s, v -> s.copy(selectedMonth = v) },
-            ProjectStatusField.DEPARTMENT   to { s, v -> s.copy(selectedDepartment = v) },
-            ProjectStatusField.KEYWORD      to { s, v -> s.copy(selectedKeyword = v) }
-        )
-
-    private fun handleSelectedSearchFilter(
+    private fun handleClickedUseFilter(
         state: ProjectStatusState,
-        field: ProjectStatusField,
-        value: String
+        filter: ProjectStatusQuery
     ): ProjectStatusState {
-        val updater = projectUpdaters[field] ?: return state
-        return updater(state, value)
+        return state.copy(filter = filter, paginationState = state.paginationState.copy(currentPage = 0))
     }
 
-    private fun handleSelectedProject(
-        state: ProjectStatusState,
-        projectId: String
+    private fun handleClickedInitFilter(
+        state: ProjectStatusState
     ): ProjectStatusState {
-        return state.copy(selectedProjectId = projectId)
+        return state.copy(filter = ProjectStatusQuery(), paginationState = state.paginationState.copy(currentPage = 0))
     }
 }

@@ -8,6 +8,18 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ProjectService {
+    // 프로젝트 현황 조회
+    @GET("/api/prjcts")
+    suspend fun getProjectStatus(
+        @Query("year") year: Int?,              // 년
+        @Query("month") month: Int?,            // 월
+        @Query("deptId") departmentId: String,  // 부서 아이디
+        @Query("searchType") type: String,      // 검색 타입 (all: 전체, prjctNm: 프로젝트명, PM: 프로젝트 책임자명)
+        @Query("keyword") searchText: String,   // 검색어
+        @Query("page") page: Int? = null,       // 페이지 번호: 0부터 시작
+        @Query("size") size: Int? = null        // 페이지 당 데이터 개수
+    ): ProjectDTO.GetProjectStatusResponse
+
     // 프로젝트 등록
     @POST("/api/prjcts")
     suspend fun addProject(

@@ -3,14 +3,12 @@ package com.example.attendancemanagementapp.ui.project
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.attendancemanagementapp.data.dto.DepartmentDTO
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.data.repository.DepartmentRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.data.repository.ProjectRepository
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.base.UiEffect
-import com.example.attendancemanagementapp.ui.hr.employee.EmployeeViewModel
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddEvent
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddReducer
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddState
@@ -21,6 +19,7 @@ import com.example.attendancemanagementapp.ui.project.add.ProjectAddSearchField
 import com.example.attendancemanagementapp.ui.project.personnel.ProjectPersonnelEvent
 import com.example.attendancemanagementapp.ui.project.personnel.ProjectPersonnelReducer
 import com.example.attendancemanagementapp.ui.project.personnel.ProjectPersonnelState
+import com.example.attendancemanagementapp.ui.project.status.ProjectStatusCnt
 import com.example.attendancemanagementapp.ui.project.status.ProjectStatusEvent
 import com.example.attendancemanagementapp.ui.project.status.ProjectStatusReducer
 import com.example.attendancemanagementapp.ui.project.status.ProjectStatusState
@@ -34,7 +33,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class ProjectTarget { ADD, PERSONNEL }
+enum class ProjectTarget { PERSONNEL, STATUS }
 
 @HiltViewModel
 class ProjectViewModel @Inject constructor(private val projectRepository: ProjectRepository, private val employeeRepository: EmployeeRepository, private val departmentRepository: DepartmentRepository, private val commonCodeRepository: CommonCodeRepository) : ViewModel() {
@@ -60,26 +59,26 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
         when (e) {
             ProjectAddEvent.Init -> {
                 getEmployees()
-                getDepartments(target = ProjectTarget.ADD)
+                getDepartments()
                 getProjectType()
                 getPersonnelType()
             }
             ProjectAddEvent.ClickedAdd -> addProject()
             is ProjectAddEvent.ClickedSearchWith -> {
                 when (e.field) {
-                    ProjectAddSearchField.DEPARTMENT -> getDepartments(target = ProjectTarget.ADD)
+                    ProjectAddSearchField.DEPARTMENT -> getDepartments()
                     ProjectAddSearchField.EMPLOYEE -> getEmployees()
                 }
             }
             is ProjectAddEvent.ClickedSearchInitWith -> {
                 when (e.field) {
-                    ProjectAddSearchField.DEPARTMENT -> getDepartments(target = ProjectTarget.ADD)
+                    ProjectAddSearchField.DEPARTMENT -> getDepartments()
                     ProjectAddSearchField.EMPLOYEE -> getEmployees()
                 }
             }
             is ProjectAddEvent.LoadNextPage -> {
                 when (e.field) {
-                    ProjectAddSearchField.DEPARTMENT -> getDepartments(target = ProjectTarget.ADD)
+                    ProjectAddSearchField.DEPARTMENT -> getDepartments()
                     ProjectAddSearchField.EMPLOYEE -> getEmployees()
                 }
             }
@@ -99,7 +98,7 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
         _projectPersonnelState.update { ProjectPersonnelReducer.reduce(it, e) }
 
         when (e) {
-            ProjectPersonnelEvent.Init -> getDepartments(target = ProjectTarget.PERSONNEL)
+            ProjectPersonnelEvent.Init -> getAllDepartments(target = ProjectTarget.PERSONNEL)
         }
     }
 
@@ -107,8 +106,19 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
         _projectStatusState.update { ProjectStatusReducer.reduce(it, e) }
 
         when (e) {
-            ProjectStatusEvent.Init -> getAllDepartments()
-//            is ProjectStatusEvent.SelectedProjectWith -> getProjectStatus(e.projectId)
+            ProjectStatusEvent.InitFirst -> {
+                getAllDepartments(target = ProjectTarget.STATUS)
+                getProjectStatus()
+            }
+            ProjectStatusEvent.LoadNextPage -> getProjectStatus()
+            ProjectStatusEvent.ClickedSearch -> getProjectStatus()
+            ProjectStatusEvent.ClickedInitSearchText -> getProjectStatus()
+            is ProjectStatusEvent.ClickedProjectWith -> {
+                getProject(e.id)
+                _uiEffect.tryEmit(UiEffect.Navigate("projectDetail"))
+            }
+            ProjectStatusEvent.ClickedInitFilter -> getProjectStatus()
+            is ProjectStatusEvent.ClickedUseFilter -> getProjectStatus()
             else -> Unit
         }
     }
@@ -178,18 +188,18 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
         }
     }
 
-    /* 프로젝트 현황 조회 */
-    fun getProjectStatus() {
+    /* 프로젝트 상세 조회 */
+    fun getProject(projectId: String) {
         viewModelScope.launch {
-            projectRepository.getProjectStatus(projectId = projectStatusState.value.selectedProjectId).collect { result ->
+            projectRepository.getProject(projectId = projectId).collect { result ->
                 result
                     .onSuccess { data ->
                         _projectDetailState.update { it.copy(projectInfo = data) }
 
-                        Log.d(TAG, "[getProjectStatus] 프로젝트 현황 조회 성공\n${data}")
+                        Log.d(TAG, "[getProject] 프로젝트 상세 조회 성공\n${data}")
                     }
                     .onFailure { e ->
-                        ErrorHandler.handle(e, TAG, "getProjectStatus")
+                        ErrorHandler.handle(e, TAG, "getProject")
                     }
             }
         }
@@ -249,74 +259,70 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
     }
 
     /* 부서 목록 조회 */
-    fun getDepartments(target: ProjectTarget) {
+    fun getDepartments() {
         viewModelScope.launch {
-            when (target) {
-                ProjectTarget.ADD -> {
-                    val state = projectAddState.value.departmentState
+            val state = projectAddState.value.departmentState
 
-                    _projectAddState.update {
-                        it.copy(
-                            departmentState = it.departmentState.copy(
-                                paginationState = it.departmentState.paginationState.copy(isLoading = true)
-                            )
-                        )
-                    }
+            _projectAddState.update {
+                it.copy(
+                    departmentState = it.departmentState.copy(
+                        paginationState = it.departmentState.paginationState.copy(isLoading = true)
+                    )
+                )
+            }
 
-                    departmentRepository.getDepartments(
-                        searchName = state.searchText,
-                        page = state.paginationState.currentPage
-                    ).collect { result ->
-                        result
-                            .onSuccess { data ->
-                                if (state.paginationState.currentPage == 0) {
-                                    _projectAddState.update {
-                                        it.copy(
-                                            departmentState = it.departmentState.copy(
-                                                departments = data.content,
-                                                paginationState = it.departmentState.paginationState.copy(
-                                                    currentPage = it.departmentState.paginationState.currentPage + 1,
-                                                    totalPage = data.totalPages,
-                                                    isLoading = false
-                                                )
-                                            )
+            departmentRepository.getDepartments(
+                searchName = state.searchText,
+                page = state.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        if (state.paginationState.currentPage == 0) {
+                            _projectAddState.update {
+                                it.copy(
+                                    departmentState = it.departmentState.copy(
+                                        departments = data.content,
+                                        paginationState = it.departmentState.paginationState.copy(
+                                            currentPage = it.departmentState.paginationState.currentPage + 1,
+                                            totalPage = data.totalPages,
+                                            isLoading = false
                                         )
-                                    }
-                                } else {
-                                    _projectAddState.update {
-                                        it.copy(
-                                            departmentState = it.departmentState.copy(
-                                                departments = it.departmentState.departments + data.content,
-                                                paginationState = it.departmentState.paginationState.copy(
-                                                    currentPage = it.departmentState.paginationState.currentPage + 1,
-                                                    isLoading = false
-                                                )
-                                            )
+                                    )
+                                )
+                            }
+                        } else {
+                            _projectAddState.update {
+                                it.copy(
+                                    departmentState = it.departmentState.copy(
+                                        departments = it.departmentState.departments + data.content,
+                                        paginationState = it.departmentState.paginationState.copy(
+                                            currentPage = it.departmentState.paginationState.currentPage + 1,
+                                            isLoading = false
                                         )
-                                    }
-                                }
+                                    )
+                                )
+                            }
+                        }
 
-                                Log.d(TAG, "[getDepartments] 부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}")
-                            }
-                            .onFailure { e ->
-                                ErrorHandler.handle(e, TAG, "getDepartments")
-                            }
+                        Log.d(TAG, "[getDepartments] 부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}")
                     }
-                }
-                ProjectTarget.PERSONNEL -> {
-
-                }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "getDepartments")
+                    }
             }
         }
     }
 
     /* 전체 부서 조회 */
-    fun getAllDepartments() {
+    fun getAllDepartments(target: ProjectTarget) {
         viewModelScope.launch {
             departmentRepository.getAllDepartments().collect { result ->
                 result
                     .onSuccess { departments ->
-                        _projectStatusState.update { it.copy(departments = departments) }
+                        when (target) {
+                            ProjectTarget.PERSONNEL -> _projectPersonnelState.update { it.copy(departments = departments) }
+                            ProjectTarget.STATUS -> _projectStatusState.update { it.copy(departments = departments) }
+                        }
 
                         Log.d(TAG, "[getAllDepartments] 전체 부서 조회 성공\n${departments}")
                     }
@@ -345,5 +351,59 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
 //                    }
 //            }
 //        }
+    }
+
+    /* 프로젝트 현황 조회 */
+    fun getProjectStatus() {
+        val state = projectStatusState.value
+
+        viewModelScope.launch {
+            _projectStatusState.update { it.copy(paginationState = it.paginationState.copy(isLoading = true)) }
+
+            projectRepository.getProjectStatus(
+                query = state.filter,
+                page = state.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        if (state.paginationState.currentPage == 0) {
+                            _projectStatusState.update { it.copy(
+                                projects = data.projects.content,
+                                cntStatus = ProjectStatusCnt(
+                                    total = data.totalCnt ?: 0,
+                                    inProgress = data.inProgressCnt ?: 0,
+                                    notStarted = data.notStartCnt ?: 0,
+                                    completed = data.completeCnt ?: 0
+                                ),
+                                paginationState = it.paginationState.copy(
+                                    currentPage = it.paginationState.currentPage + 1,
+                                    totalPage = data.projects.totalpages,
+                                    isLoading = false
+                                ))
+                            }
+                        }
+                        else {
+                            _projectStatusState.update { it.copy(
+                                projects = it.projects + data.projects.content,
+                                cntStatus = ProjectStatusCnt(
+                                    total = data.totalCnt ?: 0,
+                                    inProgress = data.inProgressCnt ?: 0,
+                                    notStarted = data.notStartCnt ?: 0,
+                                    completed = data.completeCnt ?: 0
+                                ),
+                                paginationState = it.paginationState.copy(
+                                    currentPage = it.paginationState.currentPage + 1,
+                                    isLoading = false
+                                )
+                            ) }
+                        }
+
+                        Log.d(TAG, "[getProjectStatus] 프로젝트 현황 조회 성공: ${state.paginationState.currentPage + 1}/${data.projects.totalpages}, 검색(${state.filter.year}년/${state.filter.month}월/${state.filter.departmentId}/${state.filter.searchType.label})\n${data.projects.content}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "getProjectStatus")
+                    }
+            }
+        }
     }
 }

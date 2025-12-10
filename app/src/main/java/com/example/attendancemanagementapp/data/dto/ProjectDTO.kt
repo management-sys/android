@@ -102,4 +102,39 @@ object ProjectDTO {
         @Json(name = "userId")  val id: String,         // 사용자 ID
         @Json(name = "userNm")  val name: String        // 사용자명
     )
+
+    /* 프로젝트 현황 조회 응답 */
+    data class GetProjectStatusResponse(
+        @Json(name = "totalCount")  val totalCnt: Int?,
+        @Json(name = "icount")      val inProgressCnt: Int?,
+        @Json(name = "ncount")      val notStartCnt: Int?,
+        @Json(name = "ccount")      val completeCnt: Int?,
+        @Json(name = "deptList")    val departments: List<DepartmentInfo>,
+        @Json(name = "prjcts")      val projects: ProjectStatusesInfo
+    )
+
+    /* 프로젝트 현황 목록 */
+    data class ProjectStatusesInfo(
+        @Json(name = "content")     val content: List<ProjectStatusInfo>,
+        @Json(name = "totalPages")  val totalpages: Int
+    )
+
+    /* 프로젝트 현황 목록 데이터 */
+    data class ProjectStatusInfo(
+        @Json(name = "bsnsBgnde")           val businessStartDate: String = "",                                 // 시작일
+        @Json(name = "bsnsEndde")           val businessEndDate: String = "",                                   // 종료일
+        @Json(name = "chrgDeptNm")          val departmentName: String = "",                                    // 담당부서명
+        @Json(name = "prjctId")             val projectId: String = "",                                         // 프로젝트 아이디
+        @Json(name = "prjctNm")             val projectName: String = "",                                       // 프로젝트명
+        @Json(name = "prjctRspnberNm")      val managerName: String = "",                                       // 프로젝트 책임자 이름
+        @Json(name = "progrsSttus")         val status: String = "",                                            // 진행상태
+        @Json(name = "se")                  val type: String = "",                                              // 구분 (용역/내부/국가과제)
+        @Json(name = "wct")                 val businessExpense: Int? = 0                                       // 사업비
+    )
+
+    /* (검색조건) 프로젝트에 참여한 부서 목록 데이터 */
+    data class DepartmentInfo(
+        @Json(name = "deptId")  val id: String,     // 부서 아이디
+        @Json(name = "deptNm")  val name: String    // 부서명
+    )
 }

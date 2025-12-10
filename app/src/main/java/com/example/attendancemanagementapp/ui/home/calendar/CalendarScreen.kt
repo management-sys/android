@@ -206,11 +206,11 @@ private fun ScheduleItem(scheduleInfo: ScheduleInfo) {
                 fontSize = 15.sp,
                 color = color,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(end = 10.dp)
+                modifier = Modifier.weight(0.25f).padding(end = 10.dp)
             )
 
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(0.75f),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(

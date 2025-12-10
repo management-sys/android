@@ -41,11 +41,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.data.dto.ProjectDTO.MeetingsInfo
-import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
-import com.example.attendancemanagementapp.ui.components.InfoBar
-import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TowLineInfoBar
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.meeting.MeetingViewModel
@@ -68,10 +65,6 @@ fun ProjectDetailScreen(navController: NavController, projectViewModel: ProjectV
     val tabs = listOf("프로젝트 정보", "회의록 정보")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
-
-    LaunchedEffect(Unit) {
-        projectViewModel.getProjectStatus()
-    }
 
     Scaffold(
         topBar = {
