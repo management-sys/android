@@ -43,7 +43,7 @@ object EmployeeDTO {
 
     /* 경력 정보 목록 데이터 */
     data class CareerInfo(
-        @Json(name = "crrId")   val id: Int? = 0,               // 경력 아이디 (TODO: 직원 정보 수정 API 바뀐거 보고 null로 주면 되는지 확인 필요)
+        @Json(name = "crrId")   val id: Int? = 0,               // 경력 아이디
         @Json(name = "cpnNm")   val name: String = "",          // 회사명
         @Json(name = "encpn")   val hireDate: String = "",      // 입사일
         @Json(name = "excpn")   val resignDate: String? = null  // 퇴사일 (현재 재직중이면 null)

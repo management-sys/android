@@ -1,8 +1,6 @@
-package com.example.attendancemanagementapp.ui.project.add
+package com.example.attendancemanagementapp.ui.project.edit
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,13 +22,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,15 +32,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,7 +46,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -68,13 +58,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.ui.components.BasicButton
-import com.example.attendancemanagementapp.ui.components.BasicCheckbox
-import com.example.attendancemanagementapp.ui.components.BasicDatePickerDialog
 import com.example.attendancemanagementapp.ui.components.BasicOutlinedTextField
-import com.example.attendancemanagementapp.ui.components.BasicOutlinedTextFieldColors
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.DropDownField
 import com.example.attendancemanagementapp.ui.components.StartEndDateEditBar
@@ -85,11 +71,16 @@ import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineSearchEditBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
-import com.example.attendancemanagementapp.ui.hr.employee.add.EmployeeAddEvent
 import com.example.attendancemanagementapp.ui.hr.employee.edit.DepartmentInfoItem
 import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeInfoItem
-import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddEvent
 import com.example.attendancemanagementapp.ui.project.ProjectViewModel
+import com.example.attendancemanagementapp.ui.project.add.BottomSheetType
+import com.example.attendancemanagementapp.ui.project.add.EmployeeItem
+import com.example.attendancemanagementapp.ui.project.add.ProjectAddEvent
+import com.example.attendancemanagementapp.ui.project.add.ProjectAddField
+import com.example.attendancemanagementapp.ui.project.add.ProjectAddSearchField
+import com.example.attendancemanagementapp.ui.project.add.ProjectAddState
+import com.example.attendancemanagementapp.ui.project.edit.PersonnelItem
 import com.example.attendancemanagementapp.ui.theme.BackgroundColor
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.TextGray
@@ -97,20 +88,12 @@ import com.example.attendancemanagementapp.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
-enum class BottomSheetType { NONE, DEPARTMENT, MANAGER, ASSIGNED_PERSONNEL }
-
-/* 프로젝트 등록 화면 */
+/* 프로젝트 수정 화면 */
 @Composable
-fun ProjectAddScreen(navController: NavController, projectViewModel: ProjectViewModel) {
-    val onEvent = projectViewModel::onAddEvent
-    val projectAddState by projectViewModel.projectAddState.collectAsState()
+fun ProjectEditScreen(navController: NavController, projectViewModel: ProjectViewModel) {
+    val onEvent = projectViewModel::onEditEvent
+    val projectEditState by projectViewModel.projectEditState.collectAsState()
 
     val tabs = listOf("프로젝트 정보", "투입인력")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
@@ -121,20 +104,20 @@ fun ProjectAddScreen(navController: NavController, projectViewModel: ProjectView
     if (bottomSheetType != BottomSheetType.NONE) {
         ProjectBottomSheet(
             bottomSheetType = bottomSheetType,
-            projectAddState = projectAddState,
+            projectEditState = projectEditState,
             onEvent = onEvent,
             onDismiss = { bottomSheetType = BottomSheetType.NONE }
         )
     }
 
     LaunchedEffect(Unit) {
-        onEvent(ProjectAddEvent.Init)
+        onEvent(ProjectEditEvent.Init)
     }
 
     Scaffold(
         topBar = {
             BasicTopBar(
-                title = "프로젝트 등록",
+                title = "프로젝트 수정",
                 onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         }
@@ -180,8 +163,8 @@ fun ProjectAddScreen(navController: NavController, projectViewModel: ProjectView
                     ) {
                         when (page) {
                             0 -> {  // 프로젝트 정보
-                                ProjectAddCard(
-                                    projectAddState = projectAddState,
+                                ProjectInfoEditCard(
+                                    projectEditState = projectEditState,
                                     onEvent = onEvent,
                                     onOpenDepartment = { bottomSheetType = BottomSheetType.DEPARTMENT },
                                     onOpenManager = { bottomSheetType = BottomSheetType.MANAGER }
@@ -197,12 +180,11 @@ fun ProjectAddScreen(navController: NavController, projectViewModel: ProjectView
                                     )
                                 }
                             }
-                            1 -> {  // 투입 현황
-                                PersonnelAddCard(
-                                    projectAddState = projectAddState,
-                                    onOpenPersonnel = {
-                                        bottomSheetType = BottomSheetType.ASSIGNED_PERSONNEL
-                                    },
+
+                            1 -> {  // 회의록 정보
+                                PersonnelEditCard(
+                                    projectEditState = projectEditState,
+                                    onOpenPersonnel = { bottomSheetType = BottomSheetType.ASSIGNED_PERSONNEL },
                                     onEvent = onEvent
                                 )
 
@@ -216,16 +198,12 @@ fun ProjectAddScreen(navController: NavController, projectViewModel: ProjectView
                                     )
 
                                     BasicButton(
-                                        name = "저장",
-                                        onClick = { onEvent(ProjectAddEvent.ClickedAdd) }
+                                        name = "수정",
+                                        onClick = { onEvent(ProjectEditEvent.ClickedUpdate) }
                                     )
                                 }
                             }
                         }
-
-                        Box(
-                            modifier = Modifier.height(40.dp)
-                        )
                     }
                 }
             }
@@ -233,11 +211,11 @@ fun ProjectAddScreen(navController: NavController, projectViewModel: ProjectView
     }
 }
 
-/* 프로젝트 등록 카드 */
+/* 프로젝트 정보 수정 카드 */
 @Composable
-private fun ProjectAddCard(
-    projectAddState: ProjectAddState,
-    onEvent: (ProjectAddEvent) -> Unit,
+private fun ProjectInfoEditCard(
+    projectEditState: ProjectEditState,
+    onEvent: (ProjectEditEvent) -> Unit,
     onOpenDepartment: () -> Unit,
     onOpenManager: () -> Unit
 ) {
@@ -253,81 +231,81 @@ private fun ProjectAddCard(
             TwoLineDropdownEditBar(
                 name = "구분",
                 isRequired = true,
-                options = projectAddState.projectTypeOptions,
-                selected = projectAddState.inputData.type,
-                onSelected = { onEvent(ProjectAddEvent.SelectedTypeWith(it)) }
+                options = projectEditState.projectTypeOptions,
+                selected = projectEditState.inputData.type,
+                onSelected = { onEvent(ProjectEditEvent.SelectedTypeWith(it)) }
             )
 
             TwoLineEditBar(
                 name = "프로젝트명",
                 isRequired = true,
-                value = projectAddState.inputData.projectName,
-                onValueChange = { onEvent(ProjectAddEvent.ChangedValueWith(ProjectAddField.PROJECT_NAME, it)) }
+                value = projectEditState.inputData.projectName,
+                onValueChange = { onEvent(ProjectEditEvent.ChangedValueWith(ProjectAddField.PROJECT_NAME, it)) }
             )
 
             TwoLineEditBar(
                 name = "주관기관",
-                value = projectAddState.inputData.companyName ?: "",
-                onValueChange = { onEvent(ProjectAddEvent.ChangedValueWith(ProjectAddField.COMPANY_NAME, it)) }
+                value = projectEditState.inputData.companyName ?: "",
+                onValueChange = { onEvent(ProjectEditEvent.ChangedValueWith(ProjectAddField.COMPANY_NAME, it)) }
             )
 
             TwoLineSearchEditBar(
                 name = "담당부서",
                 isRequired = true,
-                value = projectAddState.departmentName,
+                value = projectEditState.departmentName,
                 onClick = { onOpenDepartment() }
             )
 
             TwoLineSearchEditBar(
                 name = "프로젝트 책임자",
                 isRequired = true,
-                value = projectAddState.managerName,
+                value = projectEditState.managerName,
                 onClick = { onOpenManager() }
             )
 
             TwoLineEditBar(
                 name = "사업비",
-                value = projectAddState.inputData.businessExpense.toString(),
-                onValueChange = { onEvent(ProjectAddEvent.ChangedValueWith(ProjectAddField.BUSINESS_EXPENSE, it)) },
+                value = projectEditState.inputData.businessExpense.toString(),
+                onValueChange = { onEvent(ProjectEditEvent.ChangedValueWith(ProjectAddField.BUSINESS_EXPENSE, it)) },
                 onlyNumber = true
             )
 
             TwoLineEditBar(
                 name = "회의비",
-                value = projectAddState.inputData.meetingExpense.toString(),
-                onValueChange = { onEvent(ProjectAddEvent.ChangedValueWith(ProjectAddField.MEETING_EXPENSE, it)) },
+                value = projectEditState.inputData.meetingExpense.toString(),
+                onValueChange = { onEvent(ProjectEditEvent.ChangedValueWith(ProjectAddField.MEETING_EXPENSE, it)) },
                 onlyNumber = true
             )
 
             StartEndDateEditBar(
                 name = "사업기간",
-                startDate = projectAddState.inputData.businessStartDate,
-                endDate = projectAddState.inputData.businessEndDate,
-                onStartChange = { onEvent(ProjectAddEvent.ChangedValueWith(ProjectAddField.BUSINESS_START, it)) },
-                onEndChange = { onEvent(ProjectAddEvent.ChangedValueWith(ProjectAddField.BUSINESS_END, it)) },
+                startDate = projectEditState.inputData.businessStartDate,
+                endDate = projectEditState.inputData.businessEndDate,
+                onStartChange = { onEvent(ProjectEditEvent.ChangedValueWith(ProjectAddField.BUSINESS_START, it)) },
+                onEndChange = { onEvent(ProjectEditEvent.ChangedValueWith(ProjectAddField.BUSINESS_END, it)) },
                 isRequired = true
             )
 
             StartEndDateEditBar(
                 name = "계획기간",
-                startDate = projectAddState.inputData.planStartDate ?: "",
-                endDate = projectAddState.inputData.planEndDate ?: "",
-                onStartChange = { onEvent(ProjectAddEvent.ChangedValueWith(ProjectAddField.PLAN_START, it)) },
-                onEndChange = { onEvent(ProjectAddEvent.ChangedValueWith(ProjectAddField.PLAN_END, it)) }
+                startDate = projectEditState.inputData.planStartDate ?: "",
+                endDate = projectEditState.inputData.planEndDate ?: "",
+                onStartChange = { onEvent(ProjectEditEvent.ChangedValueWith(ProjectAddField.PLAN_START, it)) },
+                onEndChange = { onEvent(ProjectEditEvent.ChangedValueWith(ProjectAddField.PLAN_END, it)) }
             )
 
             StartEndDateEditBar(
                 name = "실제기간",
-                startDate = projectAddState.inputData.realStartDate ?: "",
-                endDate = projectAddState.inputData.realEndDate ?: "",
-                onStartChange = { onEvent(ProjectAddEvent.ChangedValueWith(ProjectAddField.REAL_START, it)) },
-                onEndChange = { onEvent(ProjectAddEvent.ChangedValueWith(ProjectAddField.REAL_END, it)) }
+                startDate = projectEditState.inputData.realStartDate ?: "",
+                endDate = projectEditState.inputData.realEndDate ?: "",
+                onStartChange = { onEvent(ProjectEditEvent.ChangedValueWith(ProjectAddField.REAL_START, it)) },
+                onEndChange = { onEvent(ProjectEditEvent.ChangedValueWith(ProjectAddField.REAL_END, it)) }
             )
 
             TwoLineBigEditBar(
                 name = "비고",
-                value = projectAddState.inputData.remark ?: "",
-                onValueChange = { onEvent(ProjectAddEvent.ChangedValueWith(ProjectAddField.REMARK, it)) }
+                value = projectEditState.inputData.remark ?: "",
+                onValueChange = { onEvent(ProjectEditEvent.ChangedValueWith(ProjectAddField.REMARK, it)) }
             )
         }
     }
@@ -335,10 +313,10 @@ private fun ProjectAddCard(
 
 /* 투입인력 등록 카드 */
 @Composable
-private fun PersonnelAddCard(
-    projectAddState: ProjectAddState,
+private fun PersonnelEditCard(
+    projectEditState: ProjectEditState,
     onOpenPersonnel: () -> Unit,
-    onEvent: (ProjectAddEvent) -> Unit
+    onEvent: (ProjectEditEvent) -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -378,7 +356,7 @@ private fun PersonnelAddCard(
                 }
             }
 
-            if (projectAddState.inputData.assignedPersonnels.isEmpty()) {
+            if (projectEditState.inputData.assignedPersonnels.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -391,11 +369,12 @@ private fun PersonnelAddCard(
                 }
             }
             else {
-                projectAddState.inputData.assignedPersonnels.forEach { personnel ->
+                projectEditState.inputData.assignedPersonnels.forEach { personnel ->
                     PersonnelItem(
                         personnelInfo = personnel,
-                        name = projectAddState.employeeState.employees.find { it.userId == personnel.chargerId }?.name ?: "",
-                        typeOptions = projectAddState.personnelTypeOptions,
+                        name = personnel.name,
+//                        name = projectEditState.employeeState.employees.find { it.userId == personnel.managerId }?.name ?: "",
+                        typeOptions = projectEditState.personnelTypeOptions,
                         onEvent = onEvent
                     )
                 }
@@ -406,7 +385,12 @@ private fun PersonnelAddCard(
 
 /* 투입인력 목록 아이템 */
 @Composable
-private fun PersonnelItem(personnelInfo: ProjectDTO.AssignedPersonnelRequestInfo, name: String, typeOptions: List<String>, onEvent: (ProjectAddEvent) -> Unit) {
+private fun PersonnelItem(
+    personnelInfo: ProjectDTO.AssignedPersonnelInfo,
+    name: String,
+    typeOptions: List<String>,
+    onEvent: (ProjectEditEvent) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -422,7 +406,7 @@ private fun PersonnelItem(personnelInfo: ProjectDTO.AssignedPersonnelRequestInfo
                 modifier = Modifier.weight(0.5f),
                 options = typeOptions,
                 selected = personnelInfo.type,
-                onSelected = { onEvent(ProjectAddEvent.SelectedPersonnelTypeWith(personnelInfo.chargerId, it)) }
+                onSelected = { onEvent(ProjectEditEvent.SelectedPersonnelTypeWith(personnelInfo.managerId, it)) }
             )
 
             Divider(modifier = Modifier.fillMaxHeight().padding(horizontal = 10.dp).width(1.dp))
@@ -442,11 +426,11 @@ private fun PersonnelItem(personnelInfo: ProjectDTO.AssignedPersonnelRequestInfo
 @Composable
 private fun ProjectBottomSheet(
     bottomSheetType: BottomSheetType,
-    projectAddState: ProjectAddState,
-    onEvent: (ProjectAddEvent) -> Unit,
+    projectEditState: ProjectEditState,
+    onEvent: (ProjectEditEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberModalBottomSheetState()
 
     ModalBottomSheet(
         modifier = Modifier.fillMaxSize(),
@@ -458,27 +442,27 @@ private fun ProjectBottomSheet(
         when (bottomSheetType) {
             BottomSheetType.DEPARTMENT -> {
                 DepartmentBottomSheetContent(
-                    projectAddState = projectAddState,
+                    projectEditState = projectEditState,
                     onEvent = onEvent,
                     onDismiss = {
                         onDismiss()
-                        onEvent(ProjectAddEvent.ChangedSearchValueWith(ProjectAddSearchField.DEPARTMENT, ""))
+                        onEvent(ProjectEditEvent.ChangedSearchValueWith(ProjectAddSearchField.DEPARTMENT, ""))
                     }
                 )
             }
             BottomSheetType.MANAGER -> {
                 ManagerBottomSheetContent(
-                    projectAddState = projectAddState,
+                    projectEditState = projectEditState,
                     onEvent = onEvent,
                     onDismiss = {
                         onDismiss()
-                        onEvent(ProjectAddEvent.ChangedSearchValueWith(ProjectAddSearchField.EMPLOYEE, ""))
+                        onEvent(ProjectEditEvent.ChangedSearchValueWith(ProjectAddSearchField.EMPLOYEE, ""))
                     }
                 )
             }
             BottomSheetType.ASSIGNED_PERSONNEL -> {
                 AssignedPersonnelBottomSheetContent(
-                    projectAddState = projectAddState,
+                    projectEditState = projectEditState,
                     onEvent = onEvent
                 )
             }
@@ -490,8 +474,8 @@ private fun ProjectBottomSheet(
 /* 담당부서 선택 바텀 시트 내용 */
 @Composable
 private fun DepartmentBottomSheetContent(
-    projectAddState: ProjectAddState,
-    onEvent: (ProjectAddEvent) -> Unit,
+    projectEditState: ProjectEditState,
+    onEvent: (ProjectEditEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
     val listState = rememberLazyListState()
@@ -503,8 +487,8 @@ private fun DepartmentBottomSheetContent(
             val total = info.totalItemsCount
             lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !projectAddState.departmentState.paginationState.isLoading && projectAddState.departmentState.paginationState.currentPage < projectAddState.departmentState.paginationState.totalPage) {
-                onEvent(ProjectAddEvent.LoadNextPage(ProjectAddSearchField.DEPARTMENT))
+            if (shouldLoad && !projectEditState.departmentState.paginationState.isLoading && projectEditState.departmentState.paginationState.currentPage < projectEditState.departmentState.paginationState.totalPage) {
+                onEvent(ProjectEditEvent.LoadNextPage(ProjectAddSearchField.DEPARTMENT))
             }
         }
     }
@@ -517,41 +501,42 @@ private fun DepartmentBottomSheetContent(
         SearchBar(
             modifier = Modifier.fillMaxWidth(),
             searchState = SearchState(
-                value = projectAddState.departmentState.searchText,
-                onValueChange = { onEvent(ProjectAddEvent.ChangedSearchValueWith(ProjectAddSearchField.DEPARTMENT, it)) },
+                value = projectEditState.departmentState.searchText,
+                onValueChange = { onEvent(ProjectEditEvent.ChangedSearchValueWith(ProjectAddSearchField.DEPARTMENT, it)) },
                 onClickSearch = {
-                    if (projectAddState.departmentState.paginationState.currentPage <= projectAddState.departmentState.paginationState.totalPage) {
-                        onEvent(ProjectAddEvent.ClickedSearchWith(ProjectAddSearchField.DEPARTMENT)) }
-                    },
-                onClickInit = { onEvent(ProjectAddEvent.ClickedSearchInitWith(ProjectAddSearchField.DEPARTMENT)) }
+                    if (projectEditState.departmentState.paginationState.currentPage <= projectEditState.departmentState.paginationState.totalPage) {
+                        onEvent(ProjectEditEvent.ClickedSearchWith(ProjectAddSearchField.DEPARTMENT)) }
+                },
+                onClickInit = { onEvent(ProjectEditEvent.ClickedSearchInitWith(ProjectAddSearchField.DEPARTMENT)) }
             ),
             hint = "부서명"
         )
 
-        if (projectAddState.departmentState.departments.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "조회된 결과가 없습니다",
-                    color = TextGray,
-                    fontSize = 15.sp
-                )
-            }
-        }
-        else {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                state = listState
-            ) {
-                items(projectAddState.departmentState.departments) { item ->
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            state = listState
+        ) {
+            if (projectEditState.departmentState.departments.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(top = 30.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "조회된 결과가 없습니다",
+                            color = TextGray,
+                            fontSize = 15.sp
+                        )
+                    }
+                }
+            } else {
+                items(projectEditState.departmentState.departments) { item ->
                     DepartmentInfoItem(
                         name = item.name,
                         head = item.headName ?: "",
                         onClick = {
-                            onEvent(ProjectAddEvent.SelectedDepartmentWith(item))
+                            onEvent(ProjectEditEvent.SelectedDepartmentWith(item))
                             onDismiss()
                         }
                     )
@@ -568,8 +553,8 @@ private fun DepartmentBottomSheetContent(
 /* 프로젝트 책임자 선택 바텀 시트 내용 */
 @Composable
 private fun ManagerBottomSheetContent(
-    projectAddState: ProjectAddState,
-    onEvent: (ProjectAddEvent) -> Unit,
+    projectEditState: ProjectEditState,
+    onEvent: (ProjectEditEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
     val listState = rememberLazyListState()
@@ -581,8 +566,8 @@ private fun ManagerBottomSheetContent(
             val total = info.totalItemsCount
             lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !projectAddState.employeeState.paginationState.isLoading && projectAddState.employeeState.paginationState.currentPage < projectAddState.employeeState.paginationState.totalPage) {
-                onEvent(ProjectAddEvent.LoadNextPage(ProjectAddSearchField.EMPLOYEE))
+            if (shouldLoad && !projectEditState.employeeState.paginationState.isLoading && projectEditState.employeeState.paginationState.currentPage < projectEditState.employeeState.paginationState.totalPage) {
+                onEvent(ProjectEditEvent.LoadNextPage(ProjectAddSearchField.EMPLOYEE))
             }
         }
     }
@@ -595,36 +580,37 @@ private fun ManagerBottomSheetContent(
         SearchBar(
             modifier = Modifier.fillMaxWidth(),
             searchState = SearchState(
-                value = projectAddState.employeeState.searchText,
-                onValueChange = { onEvent(ProjectAddEvent.ChangedSearchValueWith(ProjectAddSearchField.EMPLOYEE, it)) },
+                value = projectEditState.employeeState.searchText,
+                onValueChange = { onEvent(ProjectEditEvent.ChangedSearchValueWith(ProjectAddSearchField.EMPLOYEE, it)) },
                 onClickSearch = {
-                    if (projectAddState.employeeState.paginationState.currentPage <= projectAddState.employeeState.paginationState.totalPage) {
-                        onEvent(ProjectAddEvent.ClickedSearchWith(ProjectAddSearchField.EMPLOYEE)) }
+                    if (projectEditState.employeeState.paginationState.currentPage <= projectEditState.employeeState.paginationState.totalPage) {
+                        onEvent(ProjectEditEvent.ClickedSearchWith(ProjectAddSearchField.EMPLOYEE)) }
                 },
-                onClickInit = { onEvent(ProjectAddEvent.ClickedSearchInitWith(ProjectAddSearchField.EMPLOYEE)) }
+                onClickInit = { onEvent(ProjectEditEvent.ClickedSearchInitWith(ProjectAddSearchField.EMPLOYEE)) }
             ),
             hint = "직원명"
         )
 
-        if (projectAddState.employeeState.employees.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "조회된 결과가 없습니다",
-                    color = TextGray,
-                    fontSize = 15.sp
-                )
-            }
-        }
-        else {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                state = listState
-            ) {
-                items(projectAddState.employeeState.employees) { item ->
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            state = listState
+        ) {
+            if (projectEditState.employeeState.employees.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(top = 30.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "조회된 결과가 없습니다",
+                            color = TextGray,
+                            fontSize = 15.sp
+                        )
+                    }
+                }
+            } else {
+                items(projectEditState.employeeState.employees) { item ->
                     EmployeeInfoItem(
                         name = item.name,
                         deptGradeTitle = formatDeptGradeTitle(
@@ -633,11 +619,12 @@ private fun ManagerBottomSheetContent(
                             item.title
                         ),
                         onClick = {
-                            onEvent(ProjectAddEvent.SelectedManagerWith(item))
+                            onEvent(ProjectEditEvent.SelectedManagerWith(item))
                             onDismiss()
                         }
                     )
                 }
+
 
                 item {
                     Spacer(Modifier.height(5.dp))
@@ -650,8 +637,8 @@ private fun ManagerBottomSheetContent(
 /* 투입 인력 선택 바텀 시트 내용 */
 @Composable
 private fun AssignedPersonnelBottomSheetContent(
-    projectAddState: ProjectAddState,
-    onEvent: (ProjectAddEvent) -> Unit
+    projectEditState: ProjectEditState,
+    onEvent: (ProjectEditEvent) -> Unit
 ) {
     val listState = rememberLazyListState()
 
@@ -662,8 +649,8 @@ private fun AssignedPersonnelBottomSheetContent(
             val total = info.totalItemsCount
             lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !projectAddState.employeeState.paginationState.isLoading && projectAddState.employeeState.paginationState.currentPage < projectAddState.employeeState.paginationState.totalPage) {
-                onEvent(ProjectAddEvent.LoadNextPage(ProjectAddSearchField.EMPLOYEE))
+            if (shouldLoad && !projectEditState.employeeState.paginationState.isLoading && projectEditState.employeeState.paginationState.currentPage < projectEditState.employeeState.paginationState.totalPage) {
+                onEvent(ProjectEditEvent.LoadNextPage(ProjectAddSearchField.EMPLOYEE))
             }
         }
     }
@@ -676,44 +663,45 @@ private fun AssignedPersonnelBottomSheetContent(
         SearchBar(
             modifier = Modifier.fillMaxWidth(),
             searchState = SearchState(
-                value = projectAddState.employeeState.searchText,
-                onValueChange = { onEvent(ProjectAddEvent.ChangedSearchValueWith(ProjectAddSearchField.EMPLOYEE, it)) },
+                value = projectEditState.employeeState.searchText,
+                onValueChange = { onEvent(ProjectEditEvent.ChangedSearchValueWith(ProjectAddSearchField.EMPLOYEE, it)) },
                 onClickSearch = {
-                    if (projectAddState.employeeState.paginationState.currentPage <= projectAddState.employeeState.paginationState.totalPage) {
-                        onEvent(ProjectAddEvent.ClickedSearchWith(ProjectAddSearchField.EMPLOYEE)) }
+                    if (projectEditState.employeeState.paginationState.currentPage <= projectEditState.employeeState.paginationState.totalPage) {
+                        onEvent(ProjectEditEvent.ClickedSearchWith(ProjectAddSearchField.EMPLOYEE)) }
                 },
-                onClickInit = { onEvent(ProjectAddEvent.ClickedSearchInitWith(ProjectAddSearchField.EMPLOYEE)) }
+                onClickInit = { onEvent(ProjectEditEvent.ClickedSearchInitWith(ProjectAddSearchField.EMPLOYEE)) }
             ),
             hint = "직원명"
         )
 
-        if (projectAddState.employeeState.employees.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "조회된 결과가 없습니다",
-                    color = TextGray,
-                    fontSize = 15.sp
-                )
-            }
-        }
-        else {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                state = listState
-            ) {
-                items(projectAddState.employeeState.employees) { item ->
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            state = listState
+        ) {
+            if (projectEditState.employeeState.employees.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(top = 30.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "조회된 결과가 없습니다",
+                            color = TextGray,
+                            fontSize = 15.sp
+                        )
+                    }
+                }
+            } else {
+                items(projectEditState.employeeState.employees) { item ->
                     val isChecked =
-                        projectAddState.inputData.assignedPersonnels.any { it.chargerId == item.userId }
+                        projectEditState.inputData.assignedPersonnels.any { it.managerId == item.userId }
                     EmployeeItem(
                         info = item,
                         isChecked = isChecked,
                         onChecked = {
                             onEvent(
-                                ProjectAddEvent.CheckedAssignedPersonnelWith(
+                                ProjectEditEvent.CheckedAssignedPersonnelWith(
                                     it,
                                     item
                                 )
@@ -725,50 +713,6 @@ private fun AssignedPersonnelBottomSheetContent(
                 item {
                     Spacer(Modifier.height(5.dp))
                 }
-            }
-        }
-    }
-}
-
-/* 직원 목록 아이템 */
-@Composable
-fun EmployeeItem(
-    info: EmployeeDTO.ManageEmployeesInfo,
-    isChecked: Boolean,
-    onChecked: (Boolean) -> Unit,
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(width = 0.5.dp, color = DividerDefaults.color.copy(alpha = 0.8f))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            BasicCheckbox(
-                isChecked = isChecked,
-                onChecked = { onChecked(it) }
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = info.name,
-                    fontSize = 15.sp
-                )
-
-                Text(
-                    text = formatDeptGradeTitle(info.department, info.grade, info.title),
-                    fontSize = 15.sp
-                )
             }
         }
     }

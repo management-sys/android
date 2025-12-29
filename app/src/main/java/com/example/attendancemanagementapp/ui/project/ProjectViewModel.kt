@@ -3,12 +3,15 @@ package com.example.attendancemanagementapp.ui.project
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.data.repository.DepartmentRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.data.repository.ProjectRepository
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.base.UiEffect
+import com.example.attendancemanagementapp.ui.project.add.DepartmentSearchState
+import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddEvent
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddReducer
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddState
@@ -16,6 +19,9 @@ import com.example.attendancemanagementapp.ui.project.detail.ProjectDetailEvent
 import com.example.attendancemanagementapp.ui.project.detail.ProjectDetailReducer
 import com.example.attendancemanagementapp.ui.project.detail.ProjectDetailState
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddSearchField
+import com.example.attendancemanagementapp.ui.project.edit.ProjectEditEvent
+import com.example.attendancemanagementapp.ui.project.edit.ProjectEditReducer
+import com.example.attendancemanagementapp.ui.project.edit.ProjectEditState
 import com.example.attendancemanagementapp.ui.project.personnel.ProjectPersonnelEvent
 import com.example.attendancemanagementapp.ui.project.personnel.ProjectPersonnelReducer
 import com.example.attendancemanagementapp.ui.project.personnel.ProjectPersonnelState
@@ -33,7 +39,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class ProjectTarget { PERSONNEL, STATUS }
+enum class ProjectTarget { ADD, EDIT, PERSONNEL, STATUS }
 
 @HiltViewModel
 class ProjectViewModel @Inject constructor(private val projectRepository: ProjectRepository, private val employeeRepository: EmployeeRepository, private val departmentRepository: DepartmentRepository, private val commonCodeRepository: CommonCodeRepository) : ViewModel() {
@@ -48,6 +54,8 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
     val projectAddState = _projectAddState.asStateFlow()
     private val _projectDetailState = MutableStateFlow(ProjectDetailState())
     val projectDetailState = _projectDetailState.asStateFlow()
+    private val _projectEditState = MutableStateFlow(ProjectEditState())
+    val projectEditState = _projectEditState.asStateFlow()
     private val _projectPersonnelState = MutableStateFlow(ProjectPersonnelState())
     val projectPersonnelState = _projectPersonnelState.asStateFlow()
     private val _projectStatusState = MutableStateFlow(ProjectStatusState())
@@ -58,38 +66,74 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
 
         when (e) {
             ProjectAddEvent.Init -> {
-                getEmployees()
-                getDepartments()
-                getProjectType()
-                getPersonnelType()
+                getEmployees(ProjectTarget.ADD)
+                getDepartments(ProjectTarget.ADD)
+                getProjectType(ProjectTarget.ADD)
+                getPersonnelType(ProjectTarget.ADD)
             }
             ProjectAddEvent.ClickedAdd -> addProject()
             is ProjectAddEvent.ClickedSearchWith -> {
                 when (e.field) {
-                    ProjectAddSearchField.DEPARTMENT -> getDepartments()
-                    ProjectAddSearchField.EMPLOYEE -> getEmployees()
+                    ProjectAddSearchField.DEPARTMENT -> getDepartments(ProjectTarget.ADD)
+                    ProjectAddSearchField.EMPLOYEE -> getEmployees(ProjectTarget.ADD)
                 }
             }
             is ProjectAddEvent.ClickedSearchInitWith -> {
                 when (e.field) {
-                    ProjectAddSearchField.DEPARTMENT -> getDepartments()
-                    ProjectAddSearchField.EMPLOYEE -> getEmployees()
+                    ProjectAddSearchField.DEPARTMENT -> getDepartments(ProjectTarget.ADD)
+                    ProjectAddSearchField.EMPLOYEE -> getEmployees(ProjectTarget.ADD)
                 }
             }
             is ProjectAddEvent.LoadNextPage -> {
                 when (e.field) {
-                    ProjectAddSearchField.DEPARTMENT -> getDepartments()
-                    ProjectAddSearchField.EMPLOYEE -> getEmployees()
+                    ProjectAddSearchField.DEPARTMENT -> getDepartments(ProjectTarget.ADD)
+                    ProjectAddSearchField.EMPLOYEE -> getEmployees(ProjectTarget.ADD)
                 }
             }
             else -> Unit
         }
     }
 
-    fun onDetailEvent(e: ProjectDetailEvent) {
+    fun onDetailEvent(e: ProjectDetailEvent){
         _projectDetailState.update { ProjectDetailReducer.reduce(it, e) }
 
         when (e) {
+            ProjectDetailEvent.ClickedDelete -> deleteProject()
+            ProjectDetailEvent.ClickedStop -> stopProject()
+            else -> Unit
+        }
+    }
+
+    fun onEditEvent(e: ProjectEditEvent) {
+        _projectEditState.update { ProjectEditReducer.reduce(it, e) }
+
+        when (e) {
+            is ProjectEditEvent.Init -> {
+                getEmployees(ProjectTarget.EDIT)
+                getDepartments(ProjectTarget.EDIT)
+                getProjectType(ProjectTarget.EDIT)
+                getPersonnelType(ProjectTarget.EDIT)
+                onEditEvent(ProjectEditEvent.InitWith(projectDetailState.value.projectInfo))
+            }
+            ProjectEditEvent.ClickedUpdate -> updateProject()
+            is ProjectEditEvent.ClickedSearchWith -> {
+                when (e.field) {
+                    ProjectAddSearchField.DEPARTMENT -> getDepartments(ProjectTarget.EDIT)
+                    ProjectAddSearchField.EMPLOYEE -> getEmployees(ProjectTarget.EDIT)
+                }
+            }
+            is ProjectEditEvent.ClickedSearchInitWith -> {
+                when (e.field) {
+                    ProjectAddSearchField.DEPARTMENT -> getDepartments(ProjectTarget.EDIT)
+                    ProjectAddSearchField.EMPLOYEE -> getEmployees(ProjectTarget.EDIT)
+                }
+            }
+            is ProjectEditEvent.LoadNextPage -> {
+                when (e.field) {
+                    ProjectAddSearchField.DEPARTMENT -> getDepartments(ProjectTarget.EDIT)
+                    ProjectAddSearchField.EMPLOYEE -> getEmployees(ProjectTarget.EDIT)
+                }
+            }
             else -> Unit
         }
     }
@@ -124,7 +168,7 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
     }
 
     /* 공통코드 목록에서 프로젝트 구분 조회 */
-    fun getProjectType() {
+    fun getProjectType(target: ProjectTarget) {
         viewModelScope.launch {
             commonCodeRepository.getCommonCodes(
                 searchType = SearchType.UPPER_CODE,
@@ -134,19 +178,24 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
                 result
                     .onSuccess { data ->
                         val projectTypeNames: List<String> = data.content.map { it.codeName }
-                        _projectAddState.update { it.copy(projectTypeOptions = projectTypeNames) }
 
-                        Log.d(TAG, "[getProjectType] 프로젝트 구분 목록 조회 성공\n${projectTypeNames}")
+                        when (target) {
+                            ProjectTarget.ADD -> _projectAddState.update { it.copy(projectTypeOptions = projectTypeNames) }
+                            ProjectTarget.EDIT -> _projectEditState.update { it.copy(projectTypeOptions = projectTypeNames) }
+                            else -> Unit
+                        }
+
+                        Log.d(TAG, "[getProjectType-${target}] 프로젝트 구분 목록 조회 성공\n${projectTypeNames}")
                     }
                     .onFailure { e ->
-                        ErrorHandler.handle(e, TAG, "getProjectType")
+                        ErrorHandler.handle(e, TAG, "getProjectType-${target}")
                     }
             }
         }
     }
 
     /* 공통코드 목록에서 투입인력 담당 조회 */
-    fun getPersonnelType() {
+    fun getPersonnelType(target: ProjectTarget) {
         viewModelScope.launch {
             commonCodeRepository.getCommonCodes(
                 searchType = SearchType.UPPER_CODE,
@@ -156,12 +205,17 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
                 result
                     .onSuccess { data ->
                         val personnelTypeNames: List<String> = data.content.map { it.codeName }
-                        _projectAddState.update { it.copy(personnelTypeOptions = personnelTypeNames) }
 
-                        Log.d(TAG, "[getPersonnelType] 투입인력 담당 목록 조회 성공\n${personnelTypeNames}")
+                        when (target) {
+                            ProjectTarget.ADD -> _projectAddState.update { it.copy(personnelTypeOptions = personnelTypeNames) }
+                            ProjectTarget.EDIT -> _projectEditState.update { it.copy(personnelTypeOptions = personnelTypeNames) }
+                            else -> Unit
+                        }
+
+                        Log.d(TAG, "[getPersonnelType-${target}] 투입인력 담당 목록 조회 성공\n${personnelTypeNames}")
                     }
                     .onFailure { e ->
-                        ErrorHandler.handle(e, TAG, "getPersonnelType")
+                        ErrorHandler.handle(e, TAG, "getPersonnelType-${target}")
                     }
             }
         }
@@ -206,12 +260,24 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
     }
 
     /* 직원 목록 조회 */
-    fun getEmployees() {
-        val state = projectAddState.value.employeeState
+    fun getEmployees(target: ProjectTarget) {
+        val state = when (target) {
+            ProjectTarget.ADD -> projectAddState.value.employeeState
+            ProjectTarget.EDIT -> projectEditState.value.employeeState
+            else -> EmployeeSearchState()
+        }
+
+        val updateState: (EmployeeSearchState) -> Unit = { newState ->
+            when (target) {
+                ProjectTarget.ADD -> _projectAddState.update { it.copy(employeeState = newState) }
+                ProjectTarget.EDIT -> _projectEditState.update { it.copy(employeeState = newState) }
+                else -> Unit
+            }
+        }
+
+        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = true)))
 
         viewModelScope.launch {
-            _projectAddState.update { it.copy(employeeState = it.employeeState.copy(paginationState = it.employeeState.paginationState.copy(isLoading = true))) }
-
             employeeRepository.getManageEmployees(
                 department = "",
                 grade = "",
@@ -221,93 +287,74 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
             ).collect { result ->
                 result
                     .onSuccess { data ->
-                        if (state.paginationState.currentPage == 0) {
-                            _projectAddState.update {
-                                it.copy(
-                                    employeeState = it.employeeState.copy(
-                                        employees = data.content,
-                                        paginationState = it.employeeState.paginationState.copy(
-                                            currentPage = it.employeeState.paginationState.currentPage + 1,
-                                            totalPage = data.totalPages,
-                                            isLoading = false
-                                        )
-                                    )
-                                )
-                            }
-                        }
-                        else {
-                            _projectAddState.update {
-                                it.copy(
-                                    employeeState = it.employeeState.copy(
-                                        employees = it.employeeState.employees + data.content,
-                                        paginationState = it.employeeState.paginationState.copy(
-                                            currentPage = it.employeeState.paginationState.currentPage + 1,
-                                            isLoading = false
-                                        )
-                                    )
-                                )
-                            }
-                        }
+                        val isFirstPage = state.paginationState.currentPage == 0
 
-                        Log.d(TAG, "[getEmployees] 직원 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${projectAddState.value.employeeState.searchText})\n${data.content}")
+                        val updatedEmployees = if (isFirstPage) data.content else state.employees + data.content
+
+                        updateState(state.copy(
+                            employees = updatedEmployees,
+                            paginationState = state.paginationState.copy(
+                                currentPage = state.paginationState.currentPage + 1,
+                                totalPage = data.totalPages,
+                                isLoading = false
+                            )
+                        ))
+
+                        Log.d(TAG, "[getEmployees-${target}] 직원 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${projectAddState.value.employeeState.searchText})\n${data.content}")
                     }
                     .onFailure { e ->
-                        ErrorHandler.handle(e, TAG, "getEmployees")
+                        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = false)))
+
+                        ErrorHandler.handle(e, TAG, "getEmployees-${target}")
                     }
             }
         }
     }
 
     /* 부서 목록 조회 */
-    fun getDepartments() {
-        viewModelScope.launch {
-            val state = projectAddState.value.departmentState
+    fun getDepartments(target: ProjectTarget) {
+        val state = when (target) {
+            ProjectTarget.ADD -> projectAddState.value.departmentState
+            ProjectTarget.EDIT -> projectEditState.value.departmentState
+            else -> DepartmentSearchState()
+        }
 
-            _projectAddState.update {
-                it.copy(
-                    departmentState = it.departmentState.copy(
-                        paginationState = it.departmentState.paginationState.copy(isLoading = true)
-                    )
-                )
+        val updateState: (DepartmentSearchState) -> Unit = { newState ->
+            when (target) {
+                ProjectTarget.ADD -> _projectAddState.update { it.copy(departmentState = newState) }
+                ProjectTarget.EDIT -> _projectEditState.update { it.copy(departmentState = newState) }
+                else -> Unit
             }
+        }
 
+        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = true)))
+
+        viewModelScope.launch {
             departmentRepository.getDepartments(
                 searchName = state.searchText,
                 page = state.paginationState.currentPage
             ).collect { result ->
                 result
                     .onSuccess { data ->
-                        if (state.paginationState.currentPage == 0) {
-                            _projectAddState.update {
-                                it.copy(
-                                    departmentState = it.departmentState.copy(
-                                        departments = data.content,
-                                        paginationState = it.departmentState.paginationState.copy(
-                                            currentPage = it.departmentState.paginationState.currentPage + 1,
-                                            totalPage = data.totalPages,
-                                            isLoading = false
-                                        )
-                                    )
-                                )
-                            }
-                        } else {
-                            _projectAddState.update {
-                                it.copy(
-                                    departmentState = it.departmentState.copy(
-                                        departments = it.departmentState.departments + data.content,
-                                        paginationState = it.departmentState.paginationState.copy(
-                                            currentPage = it.departmentState.paginationState.currentPage + 1,
-                                            isLoading = false
-                                        )
-                                    )
-                                )
-                            }
-                        }
+                        val isFirstPage = state.paginationState.currentPage == 0
 
-                        Log.d(TAG, "[getDepartments] 부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}")
+                        val updatedDepartments = if (isFirstPage) data.content else state.departments + data.content
+
+                        updateState(state.copy(
+                            departments = updatedDepartments,
+                            paginationState = state.paginationState.copy(
+                                currentPage = state.paginationState.currentPage + 1,
+                                totalPage = data.totalPages,
+                                isLoading = false
+                            )
+                        ))
+
+                        Log.d(TAG, "[getDepartments-${target}] 부서 검색 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.searchText})\n${data.content}")
                     }
                     .onFailure { e ->
-                        ErrorHandler.handle(e, TAG, "getDepartments")
+                        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = false)))
+
+                        ErrorHandler.handle(e, TAG, "getDepartments-${target}")
                     }
             }
         }
@@ -322,12 +369,13 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
                         when (target) {
                             ProjectTarget.PERSONNEL -> _projectPersonnelState.update { it.copy(departments = departments) }
                             ProjectTarget.STATUS -> _projectStatusState.update { it.copy(departments = departments) }
+                            else -> Unit
                         }
 
-                        Log.d(TAG, "[getAllDepartments] 전체 부서 조회 성공\n${departments}")
+                        Log.d(TAG, "[getAllDepartments-${target}] 전체 부서 조회 성공\n${departments}")
                     }
                     .onFailure { e ->
-                        ErrorHandler.handle(e, TAG, "getAllDepartments")
+                        ErrorHandler.handle(e, TAG, "getAllDepartments-${target}")
                     }
             }
         }
@@ -366,42 +414,97 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
             ).collect { result ->
                 result
                     .onSuccess { data ->
-                        if (state.paginationState.currentPage == 0) {
-                            _projectStatusState.update { it.copy(
-                                projects = data.projects.content,
-                                cntStatus = ProjectStatusCnt(
-                                    total = data.totalCnt ?: 0,
-                                    inProgress = data.inProgressCnt ?: 0,
-                                    notStarted = data.notStartCnt ?: 0,
-                                    completed = data.completeCnt ?: 0
-                                ),
-                                paginationState = it.paginationState.copy(
-                                    currentPage = it.paginationState.currentPage + 1,
-                                    totalPage = data.projects.totalpages,
-                                    isLoading = false
-                                ))
-                            }
-                        }
-                        else {
-                            _projectStatusState.update { it.copy(
-                                projects = it.projects + data.projects.content,
-                                cntStatus = ProjectStatusCnt(
-                                    total = data.totalCnt ?: 0,
-                                    inProgress = data.inProgressCnt ?: 0,
-                                    notStarted = data.notStartCnt ?: 0,
-                                    completed = data.completeCnt ?: 0
-                                ),
-                                paginationState = it.paginationState.copy(
-                                    currentPage = it.paginationState.currentPage + 1,
-                                    isLoading = false
-                                )
-                            ) }
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedProjects = if (isFirstPage) data.projects.content else state.projects + data.projects.content
+
+                        _projectStatusState.update { it.copy(
+                            projects = updatedProjects,
+                            cntStatus = ProjectStatusCnt(
+                                total = data.totalCnt ?: 0,
+                                inProgress = data.inProgressCnt ?: 0,
+                                notStarted = data.notStartCnt ?: 0,
+                                completed = data.completeCnt ?: 0
+                            ),
+                            paginationState = it.paginationState.copy(
+                                currentPage = it.paginationState.currentPage + 1,
+                                totalPage = data.projects.totalpages,
+                                isLoading = false
+                            ))
                         }
 
                         Log.d(TAG, "[getProjectStatus] 프로젝트 현황 조회 성공: ${state.paginationState.currentPage + 1}/${data.projects.totalpages}, 검색(${state.filter.year}년/${state.filter.month}월/${state.filter.departmentId}/${state.filter.searchType.label})\n${data.projects.content}")
                     }
                     .onFailure { e ->
+                        _projectStatusState.update { it.copy(paginationState = it.paginationState.copy(isLoading = false)) }
+
                         ErrorHandler.handle(e, TAG, "getProjectStatus")
+                    }
+            }
+        }
+    }
+
+    /* 프로젝트 수정 */
+    fun updateProject() {
+        val state = projectEditState.value
+
+        viewModelScope.launch {
+            projectRepository.updateProject(
+                projectId = state.projectId,
+                request = state.inputData
+            ).collect { result ->
+                result
+                    .onSuccess { projectInfo ->
+                        _projectDetailState.update { it.copy(projectInfo = projectInfo) }
+
+                        _uiEffect.emit(UiEffect.ShowToast("수정이 완료되었습니다"))
+                        _uiEffect.emit(UiEffect.NavigateBack)
+
+                        Log.d(TAG, "프로젝트 수정 성공\n${projectInfo}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "updateProject")
+                    }
+            }
+        }
+    }
+
+    /* 프로젝트 삭제 */
+    fun deleteProject() {
+        viewModelScope.launch {
+            projectRepository.deleteProject(
+                projectId = projectDetailState.value.projectInfo.projectId
+            ).collect { result ->
+                result
+                    .onSuccess {
+                        _uiEffect.emit(UiEffect.ShowToast("삭제가 완료되었습니다"))
+                        _uiEffect.emit(UiEffect.NavigateBack)
+
+                        Log.d(TAG, "프로젝트 삭제 성공")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "deleteProject")
+                    }
+            }
+        }
+    }
+
+    /* 프로젝트 중단 */
+    fun stopProject() {
+        viewModelScope.launch {
+            projectRepository.stopProject(
+                projectId = projectDetailState.value.projectInfo.projectId
+            ).collect { result ->
+                result
+                    .onSuccess {
+                        getProject(projectDetailState.value.projectInfo.projectId)
+
+                        _uiEffect.emit(UiEffect.ShowToast("중단 처리가 완료되었습니다"))
+
+                        Log.d(TAG, "프로젝트 중단 성공")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "stopProject")
                     }
             }
         }

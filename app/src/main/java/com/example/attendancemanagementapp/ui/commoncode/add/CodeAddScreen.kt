@@ -3,9 +3,7 @@ package com.example.attendancemanagementapp.ui.commoncode.add
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -33,12 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
-import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel.CodeScreenType
-import com.example.attendancemanagementapp.ui.commoncode.edit.CodeEditEvent
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel.CodeTarget
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.TwoLineBigEditBar
-import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineRadioEditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineSearchEditBar
@@ -68,8 +64,8 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
             val total = info.totalItemsCount
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !codeAddState.paginationState.isLoading && codeAddState.paginationState.currentPage < codeAddState.paginationState.totalPage) {
-                codeViewModel.getCodes(CodeScreenType.ADD)
+            if (shouldLoad && !codeAddState.codeState.paginationState.isLoading && codeAddState.codeState.paginationState.currentPage < codeAddState.codeState.paginationState.totalPage) {
+                codeViewModel.getCodes(CodeTarget.ADD)
             }
         }
     }
@@ -77,14 +73,14 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
     if (openDialog) {
         SearchCommonCodeDialog(
             listState = listState,
-            isLoading = codeAddState.paginationState.isLoading,
+            isLoading = codeAddState.codeState.paginationState.isLoading,
             codeSearchState = CodeSearchState(
                 searchState = SearchState(
-                    value = codeAddState.searchText,
+                    value = codeAddState.codeState.searchText,
                     onValueChange = { onEvent(CodeAddEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
                         // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                        if (codeAddState.paginationState.currentPage <= codeAddState.paginationState.totalPage) {
+                        if (codeAddState.codeState.paginationState.currentPage <= codeAddState.codeState.paginationState.totalPage) {
                             onEvent(CodeAddEvent.ClickedSearch)
                             keyboardController?.hide()
                             focusManager.clearFocus(force = true)
@@ -92,11 +88,11 @@ fun CodeAddScreen(navController: NavController, codeViewModel: CodeViewModel) {
                     },
                     onClickInit = { onEvent(CodeAddEvent.ClickedInitSearch) }
                 ),
-                selectedCategory = codeAddState.selectedCategory,
+                selectedCategory = codeAddState.codeState.selectedCategory,
                 categories = SearchType.entries,
                 onClickCategory = { onEvent(CodeAddEvent.ChangedCategoryWith(it)) }
             ),
-            commonCodes = codeAddState.codes,
+            commonCodes = codeAddState.codeState.codes,
             onDismiss = {
                 openDialog = false
             },

@@ -3,9 +3,7 @@ package com.example.attendancemanagementapp.ui.commoncode.edit
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -33,11 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
-import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel.CodeScreenType
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel.CodeTarget
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.TwoLineBigEditBar
-import com.example.attendancemanagementapp.ui.components.EditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineRadioEditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineSearchEditBar
@@ -67,8 +64,8 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
             val total = info.totalItemsCount
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !codeEditState.paginationState.isLoading && codeEditState.paginationState.currentPage < codeEditState.paginationState.totalPage) {
-                codeViewModel.getCodes(CodeScreenType.EDIT)
+            if (shouldLoad && !codeEditState.codeState.paginationState.isLoading && codeEditState.codeState.paginationState.currentPage < codeEditState.codeState.paginationState.totalPage) {
+                codeViewModel.getCodes(CodeTarget.EDIT)
             }
         }
     }
@@ -76,13 +73,13 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
     if (openDialog) {
         SearchCommonCodeDialog(
             listState = listState,
-            isLoading = codeEditState.paginationState.isLoading,
+            isLoading = codeEditState.codeState.paginationState.isLoading,
             codeSearchState = CodeSearchState(
                 searchState = SearchState(
-                    value = codeEditState.searchText,
+                    value = codeEditState.codeState.searchText,
                     onValueChange = { onEvent(CodeEditEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
-                        if (codeEditState.paginationState.currentPage <= codeEditState.paginationState.totalPage) {
+                        if (codeEditState.codeState.paginationState.currentPage <= codeEditState.codeState.paginationState.totalPage) {
                             onEvent(CodeEditEvent.ClickedSearch)
                             keyboardController?.hide()
                             focusManager.clearFocus(force = true)
@@ -90,11 +87,11 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
                     },
                     onClickInit = { onEvent(CodeEditEvent.ClickedInitSearch) }
                 ),
-                selectedCategory = codeEditState.selectedCategory,
+                selectedCategory = codeEditState.codeState.selectedCategory,
                 categories = SearchType.entries,
                 onClickCategory = { onEvent(CodeEditEvent.ChangedCategoryWith(it)) }
             ),
-            commonCodes = codeEditState.codes,
+            commonCodes = codeEditState.codeState.codes,
             onDismiss = {
                 openDialog = false
             },

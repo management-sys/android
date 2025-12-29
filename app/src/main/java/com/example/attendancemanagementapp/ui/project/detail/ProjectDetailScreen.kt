@@ -17,6 +17,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
@@ -31,7 +33,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,8 +46,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.data.dto.ProjectDTO.MeetingsInfo
+import com.example.attendancemanagementapp.ui.components.BasicButton
+import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
+import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TowLineInfoBar
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.meeting.MeetingViewModel
@@ -66,20 +74,50 @@ fun ProjectDetailScreen(navController: NavController, projectViewModel: ProjectV
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
 
+    var openDelete by remember { mutableStateOf(false) }
+    var openStop by remember { mutableStateOf(false) }
+    
+    if (openDelete) {
+        BasicDialog(
+            title = "프로젝트를 삭제하시겠습니까?",
+            onDismiss = { openDelete = false },
+            onClickConfirm = {
+                onEvent(ProjectDetailEvent.ClickedDelete)
+                openDelete = false
+            }
+        )
+    }
+
+    if (openStop) {
+        BasicDialog(
+            title = "프로젝트를 중단하시겠습니까?",
+            onDismiss = { openStop = false },
+            onClickConfirm = {
+                onEvent(ProjectDetailEvent.ClickedStop)
+                openStop = false
+            }
+        )
+    }
+    
     Scaffold(
         topBar = {
             BasicTopBar(
                 title = "프로젝트 상세",
-                onClickNavIcon = rememberOnce { navController.popBackStack() }
+                actIcon = Icons.Default.Delete,
+                actTint = Color.Red,
+                onClickNavIcon = rememberOnce { navController.popBackStack() },
+                onClickActIcon = { openDelete = true }
             )
         },
         floatingActionButton = {
-            BasicFloatingButton(
-                onClick = {
-                    meetingViewModel.onAddEvent(MeetingAddEvent.InitWith(projectDetailState.projectInfo.projectId, projectDetailState.projectInfo.projectName, true))
-                    navController.navigate("meetingAdd")
-                }
-            )
+            if (pagerState.currentPage == 1) {
+                BasicFloatingButton(
+                    onClick = {
+                        meetingViewModel.onAddEvent(MeetingAddEvent.InitWith(projectDetailState.projectInfo.projectId, projectDetailState.projectInfo.projectName, true))
+                        navController.navigate("meetingAdd")
+                    }
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -128,6 +166,24 @@ fun ProjectDetailScreen(navController: NavController, projectViewModel: ProjectV
                                     ProjectInfoCard(
                                         projectInfo = projectDetailState.projectInfo
                                     )
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(top = 15.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        SubButton(
+                                            name = "중단",
+                                            onClick = { openStop = true }
+                                        )
+
+                                        BasicButton(
+                                            name = "수정",
+                                            onClick = { navController.navigate("projectEdit") }
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(20.dp))
                                 }
                             }
 
@@ -146,10 +202,10 @@ fun ProjectDetailScreen(navController: NavController, projectViewModel: ProjectV
                                     navController = navController,
                                     meetingViewModel = meetingViewModel
                                 )
+
+                                Spacer(modifier = Modifier.height(80.dp))
                             }
                         }
-
-                        Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
             }
@@ -203,7 +259,7 @@ private fun MeetingMinutesInfoCard(meetingMinutes: List<MeetingsInfo>, onEvent: 
         ) {
             if (meetingMinutes.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(

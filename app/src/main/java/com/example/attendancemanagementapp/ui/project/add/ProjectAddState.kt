@@ -24,7 +24,7 @@ data class DepartmentSearchState(
 
 /* 직원 검색 관련 상태 */
 data class EmployeeSearchState(
-    val employees: List<EmployeeDTO.ManageEmployeesInfo> = emptyList(),   // 직원 목록
-    val searchText: String = "",                                    // 직원 검색어
-    val paginationState: PaginationState = PaginationState()        // 페이지네이션 상태
+    val employees: List<EmployeeDTO.ManageEmployeesInfo> = emptyList(), // 직원 목록
+    val searchText: String = "",                                        // 직원 검색어
+    val paginationState: PaginationState = PaginationState()            // 페이지네이션 상태
 )

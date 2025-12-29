@@ -18,7 +18,7 @@ object CodeAddReducer {
     private fun handleInitSearch(
         state: CodeAddState
     ): CodeAddState {
-        return state.copy(codes = emptyList(), searchText = "", selectedCategory = SearchType.ALL, paginationState = PaginationState())
+        return state.copy(codeState = CodeSearchState())
     }
 
     private val codeUpdaters: Map<CodeAddField, (CommonCodeDTO.CommonCodeInfo, String) -> CommonCodeDTO.CommonCodeInfo> =
@@ -50,19 +50,19 @@ object CodeAddReducer {
         state: CodeAddState,
         value: String
     ): CodeAddState {
-        return state.copy(searchText = value, paginationState = state.paginationState.copy(currentPage = 0))
+        return state.copy(codeState = state.codeState.copy(searchText = value, paginationState = state.codeState.paginationState.copy(currentPage = 0)))
     }
 
     private fun handleChangedCategory(
         state: CodeAddState,
         category: SearchType
     ): CodeAddState {
-        return state.copy(selectedCategory = category, paginationState = state.paginationState.copy(currentPage = 0))
+        return state.copy(codeState = state.codeState.copy(selectedCategory = category, paginationState = state.codeState.paginationState.copy(currentPage = 0)))
     }
 
     private fun handleClickedInitSearch(
         state: CodeAddState
     ): CodeAddState {
-        return state.copy(searchText = "", paginationState = state.paginationState.copy(currentPage = 0))
+        return state.copy(codeState = state.codeState.copy(searchText = "", paginationState = state.codeState.paginationState.copy(currentPage = 0)))
     }
 }

@@ -24,7 +24,7 @@ class TokenAuthenticator(
         }
 
         // 2) 재시도 횟수 제한 (안 하면 무한루프)
-        if (responseCount(response) >= 1) {
+        if (responseCount(response) >= 2) {
             return null
         }
 

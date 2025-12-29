@@ -3,6 +3,7 @@ package com.example.attendancemanagementapp.ui.commoncode.edit
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.retrofit.param.PaginationState
 import com.example.attendancemanagementapp.retrofit.param.SearchType
+import com.example.attendancemanagementapp.ui.commoncode.add.CodeSearchState
 
 object CodeEditReducer {
     fun reduce(s: CodeEditState, e: CodeEditEvent): CodeEditState = when (e) {
@@ -26,7 +27,7 @@ object CodeEditReducer {
     private fun handleInitSearch(
         state: CodeEditState
     ): CodeEditState {
-        return state.copy(codes = emptyList(), searchText = "", selectedCategory = SearchType.ALL, paginationState = PaginationState())
+        return state.copy(codeState = CodeSearchState())
     }
 
     private val codeUpdaters: Map<CodeEditField, (CommonCodeDTO.CommonCodeInfo, String) -> CommonCodeDTO.CommonCodeInfo> =
@@ -57,19 +58,19 @@ object CodeEditReducer {
         state: CodeEditState,
         value: String
     ): CodeEditState {
-        return state.copy(searchText = value, paginationState = state.paginationState.copy(currentPage = 0))
+        return state.copy(codeState = state.codeState.copy(searchText = value, paginationState = state.codeState.paginationState.copy(currentPage = 0)))
     }
 
     private fun handleChangedCategory(
         state: CodeEditState,
         category: SearchType
     ): CodeEditState {
-        return state.copy(selectedCategory = category, paginationState = state.paginationState.copy(currentPage = 0))
+        return state.copy(codeState = state.codeState.copy(selectedCategory = category, paginationState = state.codeState.paginationState.copy(currentPage = 0)))
     }
 
     private fun handleClickedInitSearch(
         state: CodeEditState
     ): CodeEditState {
-        return state.copy(searchText = "", paginationState = state.paginationState.copy(currentPage = 0))
+        return state.copy(codeState = state.codeState.copy(searchText = "", paginationState = state.codeState.paginationState.copy(currentPage = 0)))
     }
 }

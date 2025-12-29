@@ -19,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,7 +34,7 @@ import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.CommonCodeDTO
 import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
-import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel.CodeScreenType
+import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel.CodeTarget
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
@@ -65,8 +64,8 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
             val total = info.totalItemsCount
             lastVisiblaIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !codeManageState.paginationState.isLoading && codeManageState.paginationState.currentPage < codeManageState.paginationState.totalPage) {
-                codeViewModel.getCodes(CodeScreenType.MANAGE)
+            if (shouldLoad && !codeManageState.codeState.paginationState.isLoading && codeManageState.codeState.paginationState.currentPage < codeManageState.codeState.paginationState.totalPage) {
+                codeViewModel.getCodes(CodeTarget.MANAGE)
             }
         }
     }
@@ -94,11 +93,11 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
             CategorySearchBar(
                 codeSearchState = CodeSearchState(
                     searchState = SearchState(
-                        value = codeManageState.searchText,
+                        value = codeManageState.codeState.searchText,
                         onValueChange = { onEvent(CodeManageEvent.ChangedSearchWith(it)) },
                         onClickSearch = {
                             // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                            if (codeManageState.paginationState.currentPage <= codeManageState.paginationState.totalPage) {
+                            if (codeManageState.codeState.paginationState.currentPage <= codeManageState.codeState.paginationState.totalPage) {
                                 onEvent(CodeManageEvent.ClickedSearch)
                                 keyboardController?.hide()
                                 focusManager.clearFocus(force = true)
@@ -106,13 +105,13 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                         },
                         onClickInit = { onEvent(CodeManageEvent.ClickedInitSearch) }
                     ),
-                    selectedCategory = codeManageState.selectedCategory,
+                    selectedCategory = codeManageState.codeState.selectedCategory,
                     categories = SearchType.entries,
                     onClickCategory = { onEvent(CodeManageEvent.ChangedCategoryWith(it)) }
                 )
             )
 
-            if (codeManageState.codes.isEmpty()) {
+            if (codeManageState.codeState.codes.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -131,7 +130,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     state = listState
                 ) {
-                    items(codeManageState.codes) { item ->
+                    items(codeManageState.codeState.codes) { item ->
                         CodeInfoItem(
                             upperCodeInfo = item,
                             onClick = {
@@ -141,7 +140,7 @@ fun CodeManageScreen(navController: NavController, codeViewModel: CodeViewModel)
                         )
                     }
 
-                    if (codeManageState.paginationState.isLoading) {
+                    if (codeManageState.codeState.paginationState.isLoading) {
                         item {
                             Box(
                                 Modifier.fillMaxWidth().padding(16.dp),

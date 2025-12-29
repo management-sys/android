@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -232,10 +233,7 @@ private fun ProjectList(projectStatusState: ProjectStatusState, onEvent: (Projec
                     items(projectStatusState.projects) { projectInfo ->
                         ProjectListItem(
                             projectInfo = projectInfo,
-                            onClick = {
-                                onEvent(ProjectStatusEvent.ClickedProjectWith(projectInfo.projectId))
-                                navController.navigate("projectDetail")
-                            }
+                            onClick = { onEvent(ProjectStatusEvent.ClickedProjectWith(projectInfo.projectId)) }
                         )
                     }
 
@@ -260,7 +258,7 @@ private fun ProjectListItem(projectInfo: ProjectDTO.ProjectStatusInfo, onClick: 
     ) {
         Spacer(modifier = Modifier.height(12.dp))
         ProjectTypeStatusBar(projectInfo.type, projectInfo.status)
-        TwoInfoBar(projectInfo.projectName, "")
+        TwoInfoBar(projectInfo.projectName, "", fontWeight = FontWeight.SemiBold)
         TwoInfoBar(projectInfo.departmentName, projectInfo.managerName, fontSize = 15.sp)
         TwoInfoBar("${"%,d".format(projectInfo.businessExpense ?: 0)}원", "", fontSize = 14.sp)
         TwoInfoBar("${projectInfo.businessStartDate} ~ ${projectInfo.businessEndDate}", "", fontSize = 14.sp, color = TextGray)

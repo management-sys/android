@@ -67,6 +67,7 @@ import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -386,10 +387,13 @@ fun TwoLineBigEditBar(
             fontWeight = FontWeight.SemiBold
         )
 
-        BasicOutlinedTextField(
+        OutlinedTextField(
             modifier = Modifier.fillMaxWidth().height(150.dp),
             value = value,
             onValueChange = { onValueChange(it) },
+            singleLine = false,
+            shape = RoundedCornerShape(5.dp),
+            colors = BasicOutlinedTextFieldColors(),
             enabled = enabled
         )
     }
@@ -906,6 +910,132 @@ fun TwoLineDateEditDeleteBar(
                     tint = MainBlue
                 )
             }
+        }
+    }
+}
+
+/* 시작~끝 기간 선택 바 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StartEndDateEditBar(
+    name: String,
+    startDate: String,
+    endDate: String,
+    onStartChange: (String) -> Unit,
+    onEndChange: (String) -> Unit,
+    isRequired: Boolean = false
+) {
+    var openStart by rememberSaveable { mutableStateOf(false) }
+    var openEnd by rememberSaveable { mutableStateOf(false) }
+
+    val fmt = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.KOREA) }
+
+    if (openStart) {
+        BasicDatePickerDialog(
+            initialDateTime = startDate,
+            onDismiss = { openStart = false },
+            onConfirm = {
+                val date = LocalDateTime.parse(it).toLocalDate().format(fmt)
+                onStartChange(date)
+                openStart = false
+            }
+        )
+    }
+
+    if (openEnd) {
+        BasicDatePickerDialog(
+            initialDateTime = endDate,
+            onDismiss = { openEnd = false },
+            onConfirm = {
+                val date = LocalDateTime.parse(it).toLocalDate().format(fmt)
+                onEndChange(date)
+                openEnd = false
+            }
+        )
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                append(name)
+                if (isRequired) {
+                    append(" ")
+                    withStyle(style = SpanStyle(color = Color.Red)) {
+                        append("*")
+                    }
+                }
+            },
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                modifier = Modifier.weight(1f),
+                value = startDate,
+                onValueChange = {},
+                singleLine = true,
+                readOnly = true,
+                shape = RoundedCornerShape(5.dp),
+                colors = BasicOutlinedTextFieldColors(),
+                placeholder = {
+                    Text(
+                        text = startDate.ifBlank { "연도-월-일" },
+                        fontSize = 14.sp
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "캘린더 열기",
+                        modifier =
+                            Modifier.clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ) { openStart = true }
+                    )
+                }
+            )
+
+            Text(
+                modifier = Modifier.padding(horizontal = 10.dp),
+                text = "~",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            OutlinedTextField(
+                modifier = Modifier.weight(1f),
+                value = endDate,
+                onValueChange = {},
+                singleLine = true,
+                readOnly = true,
+                shape = RoundedCornerShape(5.dp),
+                colors = BasicOutlinedTextFieldColors(),
+                placeholder = {
+                    Text(
+                        text = endDate.ifBlank { "연도-월-일" },
+                        fontSize = 14.sp
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "캘린더 열기",
+                        modifier =
+                            Modifier.clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            ) { openEnd = true }
+                    )
+                }
+            )
         }
     }
 }

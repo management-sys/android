@@ -29,6 +29,33 @@ class ProjectRepository @Inject constructor(private val service: ProjectService)
         emit(Result.failure(e))
     }
 
+    // 프로젝트 수정
+    fun updateProject(projectId: String, request: ProjectDTO.UpdateProjectRequest): Flow<Result<ProjectDTO.GetProjectResponse>> = flow {
+        val response = service.updateProject(
+            projectId = projectId,
+            request = request
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 프로젝트 삭제
+    fun deleteProject(projectId: String): Flow<Result<Unit>> = flow {
+        val response = service.deleteProject(projectId = projectId)
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 프로젝트 중단
+    fun stopProject(projectId: String): Flow<Result<Unit>> = flow {
+        val response = service.stopProject(projectId = projectId)
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
     // 프로젝트 투입 인력 목록 조회
     fun getPersonnel(projectId: String, page: Int): Flow<Result<ProjectDTO.GetPersonnelResponse>> = flow {
         val response = service.getPersonnel(

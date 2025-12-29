@@ -11,6 +11,7 @@ import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddEvent
 import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddReducer
 import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddState
+import com.example.attendancemanagementapp.ui.meeting.add.ProjectSearchState
 import com.example.attendancemanagementapp.ui.meeting.detail.MeetingDetailEvent
 import com.example.attendancemanagementapp.ui.meeting.detail.MeetingDetailState
 import com.example.attendancemanagementapp.ui.meeting.edit.MeetingEditEvent
@@ -19,6 +20,7 @@ import com.example.attendancemanagementapp.ui.meeting.edit.MeetingEditState
 import com.example.attendancemanagementapp.ui.meeting.status.MeetingStatusEvent
 import com.example.attendancemanagementapp.ui.meeting.status.MeetingStatusReducer
 import com.example.attendancemanagementapp.ui.meeting.status.MeetingStatusState
+import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 import com.example.attendancemanagementapp.util.ErrorHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -199,9 +201,9 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
     fun getMeetings() {
         val state = meetingStatusState.value
 
-        viewModelScope.launch {
-            _meetingStatusState.update { it.copy(paginationState = it.paginationState.copy(isLoading = true)) }
+        _meetingStatusState.update { it.copy(paginationState = it.paginationState.copy(isLoading = true)) }
 
+        viewModelScope.launch {
             meetingRepository.getMeetings(
                 startDate = state.startDate,
                 endDate = state.endDate,
@@ -211,28 +213,24 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
             ).collect { result ->
                 result
                     .onSuccess { data ->
-                        if (state.paginationState.currentPage == 0) {
-                            _meetingStatusState.update { it.copy(
-                                meetings = data.content,
-                                paginationState = it.paginationState.copy(
-                                    currentPage = it.paginationState.currentPage + 1,
-                                    totalPage = data.totalPages,
-                                    isLoading = false
-                                ))
-                            }
-                        } else {
-                            _meetingStatusState.update { it.copy(
-                                meetings = it.meetings + data.content,
-                                paginationState = it.paginationState.copy(
-                                    currentPage = it.paginationState.currentPage + 1,
-                                    isLoading = false
-                                ))
-                            }
-                        }
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedMeetings = if (isFirstPage) data.content else state.meetings + data.content
+
+                        _meetingStatusState.update { it.copy(
+                            meetings = updatedMeetings,
+                            paginationState = it.paginationState.copy(
+                                currentPage = it.paginationState.currentPage + 1,
+                                totalPage = data.totalPages,
+                                isLoading = false
+                            )
+                        ) }
 
                         Log.d(TAG, "[getMeetings] 회의록 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${state.startDate}~${state.endDate}/${state.type})\n${data.content}")
                     }
                     .onFailure { e ->
+                        _meetingStatusState.update { it.copy(paginationState = it.paginationState.copy(isLoading = false)) }
+
                         ErrorHandler.handle(e, TAG, "getMeetings")
                     }
             }
@@ -246,9 +244,16 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
             MeetingTarget.EDIT -> meetingEditState.value.employeeState
         }
 
-        viewModelScope.launch {
-            _meetingAddState.update { it.copy(employeeState = it.employeeState.copy(paginationState = it.employeeState.paginationState.copy(isLoading = true))) }
+        val updateState: (EmployeeSearchState) -> Unit = { newState ->
+            when (target) {
+                MeetingTarget.ADD -> _meetingAddState.update { it.copy(employeeState = newState) }
+                MeetingTarget.EDIT -> _meetingEditState.update { it.copy(employeeState = newState) }
+            }
+        }
 
+        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = true)))
+
+        viewModelScope.launch {
             employeeRepository.getManageEmployees(
                 department = "",
                 grade = "",
@@ -258,72 +263,24 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
             ).collect { result ->
                 result
                     .onSuccess { data ->
-                        if (state.paginationState.currentPage == 0) {
-                            when (target) {
-                                MeetingTarget.ADD -> {
-                                    _meetingAddState.update {
-                                        it.copy(
-                                            employeeState = it.employeeState.copy(
-                                                employees = data.content,
-                                                paginationState = it.employeeState.paginationState.copy(
-                                                    currentPage = it.employeeState.paginationState.currentPage + 1,
-                                                    totalPage = data.totalPages,
-                                                    isLoading = false
-                                                )
-                                            )
-                                        )
-                                    }
-                                }
-                                MeetingTarget.EDIT -> {
-                                    _meetingEditState.update {
-                                        it.copy(
-                                            employeeState = it.employeeState.copy(
-                                                employees = data.content,
-                                                paginationState = it.employeeState.paginationState.copy(
-                                                    currentPage = it.employeeState.paginationState.currentPage + 1,
-                                                    totalPage = data.totalPages,
-                                                    isLoading = false
-                                                )
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        else {
-                            when (target) {
-                                MeetingTarget.ADD -> {
-                                    _meetingAddState.update {
-                                        it.copy(
-                                            employeeState = it.employeeState.copy(
-                                                employees = it.employeeState.employees + data.content,
-                                                paginationState = it.employeeState.paginationState.copy(
-                                                    currentPage = it.employeeState.paginationState.currentPage + 1,
-                                                    isLoading = false
-                                                )
-                                            )
-                                        )
-                                    }
-                                }
-                                MeetingTarget.EDIT -> {
-                                    _meetingEditState.update {
-                                        it.copy(
-                                            employeeState = it.employeeState.copy(
-                                                employees = it.employeeState.employees + data.content,
-                                                paginationState = it.employeeState.paginationState.copy(
-                                                    currentPage = it.employeeState.paginationState.currentPage + 1,
-                                                    isLoading = false
-                                                )
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedEmployees = if (isFirstPage) data.content else state.employees + data.content
+
+                        updateState(state.copy(
+                            employees = updatedEmployees,
+                            paginationState = state.paginationState.copy(
+                                currentPage = state.paginationState.currentPage + 1,
+                                totalPage = data.totalPages,
+                                isLoading = false
+                            )
+                        ))
 
                         Log.d(TAG, "[getEmployees] 직원 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${meetingAddState.value.employeeState.searchText})\n${data.content}")
                     }
                     .onFailure { e ->
+                        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = false)))
+
                         ErrorHandler.handle(e, TAG, "getEmployees")
                     }
             }
@@ -334,49 +291,37 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
     fun getProjects() {
         val state = meetingAddState.value.projectState
 
-        viewModelScope.launch {
-            _meetingAddState.update { it.copy(
-                projectState = it.projectState.copy(
-                    paginationState = it.projectState.paginationState.copy(
-                        isLoading = true
-                    )
-                )
-            ) }
+        val updateState: (ProjectSearchState) -> Unit = { newState ->
+            _meetingAddState.update { it.copy(projectState = newState) }
+        }
 
+        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = true)))
+
+        viewModelScope.launch {
             projectRepository.getProjectStatus(
-                query = ProjectStatusQuery(
-                    searchText = state.searchText
-                ),
+                query = ProjectStatusQuery(searchText = state.searchText),
                 page = state.paginationState.currentPage
             ).collect { result ->
                 result
                     .onSuccess { data ->
-                        if (state.paginationState.currentPage == 0) {
-                            _meetingAddState.update { it.copy(
-                                projectState = it.projectState.copy(
-                                    projects = data.projects.content,
-                                    paginationState = it.projectState.paginationState.copy(
-                                        currentPage = it.projectState.paginationState.currentPage + 1,
-                                        totalPage = data.projects.totalpages,
-                                        isLoading = false
-                                    )
-                                ))
-                            }
-                        } else {
-                            _meetingAddState.update { it.copy(
-                                projectState = it.projectState.copy(
-                                    projects = it.projectState.projects + data.projects.content,
-                                    paginationState = it.projectState.paginationState.copy(
-                                        currentPage = it.projectState.paginationState.currentPage + 1,
-                                        isLoading = false
-                                    )
-                                ))
-                            }
-                        }
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedProjects = if (isFirstPage) data.projects.content else state.projects + data.projects.content
+
+                        updateState(state.copy(
+                            projects = updatedProjects,
+                            paginationState = state.paginationState.copy(
+                                currentPage = state.paginationState.currentPage + 1,
+                                totalPage = data.projects.totalpages,
+                                isLoading = false
+                            )
+                        ))
 
                         Log.d(TAG, "[getProjects] 프로젝트 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.projects.totalpages}, 검색(${state.searchText})\n${data.projects.content}")
                     }
                     .onFailure { e ->
+                        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = false)))
+
                         ErrorHandler.handle(e, TAG, "getProjects")
                     }
             }

@@ -2,8 +2,11 @@ package com.example.attendancemanagementapp.retrofit.service
 
 import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -31,6 +34,25 @@ interface ProjectService {
     suspend fun getProject(
         @Path("prjctId") projectId: String
     ): ProjectDTO.GetProjectResponse
+
+    // 프로젝트 수정
+    @PUT("/api/prjcts/{prjctId}")
+    suspend fun updateProject(
+        @Path("prjctId") projectId: String,
+        @Body request: ProjectDTO.UpdateProjectRequest
+    ): ProjectDTO.GetProjectResponse
+
+    // 프로젝트 삭제
+    @DELETE("/api/prjcts/{prjctId}")
+    suspend fun deleteProject(
+        @Path("prjctId") projectId: String
+    )
+
+    // 프로젝트 중단
+    @PATCH("/api/prjcts/{prjctId}")
+    suspend fun stopProject(
+        @Path("prjctId") projectId: String
+    )
 
     // 프로젝트 투입 인력 목록 조회
     @GET("/api/prjcts/{prjctId}/users")

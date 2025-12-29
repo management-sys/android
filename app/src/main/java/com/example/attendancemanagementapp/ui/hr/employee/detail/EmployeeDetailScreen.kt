@@ -196,34 +196,9 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                         when (page) {
                             0 -> {
                                 EmployeeInfoCard(employeeDetailState)
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    BasicButton(
-                                        name = "다음",
-                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
-                                    )
-                                }
                             }
                             1 -> {
                                 AnnualLeaveInfoCard(employeeDetailState.employeeInfo.annualLeaves)
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    SubButton(
-                                        name = "이전",
-                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
-                                    )
-
-                                    BasicButton(
-                                        name = "다음",
-                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } }
-                                    )
-                                }
                             }
                             2 -> {
                                 if (employeeDetailState.employeeInfo.annualLeaves.isNotEmpty()) {
@@ -260,34 +235,9 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
                                 }
 
                                 CareerInfoCard(employeeDetailState.employeeInfo.careers)
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    SubButton(
-                                        name = "이전",
-                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
-                                    )
-
-                                    BasicButton(
-                                        name = "다음",
-                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(3) } }
-                                    )
-                                }
                             }
                             3 -> {
                                 SalaryInfoCard(employeeDetailState.employeeInfo.salaries)
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    SubButton(
-                                        name = "이전",
-                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
-                                    )
-                                }
                             }
                         }
 
