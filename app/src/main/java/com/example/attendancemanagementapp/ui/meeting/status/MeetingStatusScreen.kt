@@ -1,6 +1,7 @@
 package com.example.attendancemanagementapp.ui.meeting.status
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
@@ -66,11 +68,14 @@ fun MeetingStatusScreen(navController: NavController, meetingViewModel: MeetingV
     val onEvent = meetingViewModel::onStatusEvent
     val meetingStatusState by meetingViewModel.meetingStatusState.collectAsState()
 
+    val focusManager = LocalFocusManager.current    // 포커스 관리
+
     LaunchedEffect(Unit) {
         onEvent(MeetingStatusEvent.Init)
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "회의록 현황",
@@ -93,9 +98,6 @@ fun MeetingStatusScreen(navController: NavController, meetingViewModel: MeetingV
 /* 회의록 목록 카드 */
 @Composable
 private fun MeetingListCard(meetingStatusState: MeetingStatusState, onEvent: (MeetingStatusEvent) -> Unit) {
-    val focusManager = LocalFocusManager.current                        // 포커스 관리
-    val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
-
     var openSheet by remember { mutableStateOf(false) }
 
     if (openSheet) {
@@ -127,11 +129,8 @@ private fun MeetingListCard(meetingStatusState: MeetingStatusState, onEvent: (Me
                         value = meetingStatusState.searchText,
                         onValueChange = { onEvent(MeetingStatusEvent.ChangedSearchValue(it)) },
                         onClickSearch = {
-                            // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
                             if (meetingStatusState.paginationState.currentPage <= meetingStatusState.paginationState.totalPage) {
                                 onEvent(MeetingStatusEvent.ClickedSearch)
-                                keyboardController?.hide()
-                                focusManager.clearFocus(force = true)
                             }
                         },
                         onClickInit = { onEvent(MeetingStatusEvent.ClickedInitSearch) }

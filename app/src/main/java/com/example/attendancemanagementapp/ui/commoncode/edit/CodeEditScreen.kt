@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.ui.commoncode.edit
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
@@ -48,7 +50,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @Composable
 fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
     val focusManager = LocalFocusManager.current                        // 포커스 관리
-    val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
     val onEvent = codeViewModel::onEditEvent
     val codeEditState by codeViewModel.codeEditState.collectAsState()
@@ -81,8 +82,6 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
                     onClickSearch = {
                         if (codeEditState.codeState.paginationState.currentPage <= codeEditState.codeState.paginationState.totalPage) {
                             onEvent(CodeEditEvent.ClickedSearch)
-                            keyboardController?.hide()
-                            focusManager.clearFocus(force = true)
                         }
                     },
                     onClickInit = { onEvent(CodeEditEvent.ClickedInitSearch) }
@@ -100,6 +99,7 @@ fun CodeEditScreen(navController: NavController, codeViewModel: CodeViewModel) {
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "공통코드 수정",

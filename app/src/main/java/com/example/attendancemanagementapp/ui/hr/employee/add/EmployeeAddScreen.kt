@@ -3,6 +3,7 @@ package com.example.attendancemanagementapp.ui.hr.employee.add
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,6 +58,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -100,6 +103,8 @@ fun EmployeeAddScreen(navController: NavController, employeeViewModel: EmployeeV
     val onEvent = employeeViewModel::onAddEvent
     val employeeAddState by employeeViewModel.employeeAddState.collectAsState()
 
+    val focusManager = LocalFocusManager.current    // 포커스 관리
+
     val tabs = listOf("기본정보", "경력정보", "연봉정보")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
@@ -128,6 +133,7 @@ fun EmployeeAddScreen(navController: NavController, employeeViewModel: EmployeeV
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "직원 등록",

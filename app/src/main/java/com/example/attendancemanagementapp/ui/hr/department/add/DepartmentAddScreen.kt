@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.ui.hr.department.add
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,6 +25,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,7 +46,10 @@ fun DepartmentAddScreen(navController: NavController, departmentViewModel: Depar
     val onEvent = departmentViewModel::onAddEvent
     val departmentAddState by departmentViewModel.departmentAddState.collectAsState()
 
+    val focusManager = LocalFocusManager.current    // 포커스 관리
+
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "부서 등록",

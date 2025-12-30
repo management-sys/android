@@ -54,11 +54,21 @@ interface ProjectService {
         @Path("prjctId") projectId: String
     )
 
-    // 프로젝트 투입 인력 목록 조회
-    @GET("/api/prjcts/{prjctId}/users")
-    suspend fun getPersonnel(
-        @Path("prjctId") projectId: String,
-        @Query("page") page: Int? = null,  // 페이지 번호: 0부터 시작
-        @Query("size") size: Int? = null   // 페이지 당 데이터 개수
-    ): ProjectDTO.GetPersonnelResponse
+//    // 프로젝트 투입 인력 목록 조회
+//    @GET("/api/prjcts/{prjctId}/users")
+//    suspend fun getPersonnel(
+//        @Path("prjctId") projectId: String,
+//        @Query("page") page: Int? = null,  // 페이지 번호: 0부터 시작
+//        @Query("size") size: Int? = null   // 페이지 당 데이터 개수
+//    ): ProjectDTO.GetPersonnelResponse
+
+    // 투입 현황 조회
+    @GET("/api/prjcts/user-inpt")
+    suspend fun getPersonnels(
+        @Query("deptId") departmentId: String,  // 부서 아이디
+        @Query("userNm") userName: String,      // 사용자 이름
+        @Query("year") year: Int?,              // 검색 연도 (프로젝트 사업 시작일 기준)
+        @Query("page") page: Int? = null,       // 페이지 번호: 0부터 시작
+        @Query("size") size: Int? = null        // 페이지 당 데이터 개수
+    ): ProjectDTO.GetPersonnelsResponse
 }

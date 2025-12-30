@@ -2,6 +2,7 @@ package com.example.attendancemanagementapp.ui.meeting.add
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,6 +63,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
@@ -110,6 +112,8 @@ fun MeetingAddScreen(navController: NavController, meetingViewModel: MeetingView
     val onEvent = meetingViewModel::onAddEvent
     val meetingAddState by meetingViewModel.meetingAddState.collectAsState()
 
+    val focusManager = LocalFocusManager.current    // 포커스 관리
+
     val tabs = listOf("회의록 정보", "참석자", "회의비")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
@@ -119,6 +123,7 @@ fun MeetingAddScreen(navController: NavController, meetingViewModel: MeetingView
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "회의록 등록",
@@ -747,9 +752,6 @@ private fun EmployeeBottomSheet(
     onEvent: (MeetingAddEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val focusManager = LocalFocusManager.current                        // 포커스 관리
-    val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
-
     val sheetState = rememberModalBottomSheetState()
     val listState = rememberLazyListState()
 
@@ -786,8 +788,6 @@ private fun EmployeeBottomSheet(
                     onClickSearch = {
                         if (meetingAddState.employeeState.paginationState.currentPage <= meetingAddState.employeeState.paginationState.totalPage) {
                             onEvent(MeetingAddEvent.ClickedEmployeeSearch)
-                            keyboardController?.hide()
-                            focusManager.clearFocus(force = true)
                         }
                     },
                     onClickInit = { onEvent(MeetingAddEvent.ClickedEmployeeInitSearch) }

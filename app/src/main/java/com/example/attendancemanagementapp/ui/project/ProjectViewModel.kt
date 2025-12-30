@@ -142,7 +142,19 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
         _projectPersonnelState.update { ProjectPersonnelReducer.reduce(it, e) }
 
         when (e) {
-            ProjectPersonnelEvent.Init -> getAllDepartments(target = ProjectTarget.PERSONNEL)
+            ProjectPersonnelEvent.Init -> {
+                getAllDepartments(target = ProjectTarget.PERSONNEL)
+                getPersonnels()
+            }
+            ProjectPersonnelEvent.LoadNextPage -> getPersonnels()
+            ProjectPersonnelEvent.ClickedSearch -> getPersonnels()
+            ProjectPersonnelEvent.ClickedInitSearchText -> getPersonnels()
+            is ProjectPersonnelEvent.ClickedPersonnelWith -> {
+                _uiEffect.tryEmit(UiEffect.Navigate(""))
+            }
+            ProjectPersonnelEvent.ClickedInitFilter -> getPersonnels()
+            is ProjectPersonnelEvent.ClickedUseFilter -> getPersonnels()
+            else -> Unit
         }
     }
 
@@ -505,6 +517,43 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "stopProject")
+                    }
+            }
+        }
+    }
+
+    /* 투입 현황 조회 */
+    fun getPersonnels() {
+        val state = projectPersonnelState.value
+
+        viewModelScope.launch {
+            _projectPersonnelState.update { it.copy(paginationState = it.paginationState.copy(isLoading = true)) }
+
+            projectRepository.getPersonnels(
+                query = state.filter,
+                page = state.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedPersonnels = if (isFirstPage) data.personnels else state.personnels + data.personnels
+
+                        _projectPersonnelState.update { it.copy(
+                            personnels = updatedPersonnels,
+                            paginationState = it.paginationState.copy(
+                                currentPage = it.paginationState.currentPage + 1,
+                                totalPage = data.totalpages,
+                                isLoading = false
+                            )
+                        ) }
+
+                        Log.d(TAG, "[getPersonnels] 투입 현황 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalpages}, 검색(부서 아이디: ${state.filter.departmentId}/사용자 이름: ${state.filter.userName}/${state.filter.year}년\n${data.personnels}")
+                    }
+                    .onFailure { e ->
+                        _projectPersonnelState.update { it.copy(paginationState = it.paginationState.copy(isLoading = false)) }
+
+                        ErrorHandler.handle(e, TAG, "getPersonnels")
                     }
             }
         }

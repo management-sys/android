@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.ui.hr.employee.search
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
@@ -50,7 +52,6 @@ import com.example.attendancemanagementapp.util.rememberOnce
 @Composable
 fun EmployeeSearchScreen(navController: NavController, employeeViewModel: EmployeeViewModel) {
     val focusManager = LocalFocusManager.current                        // 포커스 관리
-    val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
     val onEvent = employeeViewModel::onSearchEvent
     val employeeSearchState by employeeViewModel.employeeSearchState.collectAsState()
@@ -69,6 +70,7 @@ fun EmployeeSearchScreen(navController: NavController, employeeViewModel: Employ
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "직원 검색",
@@ -85,10 +87,7 @@ fun EmployeeSearchScreen(navController: NavController, employeeViewModel: Employ
                     value = employeeSearchState.searchText,
                     onValueChange = { onEvent(EmployeeSearchEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
-                        // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
                         onEvent(EmployeeSearchEvent.ClickedSearch)
-                        keyboardController?.hide()
-                        focusManager.clearFocus(force = true)
                     },
                     onClickInit = { onEvent(EmployeeSearchEvent.ClickedInitSearch) }
                 ),

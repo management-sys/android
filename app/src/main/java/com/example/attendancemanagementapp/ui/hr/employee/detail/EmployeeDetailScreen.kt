@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,6 +53,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -83,6 +86,8 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
     val onEvent = employeeViewModel::onDetailEvent
     val employeeDetailState by employeeViewModel.employeeDetailState.collectAsState()
     val currentPage by employeeViewModel.currentPage.collectAsState()
+
+    val focusManager = LocalFocusManager.current    // 포커스 관리
 
     val tabs = listOf("기본정보", "연차정보", "경력정보", "연봉정보")
     val coroutineScope = rememberCoroutineScope()
@@ -144,6 +149,7 @@ fun EmployeeDetailScreen(navController: NavController, employeeViewModel: Employ
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "직원 상세",

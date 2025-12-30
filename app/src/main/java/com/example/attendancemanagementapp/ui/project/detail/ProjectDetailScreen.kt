@@ -172,10 +172,14 @@ fun ProjectDetailScreen(navController: NavController, projectViewModel: ProjectV
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        SubButton(
-                                            name = "중단",
-                                            onClick = { openStop = true }
-                                        )
+                                        Box {
+                                            if (projectDetailState.projectInfo.status != "중단") {
+                                                SubButton(
+                                                    name = "중단",
+                                                    onClick = { openStop = true }
+                                                )
+                                            }
+                                        }
 
                                         BasicButton(
                                             name = "수정",

@@ -1,6 +1,7 @@
 package com.example.attendancemanagementapp.data.repository
 
 import com.example.attendancemanagementapp.data.dto.ProjectDTO
+import com.example.attendancemanagementapp.data.param.PersonnelsQuery
 import com.example.attendancemanagementapp.data.param.ProjectStatusQuery
 import com.example.attendancemanagementapp.retrofit.service.ProjectService
 import kotlinx.coroutines.flow.Flow
@@ -56,16 +57,16 @@ class ProjectRepository @Inject constructor(private val service: ProjectService)
         emit(Result.failure(e))
     }
 
-    // 프로젝트 투입 인력 목록 조회
-    fun getPersonnel(projectId: String, page: Int): Flow<Result<ProjectDTO.GetPersonnelResponse>> = flow {
-        val response = service.getPersonnel(
-            projectId = projectId,
-            page = page
-        )
-        emit(Result.success(response))
-    }.catch { e ->
-        emit(Result.failure(e))
-    }
+//    // 프로젝트 투입 인력 목록 조회
+//    fun getPersonnel(projectId: String, page: Int): Flow<Result<ProjectDTO.GetPersonnelResponse>> = flow {
+//        val response = service.getPersonnel(
+//            projectId = projectId,
+//            page = page
+//        )
+//        emit(Result.success(response))
+//    }.catch { e ->
+//        emit(Result.failure(e))
+//    }
 
     // 프로젝트 현황 조회
     fun getProjectStatus(query: ProjectStatusQuery, page: Int): Flow<Result<ProjectDTO.GetProjectStatusResponse>> = flow {
@@ -75,6 +76,19 @@ class ProjectRepository @Inject constructor(private val service: ProjectService)
             departmentId = query.departmentId,
             type = query.searchType.toKey(),
             searchText = query.searchText,
+            page = page
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 투입 현황 조회
+    fun getPersonnels(query: PersonnelsQuery, page: Int): Flow<Result<ProjectDTO.GetPersonnelsResponse>> = flow {
+        val response = service.getPersonnels(
+            departmentId = query.departmentId,
+            userName = query.userName,
+            year = if (query.year == 0) null else query.year,
             page = page
         )
         emit(Result.success(response))

@@ -1,44 +1,74 @@
 package com.example.attendancemanagementapp.ui.project.personnel
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.ProjectDTO
+import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.DepthDropDownField
 import com.example.attendancemanagementapp.ui.components.DropDownField
+import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
+import com.example.attendancemanagementapp.ui.components.TwoLineDropdownEditBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.project.ProjectViewModel
 import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Green
+import com.example.attendancemanagementapp.ui.theme.DarkGray
+import com.example.attendancemanagementapp.ui.theme.LightBlue
+import com.example.attendancemanagementapp.ui.theme.LightGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.util.rememberOnce
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 프로젝트 투입 현황 화면 */
 @Composable
@@ -46,13 +76,14 @@ fun ProjectPersonnelScreen(navController: NavController, projectViewModel: Proje
     val onEvent = projectViewModel::onPersonnelEvent
     val projectPersonnelState by projectViewModel.projectPersonnelState.collectAsState()
 
-    val listState = rememberLazyListState()
+    val focusManager = LocalFocusManager.current    // 포커스 관리
 
     LaunchedEffect(Unit) {
         onEvent(ProjectPersonnelEvent.Init)
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "투입 현황",
@@ -61,11 +92,91 @@ fun ProjectPersonnelScreen(navController: NavController, projectViewModel: Proje
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp),
+            verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
-            SearchBar(
-                projectPersonnelState = projectPersonnelState
+            PersonnelList(
+                projectPersonnelState = projectPersonnelState,
+                onEvent = onEvent
             )
+        }
+    }
+}
+
+/* 투입 현황 목록 */
+@Composable
+private fun PersonnelList(projectPersonnelState: ProjectPersonnelState, onEvent: (ProjectPersonnelEvent) -> Unit) {
+    var openSheet by remember { mutableStateOf(false) }
+
+    if (openSheet) {
+        PersonnelSearchBottomSheet(
+            projectPersonnelState = projectPersonnelState,
+            onEvent = onEvent,
+            onDismiss = { openSheet = false }
+        )
+    }
+
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val lastVisibleIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
+        }.distinctUntilChanged().collect { shouldLoad ->
+            if (shouldLoad && !projectPersonnelState.paginationState.isLoading && projectPersonnelState.paginationState.currentPage < projectPersonnelState.paginationState.totalPage) {
+                onEvent(ProjectPersonnelEvent.LoadNextPage)
+            }
+        }
+    }
+
+    // 부서 목록 조회될 때마다 첫번째 아이템으로 이동 (최상단으로 이동)
+    LaunchedEffect(projectPersonnelState.personnels) {
+        listState.scrollToItem(0)
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 14.dp, horizontal = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                SearchBar(
+                    modifier = Modifier.weight(0.85f),
+                    searchState = SearchState(
+                        value = projectPersonnelState.filter.userName,
+                        onValueChange = { onEvent(ProjectPersonnelEvent.ChangedSearchTextWith(it)) },
+                        onClickSearch = {
+                            if (projectPersonnelState.paginationState.currentPage <= projectPersonnelState.paginationState.totalPage) {
+                                onEvent(ProjectPersonnelEvent.ClickedSearch)
+                            }
+                        },
+                        onClickInit = { onEvent(ProjectPersonnelEvent.ClickedInitSearchText) }
+                    ),
+                    hint = "이름을 입력하세요"
+                )
+
+                IconButton(
+                    modifier = Modifier.weight(0.15f),
+                    onClick = { openSheet = true }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FilterAlt,
+                        contentDescription = "검색 필터",
+                        tint = if (projectPersonnelState.filter.year != 0 || projectPersonnelState.filter.departmentId.isNotBlank()) MainBlue else DarkGray
+                    )
+                }
+            }
 
             if (projectPersonnelState.personnels.isEmpty()) {
                 Box(
@@ -80,24 +191,22 @@ fun ProjectPersonnelScreen(navController: NavController, projectViewModel: Proje
                 }
             }
             else {
-                Spacer(Modifier.height(15.dp))
+                Spacer(modifier = Modifier.height(15.dp))
                 LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     state = listState
                 ) {
-                    projectPersonnelState.personnels.forEachIndexed { idx, personnelInfo ->
-                        item {
-                            PersonnelInfoItem(
-                                idx = idx,
-                                personnelInfo = personnelInfo,
-                                onClick = {}
-                            )
-                        }
+                    itemsIndexed(projectPersonnelState.personnels) { idx, personnelInfo ->
+                        PersonnelInfoItem(
+                            idx = idx,
+                            personnelInfo = personnelInfo,
+                            onClick = { /* TODO: 투입 현황 목록 아이템 클릭 이벤트 onEvent(ProjectPersonnelEvent.ClickedPersonnelWith(personnelInfo))*/ }
+                        )
                     }
 
                     item {
-                        Spacer(Modifier.height(70.dp))
+                        Spacer(Modifier.height(15.dp))
                     }
                 }
             }
@@ -105,47 +214,64 @@ fun ProjectPersonnelScreen(navController: NavController, projectViewModel: Proje
     }
 }
 
-/* 검색 필터 및 검색어 바 */
+/* 투입 현황 검색 필터 바텀 시트 */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SearchBar(projectPersonnelState: ProjectPersonnelState) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 26.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+private fun PersonnelSearchBottomSheet(projectPersonnelState: ProjectPersonnelState, onEvent: (ProjectPersonnelEvent) -> Unit, onDismiss: () -> Unit) {
+    var filter by remember { mutableStateOf(projectPersonnelState.filter) }
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        modifier = Modifier.wrapContentHeight(),
+        onDismissRequest = { onDismiss() },
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+        containerColor = Color.White
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically
+        val yearList = listOf("전체") + (2016..2025).map { it.toString() }
+
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            DropDownField(  // 검색 키워드 선택 드롭다운
-                modifier = Modifier.weight(1f),
-                options = listOf("전체", "연도", "참여자 이름"),
-                selected = projectPersonnelState.selectedKeyword,
-                onSelected = {}
+            TwoLineDropdownEditBar(
+                name = "연도",
+                options = yearList,
+                selected = if (filter.year == 0) "전체" else filter.year.toString(),
+                onSelected = { filter = filter.copy(year = it.toInt()) }
             )
 
-            DepthDropDownField( // 부서 선택 드롭다운
-                modifier = Modifier.weight(1f),
-                options = projectPersonnelState.departments,
-                selected = projectPersonnelState.selectedDepartment,
-                onSelected = {}
+            TwoLineDropdownEditBar(
+                name = "부서",
+                options = projectPersonnelState.departments.map { it.name },
+                selected = if (filter.departmentId == "") "전체" else projectPersonnelState.departments.find { it.id == filter.departmentId }?.name ?: "",
+                onSelected = { filter = filter.copy(departmentId = projectPersonnelState.departments.find { department -> department.name == it }?.id ?: "") }
             )
-        }
 
-        SearchBar(
-            searchState = SearchState(
-                value = projectPersonnelState.searchText,
-                onValueChange = {},
-                onClickSearch = {
-                    // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
-                    if (projectPersonnelState.paginationState.currentPage <= projectPersonnelState.paginationState.totalPage) {
-                        // 검색
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 50.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SubButton(
+                    name = "초기화",
+                    onClick = {
+                        onEvent(ProjectPersonnelEvent.ClickedInitFilter)
+                        onDismiss()
                     }
-                },
-                onClickInit = {}
-            ),
-            hint = "이름"
-        )
+                )
+
+                BasicButton(
+                    name = "적용",
+                    onClick = {
+                        onEvent(ProjectPersonnelEvent.ClickedUseFilter(filter = filter))
+                        onDismiss()
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -159,29 +285,44 @@ private fun PersonnelInfoItem(idx: Int, personnelInfo: ProjectDTO.PersonnelInfo,
         elevation = CardDefaults.cardElevation(1.dp),
         onClick = onClick
     ) {
-        Spacer(modifier = Modifier.height(12.dp))
-        TwoInfoBar((idx + 1).toString(), formatDeptGradeTitle(personnelInfo.department, personnelInfo.grade, personnelInfo.name))
-
-        Row(
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = 0.toString(),
-                color = Color.Red,
-                modifier = Modifier.weight(1f)
+            Spacer(modifier = Modifier.height(12.dp))
+            TwoInfoBar(
+                "No. ${(idx + 1)}",
+                formatDeptGradeTitle(
+                    personnelInfo.departmentName,
+                    personnelInfo.grade,
+                    personnelInfo.name
+                ),
+                fontSize = 15.sp
             )
-            Text(
-                text = 1.toString(),
-                color = MainBlue,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = 0.toString(),
-                color = ApprovalInfoItem_Green,
-                modifier = Modifier.weight(1f)
-            )
-        }
 
-        Spacer(modifier = Modifier.height(14.dp))
+            Divider(modifier = Modifier.padding(top = 8.dp), color = LightGray)
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp).height(IntrinsicSize.Min),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(
+                    text = personnelInfo.notStartCnt.toString(),
+                    color = Color.Red,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+                VerticalDivider(modifier = Modifier.fillMaxHeight())
+                Text(
+                    text = personnelInfo.inProgressCnt.toString(),
+                    color = MainBlue
+                )
+                VerticalDivider(modifier = Modifier.fillMaxHeight())
+                Text(
+                    text = personnelInfo.completeCnt.toString(),
+                    color = ApprovalInfoItem_Green
+                )
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.ui.hr.employee.manage
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
@@ -51,7 +53,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @Composable
 fun EmployeeManageScreen(navController: NavController, employeeViewModel: EmployeeViewModel) {
     val focusManager = LocalFocusManager.current                        // 포커스 관리
-    val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
     val onEvent = employeeViewModel::onManageEvent
     val employeeManageState by employeeViewModel.employeeManageState.collectAsState()
@@ -76,6 +77,7 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "직원 관리",
@@ -123,11 +125,8 @@ fun EmployeeManageScreen(navController: NavController, employeeViewModel: Employ
                     value = employeeManageState.searchText,
                     onValueChange = { onEvent(EmployeeManageEvent.ChangedSearchWith(it)) },
                     onClickSearch = {
-                        // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
                         if (employeeManageState.paginationState.currentPage <= employeeManageState.paginationState.totalPage) {
                             onEvent(EmployeeManageEvent.ClickedSearch)
-                            keyboardController?.hide()
-                            focusManager.clearFocus(force = true)
                         }
                     },
                     onClickInit = { onEvent(EmployeeManageEvent.ClickedInitSearch) }

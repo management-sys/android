@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.ui.mypage
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -37,14 +40,16 @@ import com.example.attendancemanagementapp.util.rememberOnce
 @Composable
 fun MyPageScreen(navController: NavController, myPageViewModel: MyPageViewModel) {
     val onEvent = myPageViewModel::onEvent
-
     val myPageState by myPageViewModel.myPageState.collectAsState()
+
+    val focusManager = LocalFocusManager.current    // 포커스 관리
 
     LaunchedEffect(Unit) {
         onEvent(MyPageEvent.Init)
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "마이페이지",

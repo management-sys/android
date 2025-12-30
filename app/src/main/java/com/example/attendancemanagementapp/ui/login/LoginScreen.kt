@@ -1,6 +1,7 @@
 package com.example.attendancemanagementapp.ui.login
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -34,14 +37,17 @@ import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 @Composable
 fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel) {
     val onEvent = loginViewModel::onEvent
-
     val loginState by loginViewModel.loginState.collectAsState()
+
+    val focusManager = LocalFocusManager.current    // 포커스 관리
 
     LaunchedEffect(Unit) {
         loginViewModel.init()
     }
 
-    Scaffold { paddingValues ->
+    Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
+    ) { paddingValues ->
         Column(
             modifier = Modifier.padding(paddingValues).fillMaxSize().padding(horizontal = 26.dp),
             verticalArrangement = Arrangement.Center,

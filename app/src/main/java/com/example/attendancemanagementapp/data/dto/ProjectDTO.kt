@@ -93,19 +93,19 @@ object ProjectDTO {
         @Json(name = "totalMtgCost")    val expense: Int,       // 회의비
     )
 
-    /* 프로젝트 투입 인력 목록 조회 응답 */
-    data class GetPersonnelResponse(
-        @Json(name = "content")     val content: List<PersonnelInfo>,   // 투입 인력 목록
-        @Json(name = "totalPages")  val totalPages: Int                 // 총 페이지 개수
-    )
-
-    /* 투입 인력 목록 데이터 */
-    data class PersonnelInfo(
-        @Json(name = "clsf")    val grade: String,      // 직책
-        @Json(name = "deptNm")  val department: String, // 부서명
-        @Json(name = "userId")  val id: String,         // 사용자 ID
-        @Json(name = "userNm")  val name: String        // 사용자명
-    )
+//    /* 프로젝트 투입 인력 목록 조회 응답 */
+//    data class GetPersonnelResponse(
+//        @Json(name = "content")     val content: List<PersonnelInfo>,   // 투입 인력 목록
+//        @Json(name = "totalPages")  val totalPages: Int                 // 총 페이지 개수
+//    )
+//
+//    /* 투입 인력 목록 데이터 */
+//    data class PersonnelInfo(
+//        @Json(name = "clsf")    val grade: String,      // 직책
+//        @Json(name = "deptNm")  val department: String, // 부서명
+//        @Json(name = "userId")  val id: String,         // 사용자 ID
+//        @Json(name = "userNm")  val name: String        // 사용자명
+//    )
 
     /* 프로젝트 현황 조회 응답 */
     data class GetProjectStatusResponse(
@@ -159,5 +159,23 @@ object ProjectDTO {
         @Json(name = "rm")                  val remark: String? = "",                                           // 비고
         @Json(name = "se")                  val type: String = "선택",                                           // 구분 (용역/내부/국가과제)
         @Json(name = "wct")                 val businessExpense: Int? = 0                                       // 사업비
+    )
+
+    /* 투입 현황 조회 응답 */
+    data class GetPersonnelsResponse(
+        @Json(name = "content") val personnels: List<PersonnelInfo>,
+        @Json(name = "totalPages")  val totalpages: Int
+    )
+
+    /* 투입 현황 목록 데이터 */
+    data class PersonnelInfo(
+        @Json(name = "ccount")          val completeCnt: Int,       // 완료된 프로젝트 개수
+        @Json(name = "clsf")            val grade: String,          // 직급
+        @Json(name = "deptNm")          val departmentName: String, // 부서명
+        @Json(name = "icount")          val inProgressCnt: Int,     // 진행 중인 프로젝트 개수
+        @Json(name = "maxInptHnfId")    val recentId: Long,         // 가장 최근의 투입 인력 아이디 (정렬 기준용)
+        @Json(name = "ncount")          val notStartCnt: Int,       // 미진행 프로젝트 개수
+        @Json(name = "userId")          val id: String,             // 사용자 아이디
+        @Json(name = "userNm")          val name: String            // 이름
     )
 }

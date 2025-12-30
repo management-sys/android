@@ -9,6 +9,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
@@ -81,7 +83,6 @@ import com.example.attendancemanagementapp.util.rememberOnce
 @Composable
 fun DepartmentDetailScreen(navController: NavController, departmentViewModel: DepartmentViewModel) {
     val focusManager = LocalFocusManager.current                        // 포커스 관리
-    val keyboardController = LocalSoftwareKeyboardController.current    // 키보드 관리
 
     val onEvent = departmentViewModel::onDetailEvent
     val departmentDetailState by departmentViewModel.departmentDetailState.collectAsState()
@@ -101,10 +102,7 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
             onEvent = onEvent,
             departmentDetailState = departmentDetailState,
             onClickSearch = {
-                // 검색 버튼 클릭 시 키보드 숨기기, 포커스 해제
                 onEvent(DepartmentDetailEvent.ClickedSearch)
-                keyboardController?.hide()
-                focusManager.clearFocus(force = true)
             },
             onDismiss = {
                 openBottomSheet = false
@@ -140,6 +138,7 @@ fun DepartmentDetailScreen(navController: NavController, departmentViewModel: De
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "부서 상세",

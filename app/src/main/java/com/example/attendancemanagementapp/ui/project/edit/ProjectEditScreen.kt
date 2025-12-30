@@ -1,6 +1,7 @@
 package com.example.attendancemanagementapp.ui.project.edit
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +52,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -95,6 +98,8 @@ fun ProjectEditScreen(navController: NavController, projectViewModel: ProjectVie
     val onEvent = projectViewModel::onEditEvent
     val projectEditState by projectViewModel.projectEditState.collectAsState()
 
+    val focusManager = LocalFocusManager.current    // 포커스 관리
+
     val tabs = listOf("프로젝트 정보", "투입인력")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
@@ -115,6 +120,7 @@ fun ProjectEditScreen(navController: NavController, projectViewModel: ProjectVie
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "프로젝트 수정",

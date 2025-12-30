@@ -3,6 +3,7 @@ package com.example.attendancemanagementapp.ui.hr.department.manage
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.times
@@ -54,8 +57,9 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 @Composable
 fun DepartmentManageScreen(navController: NavController, departmentViewModel: DepartmentViewModel) {
     val onEvent = departmentViewModel::onManageEvent
-
     val departmentManageState by departmentViewModel.departmentManageState.collectAsState()
+
+    val focusManager = LocalFocusManager.current    // 포커스 관리
 
     var deptList by remember { mutableStateOf(departmentManageState.departments) }  // 출력할 부서 리스트
     var fromInfo by remember { mutableStateOf(DepartmentDTO.DepartmentsInfo()) }  // 드래그 시작하는 부서 정보
@@ -87,6 +91,7 @@ fun DepartmentManageScreen(navController: NavController, departmentViewModel: De
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
                 title = "부서 관리",
