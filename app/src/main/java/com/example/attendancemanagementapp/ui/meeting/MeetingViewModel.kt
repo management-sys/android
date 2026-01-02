@@ -71,10 +71,7 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
 
     fun onDetailEvent(e: MeetingDetailEvent) {
         when (e) {
-            MeetingDetailEvent.ClickedUpdate -> {
-                _meetingEditState.update { it.copy() }
-                _uiEffect.tryEmit(UiEffect.Navigate("meetingEdit"))
-            }
+            MeetingDetailEvent.ClickedUpdate -> _uiEffect.tryEmit(UiEffect.Navigate("meetingEdit"))
             MeetingDetailEvent.ClickedDelete -> deleteMeeting()
             else -> Unit
         }

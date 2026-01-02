@@ -120,7 +120,7 @@ private fun MeetingInfoCard(meetingInfo: MeetingDTO.GetMeetingResponse) {
             TowLineInfoBar(name = "장소", value = meetingInfo.place)
             ViewAttendeesItem(attendeesInfo = meetingInfo.attendees)
             TowLineInfoBar(name = "회의내용", value = meetingInfo.content)
-            TowLineInfoBar(name = "비고", value = if (meetingInfo.remark.isNullOrBlank()) "비고 없음" else meetingInfo.remark)
+            TowLineInfoBar(name = "비고", value = if (meetingInfo.remark.isNullOrBlank()) "-" else meetingInfo.remark)
             ViewExpensesItem(expensesInfo = meetingInfo.expenses)
         }
     }

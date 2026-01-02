@@ -35,8 +35,7 @@ object MeetingEditReducer {
             remark = data.remark,
             title = data.title
         )
-        return MeetingEditState(inputData = initData, projectName = data.projectName, meetingId = data.id)
-//        return MeetingEditState(inputData = initData, projectId = data.id, projectName = data.projectName, meetingId = data.id)
+        return MeetingEditState(inputData = initData, projectId = data.projectId, projectName = data.projectName, meetingId = data.id)
     }
 
     private val meetingUpdaters: Map<MeetingAddField, (MeetingDTO.UpdateMeetingRequest, String) -> MeetingDTO.UpdateMeetingRequest> =

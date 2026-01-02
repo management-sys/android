@@ -13,6 +13,7 @@ object MeetingDTO {
         @Json(name = "mtgCtUseDtlsList")    val expenses: List<ExpensesInfo> = emptyList(),     // 회의비 사용 내역 리스트
         @Json(name = "mtgRcordId")          val id: Long = 0,                                   // 회의록 아이디
         @Json(name = "place")               val place: String = "",                             // 회의 장소
+        @Json(name = "prjctId")             val projectId: String = "",                         // 프로젝트 아이디
         @Json(name = "prjctNm")             val projectName: String = "",                       // 프로젝트명
         @Json(name = "rm")                  val remark: String? = "",                           // 비고
         @Json(name = "sj")                  val title: String = ""                              // 회의록 제목

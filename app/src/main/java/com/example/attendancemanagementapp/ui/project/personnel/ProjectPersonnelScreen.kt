@@ -198,9 +198,8 @@ private fun PersonnelList(projectPersonnelState: ProjectPersonnelState, onEvent:
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     state = listState
                 ) {
-                    itemsIndexed(projectPersonnelState.personnels) { idx, personnelInfo ->
+                    items(projectPersonnelState.personnels) { personnelInfo ->
                         PersonnelInfoItem(
-                            idx = idx,
                             personnelInfo = personnelInfo,
                             onClick = { onEvent(ProjectPersonnelEvent.ClickedPersonnelWith(personnelInfo.id)) }
                         )
@@ -278,7 +277,7 @@ private fun PersonnelSearchBottomSheet(projectPersonnelState: ProjectPersonnelSt
 
 /* 투입 현황 목록 아이템 */
 @Composable
-private fun PersonnelInfoItem(idx: Int, personnelInfo: ProjectDTO.PersonnelInfo, onClick: () -> Unit) {
+private fun PersonnelInfoItem(personnelInfo: ProjectDTO.PersonnelInfo, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -288,17 +287,17 @@ private fun PersonnelInfoItem(idx: Int, personnelInfo: ProjectDTO.PersonnelInfo,
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
-            TwoInfoBar(
-                "No. ${(idx + 1)}",
-                formatDeptGradeTitle(
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = formatDeptGradeTitle(
                     personnelInfo.departmentName,
                     personnelInfo.grade,
                     personnelInfo.name
                 ),
-                fontSize = 15.sp
+                fontSize = 14.sp
             )
 
             Divider(modifier = Modifier.padding(top = 8.dp), color = LightGray)

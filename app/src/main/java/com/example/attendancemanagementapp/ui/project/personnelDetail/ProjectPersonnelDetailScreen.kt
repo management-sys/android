@@ -193,11 +193,11 @@ private fun EmployeeInfoCard(personnelInfo: ProjectDTO.GetPersonnelDetailRespons
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             ProfileImage()
-            TowLineInfoBar(name = "아이디", value = personnelInfo.userId)
+            TowLineInfoBar(name = "아이디", value = personnelInfo.loginId)
             TowLineInfoBar(name = "이름", value = personnelInfo.name)
             TowLineInfoBar(name = "부서", value = personnelInfo.departmentName)
             TowLineInfoBar(name = "직급", value = personnelInfo.grade)
-            TowLineInfoBar(name = "직책", value = personnelInfo.title ?: "-")
+            TowLineInfoBar(name = "직책", value = if (personnelInfo.title.isNullOrBlank()) "-" else personnelInfo.title)
         }
     }
 }
@@ -444,11 +444,11 @@ private fun DayBlockScheduleItem(currentDate: LocalDate, projectInfo: ProjectDTO
 
     val paddingModifier = when {
         // 일정이 오늘 시작하고 오늘 끝남
-        startDate == endDate -> Modifier.padding(horizontal = 2.dp)
+        startDate == endDate -> Modifier.padding(horizontal = 3.dp)
         // 일정이 오늘 시작했지만, 오늘 끝나지 않음
-        startDate == currentDate && endDate != currentDate -> Modifier.padding(start = 2.dp)
+        startDate == currentDate && endDate != currentDate -> Modifier.padding(start = 3.dp)
         // 일정이 이전에 시작했고, 오늘 끝남
-        startDate.isBefore(currentDate) && currentDate == endDate -> Modifier.padding(end = 2.dp)
+        startDate.isBefore(currentDate) && currentDate == endDate -> Modifier.padding(end = 3.dp)
         // 일정 진행 중임
         else -> Modifier
     }

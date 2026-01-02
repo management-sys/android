@@ -233,16 +233,16 @@ private fun ProjectInfoCard(projectInfo: ProjectDTO.GetProjectResponse) {
         ) {
             TowLineInfoBar(name = "구분", value = projectInfo.type)
             TowLineInfoBar(name = "제목", value = projectInfo.projectName)
-            TowLineInfoBar(name = "주관기관", value = projectInfo.companyName ?: "")
+            TowLineInfoBar(name = "주관기관", value = if (projectInfo.companyName.isNullOrBlank()) "-" else projectInfo.companyName)
             TowLineInfoBar(name = "담당부서", value = projectInfo.departmentName)
             TowLineInfoBar(name = "프로젝트 책임자", value = projectInfo.managerName)
             TowLineInfoBar(name = "사업비", value = "%,d".format(projectInfo.businessExpense))
             TowLineInfoBar(name = "사업기간", value = "${projectInfo.businessStartDate} - ${projectInfo.businessEndDate}")
-            TowLineInfoBar(name = "계획기간", value = if (projectInfo.planStartDate.isNullOrBlank() || projectInfo.planEndDate.isNullOrBlank()) "" else "${projectInfo.planStartDate} - ${projectInfo.planEndDate}")
-            TowLineInfoBar(name = "실제기간", value = if (projectInfo.realStartDate.isNullOrBlank() || projectInfo.realEndDate.isNullOrBlank()) "" else "${projectInfo.realStartDate} - ${projectInfo.realEndDate}")
+            TowLineInfoBar(name = "계획기간", value = if (projectInfo.planStartDate.isNullOrBlank() || projectInfo.planEndDate.isNullOrBlank()) "-" else "${projectInfo.planStartDate} - ${projectInfo.planEndDate}")
+            TowLineInfoBar(name = "실제기간", value = if (projectInfo.realStartDate.isNullOrBlank() || projectInfo.realEndDate.isNullOrBlank()) "-" else "${projectInfo.realStartDate} - ${projectInfo.realEndDate}")
             TowLineInfoBar(name = "진행상태", value = projectInfo.status)
             TowLineInfoBar(name = "투입인력", value = projectInfo.assignedPersonnels?.joinToString(", ") { "${it.name}(${it.type})" } ?: "")
-            TowLineInfoBar(name = "비고", value = projectInfo.remark ?: "비고 없음")
+            TowLineInfoBar(name = "비고", value = if (projectInfo.remark.isNullOrBlank()) "-" else projectInfo.remark)
         }
     }
 }
