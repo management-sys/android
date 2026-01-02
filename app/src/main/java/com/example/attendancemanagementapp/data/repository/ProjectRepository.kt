@@ -57,16 +57,17 @@ class ProjectRepository @Inject constructor(private val service: ProjectService)
         emit(Result.failure(e))
     }
 
-//    // 프로젝트 투입 인력 목록 조회
-//    fun getPersonnel(projectId: String, page: Int): Flow<Result<ProjectDTO.GetPersonnelResponse>> = flow {
-//        val response = service.getPersonnel(
-//            projectId = projectId,
-//            page = page
-//        )
-//        emit(Result.success(response))
-//    }.catch { e ->
-//        emit(Result.failure(e))
-//    }
+    // 프로젝트 투입 인력 목록 조회
+    fun getPersonnel(projectId: String, userName: String, page: Int): Flow<Result<ProjectDTO.GetPersonnelResponse>> = flow {
+        val response = service.getPersonnel(
+            projectId = projectId,
+            userName = userName,
+            page = page
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
 
     // 프로젝트 현황 조회
     fun getProjectStatus(query: ProjectStatusQuery, page: Int): Flow<Result<ProjectDTO.GetProjectStatusResponse>> = flow {
@@ -90,6 +91,16 @@ class ProjectRepository @Inject constructor(private val service: ProjectService)
             userName = query.userName,
             year = if (query.year == 0) null else query.year,
             page = page
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 투입 현황 상세 조회
+    fun getPersonnelDetail(userId: String): Flow<Result<ProjectDTO.GetPersonnelDetailResponse>> = flow {
+        val response = service.getPersonnelDetail(
+            userId = userId
         )
         emit(Result.success(response))
     }.catch { e ->

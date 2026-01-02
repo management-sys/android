@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -201,7 +202,7 @@ private fun PersonnelList(projectPersonnelState: ProjectPersonnelState, onEvent:
                         PersonnelInfoItem(
                             idx = idx,
                             personnelInfo = personnelInfo,
-                            onClick = { /* TODO: 투입 현황 목록 아이템 클릭 이벤트 onEvent(ProjectPersonnelEvent.ClickedPersonnelWith(personnelInfo))*/ }
+                            onClick = { onEvent(ProjectPersonnelEvent.ClickedPersonnelWith(personnelInfo.id)) }
                         )
                     }
 
@@ -310,16 +311,22 @@ private fun PersonnelInfoItem(idx: Int, personnelInfo: ProjectDTO.PersonnelInfo,
                 Text(
                     text = personnelInfo.notStartCnt.toString(),
                     color = Color.Red,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
                 VerticalDivider(modifier = Modifier.fillMaxHeight())
                 Text(
                     text = personnelInfo.inProgressCnt.toString(),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
                     color = MainBlue
                 )
                 VerticalDivider(modifier = Modifier.fillMaxHeight())
                 Text(
                     text = personnelInfo.completeCnt.toString(),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
                     color = ApprovalInfoItem_Green
                 )
             }

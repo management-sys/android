@@ -65,7 +65,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -78,6 +77,7 @@ import com.example.attendancemanagementapp.data.dto.MeetingDTO
 import com.example.attendancemanagementapp.data.dto.MeetingDTO.AddAttendeesInfo
 import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.ui.components.BasicButton
+import com.example.attendancemanagementapp.ui.components.BasicCheckbox
 import com.example.attendancemanagementapp.ui.components.BasicDatePickerDialog
 import com.example.attendancemanagementapp.ui.components.BasicLongButton
 import com.example.attendancemanagementapp.ui.components.BasicOutlinedTextFieldColors
@@ -89,11 +89,7 @@ import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineSearchEditBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
-import com.example.attendancemanagementapp.ui.hr.employee.edit.DepartmentInfoItem
 import com.example.attendancemanagementapp.ui.meeting.MeetingViewModel
-import com.example.attendancemanagementapp.ui.project.add.EmployeeItem
-import com.example.attendancemanagementapp.ui.project.add.ProjectAddEvent
-import com.example.attendancemanagementapp.ui.project.add.ProjectAddSearchField
 import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Red
 import com.example.attendancemanagementapp.ui.theme.BackgroundColor
 import com.example.attendancemanagementapp.ui.theme.DarkGray
@@ -101,6 +97,7 @@ import com.example.attendancemanagementapp.ui.theme.DisableGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.util.formatDateYY
+import com.example.attendancemanagementapp.util.formatDeptGradeTitle
 import com.example.attendancemanagementapp.util.formatTime
 import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -628,7 +625,10 @@ private fun AttendeeEditCard(
     if (openSelectType) {
         AttendeeTypeDialog(
             onDismiss = { openSelectType = false },
-            onClickConfirm = { openSelectInternalAttendee = true },
+            onClickConfirm = {
+                onEvent(MeetingAddEvent.ClickedAddInnerAttendee)
+                openSelectInternalAttendee = true
+            },
             onClickDismiss = { openSelectExternalAttendee = true }
         )
     }
@@ -801,7 +801,7 @@ private fun EmployeeBottomSheet(
                 state = listState
             ) {
                 items(meetingAddState.employeeState.employees) { item ->
-                    val isChecked = meetingAddState.inputData.attendees.any { it.userId == item.userId }
+                    val isChecked = meetingAddState.inputData.attendees.any { it.userId == item.id }
                     EmployeeItem(
                         info = item,
                         isChecked = isChecked,
@@ -821,6 +821,50 @@ private fun EmployeeBottomSheet(
                 item {
                     Spacer(Modifier.height(5.dp))
                 }
+            }
+        }
+    }
+}
+
+/* 직원 목록 아이템 */
+@Composable
+fun EmployeeItem(
+    info: ProjectDTO.EmployeeInfo,
+    isChecked: Boolean,
+    onChecked: (Boolean) -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(10.dp),
+        border = BorderStroke(width = 0.5.dp, color = DividerDefaults.color.copy(alpha = 0.8f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            BasicCheckbox(
+                isChecked = isChecked,
+                onChecked = { onChecked(it) }
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = info.name,
+                    fontSize = 15.sp
+                )
+
+                Text(
+                    text = formatDeptGradeTitle(info.department, info.grade, info.title),
+                    fontSize = 15.sp
+                )
             }
         }
     }

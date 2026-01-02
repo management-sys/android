@@ -2,6 +2,7 @@ package com.example.attendancemanagementapp.ui.meeting.add
 
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.dto.MeetingDTO
+import com.example.attendancemanagementapp.data.dto.ProjectDTO
 
 enum class MeetingAddField {
     TITLE, START, END, PLACE, CONTENT, REMARK
@@ -84,10 +85,13 @@ sealed interface MeetingAddEvent {
         val name: String
     ): MeetingAddEvent
 
+    /* 내부 참석자 추가 버튼 클릭 이벤트 */
+    data object ClickedAddInnerAttendee: MeetingAddEvent
+
     /* 참석자 체크박스 클릭 이벤트 */
     data class CheckedAttendeeWith(
         val checked: Boolean,
-        val employee: EmployeeDTO.ManageEmployeesInfo
+        val employee: ProjectDTO.EmployeeInfo
     ): MeetingAddEvent
 
     /* 참석자 아이템 삭제 버튼 클릭 이벤트 */

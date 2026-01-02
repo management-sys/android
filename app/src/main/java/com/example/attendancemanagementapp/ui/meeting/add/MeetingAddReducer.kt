@@ -3,6 +3,7 @@ package com.example.attendancemanagementapp.ui.meeting.add
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.dto.MeetingDTO
 import com.example.attendancemanagementapp.data.dto.MeetingDTO.AddAttendeesInfo
+import com.example.attendancemanagementapp.data.dto.ProjectDTO
 
 object MeetingAddReducer {
     fun reduce(s: MeetingAddState, e: MeetingAddEvent): MeetingAddState = when (e) {
@@ -97,11 +98,11 @@ object MeetingAddReducer {
     private fun handleCheckedAttendee(
         state: MeetingAddState,
         checked: Boolean,
-        employee: EmployeeDTO.ManageEmployeesInfo
+        employee: ProjectDTO.EmployeeInfo
     ): MeetingAddState {
-        val newAttendee = AddAttendeesInfo(type = "I", name = employee.name, grade = employee.grade, department = employee.department, userId = employee.userId)
+        val newAttendee = AddAttendeesInfo(type = "I", name = employee.name, grade = employee.grade, department = employee.department, userId = employee.id)
         val updatedList = if (checked) state.inputData.attendees + newAttendee else state.inputData.attendees - newAttendee
-        val sortedList = updatedList.sortedBy { attendee -> state.employeeState.employees.indexOfFirst { it.userId == attendee.userId } }
+        val sortedList = updatedList.sortedBy { attendee -> state.employeeState.employees.indexOfFirst { it.id == attendee.userId } }
 
         return state.copy(inputData = state.inputData.copy(attendees = sortedList))
     }

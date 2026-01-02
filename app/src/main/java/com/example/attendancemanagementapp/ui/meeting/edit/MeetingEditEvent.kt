@@ -2,7 +2,9 @@ package com.example.attendancemanagementapp.ui.meeting.edit
 
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.dto.MeetingDTO
+import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.ui.meeting.add.ExpenseField
+import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddEvent
 import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddField
 
 sealed interface MeetingEditEvent {
@@ -54,10 +56,13 @@ sealed interface MeetingEditEvent {
     /* 검색어 초기화 버튼 클릭 이벤트 */
     data object ClickedInitSearch: MeetingEditEvent
 
+    /* 내부 참석자 추가 버튼 클릭 이벤트 */
+    data object ClickedAddInnerAttendee: MeetingEditEvent
+
     /* 참석자 체크박스 클릭 이벤트 */
     data class CheckedAttendeeWith(
         val checked: Boolean,
-        val employee: EmployeeDTO.ManageEmployeesInfo
+        val employee: ProjectDTO.EmployeeInfo
     ): MeetingEditEvent
 
     /* 참석자 아이템 삭제 버튼 클릭 이벤트 */

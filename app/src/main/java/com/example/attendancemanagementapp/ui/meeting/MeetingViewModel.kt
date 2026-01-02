@@ -11,6 +11,7 @@ import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddEvent
 import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddReducer
 import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddState
+import com.example.attendancemanagementapp.ui.meeting.add.ProjectEmployeeSearchState
 import com.example.attendancemanagementapp.ui.meeting.add.ProjectSearchState
 import com.example.attendancemanagementapp.ui.meeting.detail.MeetingDetailEvent
 import com.example.attendancemanagementapp.ui.meeting.detail.MeetingDetailState
@@ -55,17 +56,15 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
         _meetingAddState.update { MeetingAddReducer.reduce(it, e) }
 
         when (e) {
-            MeetingAddEvent.Init -> {
-                getProjects()
-                getEmployees(MeetingTarget.ADD)
-            }
+            MeetingAddEvent.Init -> getProjects()
             MeetingAddEvent.ClickedAdd -> addMeeting()
-            MeetingAddEvent.LoadNextEmployeePage -> getEmployees(MeetingTarget.ADD)
-            MeetingAddEvent.ClickedEmployeeSearch -> getEmployees(MeetingTarget.ADD)
-            MeetingAddEvent.ClickedEmployeeInitSearch -> getEmployees(MeetingTarget.ADD)
+            MeetingAddEvent.LoadNextEmployeePage -> getPersonnel(MeetingTarget.ADD)
+            MeetingAddEvent.ClickedEmployeeSearch -> getPersonnel(MeetingTarget.ADD)
+            MeetingAddEvent.ClickedEmployeeInitSearch -> getPersonnel(MeetingTarget.ADD)
             MeetingAddEvent.LoadNextProjectPage -> getProjects()
             MeetingAddEvent.ClickedProjectSearch -> getProjects()
             MeetingAddEvent.ClickedProjectInitSearch -> getProjects()
+            MeetingAddEvent.ClickedAddInnerAttendee -> getPersonnel(MeetingTarget.ADD)
             else -> Unit
         }
     }
@@ -85,11 +84,11 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
         _meetingEditState.update { MeetingEditReducer.reduce(it, e) }
 
         when (e) {
-            is MeetingEditEvent.InitWith -> getEmployees(MeetingTarget.EDIT)
             MeetingEditEvent.ClickedUpdate -> updateMeeting()
-            MeetingEditEvent.LoadNextPage -> getEmployees(MeetingTarget.EDIT)
-            MeetingEditEvent.ClickedSearch -> getEmployees(MeetingTarget.EDIT)
-            MeetingEditEvent.ClickedInitSearch -> getEmployees(MeetingTarget.EDIT)
+            MeetingEditEvent.LoadNextPage -> getPersonnel(MeetingTarget.EDIT)
+            MeetingEditEvent.ClickedSearch -> getPersonnel(MeetingTarget.EDIT)
+            MeetingEditEvent.ClickedInitSearch -> getPersonnel(MeetingTarget.EDIT)
+            MeetingEditEvent.ClickedAddInnerAttendee -> getPersonnel(MeetingTarget.EDIT)
             else -> Unit
         }
     }
@@ -237,56 +236,6 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
         }
     }
 
-    /* 직원 목록 조회 */
-    fun getEmployees(target: MeetingTarget) {
-        val state = when (target) {
-            MeetingTarget.ADD -> meetingAddState.value.employeeState
-            MeetingTarget.EDIT -> meetingEditState.value.employeeState
-        }
-
-        val updateState: (EmployeeSearchState) -> Unit = { newState ->
-            when (target) {
-                MeetingTarget.ADD -> _meetingAddState.update { it.copy(employeeState = newState) }
-                MeetingTarget.EDIT -> _meetingEditState.update { it.copy(employeeState = newState) }
-            }
-        }
-
-        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = true)))
-
-        viewModelScope.launch {
-            employeeRepository.getManageEmployees(
-                department = "",
-                grade = "",
-                title = "",
-                name = state.searchText,
-                page = state.paginationState.currentPage
-            ).collect { result ->
-                result
-                    .onSuccess { data ->
-                        val isFirstPage = state.paginationState.currentPage == 0
-
-                        val updatedEmployees = if (isFirstPage) data.content else state.employees + data.content
-
-                        updateState(state.copy(
-                            employees = updatedEmployees,
-                            paginationState = state.paginationState.copy(
-                                currentPage = state.paginationState.currentPage + 1,
-                                totalPage = data.totalPages,
-                                isLoading = false
-                            )
-                        ))
-
-                        Log.d(TAG, "[getEmployees] 직원 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${meetingAddState.value.employeeState.searchText})\n${data.content}")
-                    }
-                    .onFailure { e ->
-                        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = false)))
-
-                        ErrorHandler.handle(e, TAG, "getEmployees")
-                    }
-            }
-        }
-    }
-
     /* 프로젝트 목록 조회 */
     fun getProjects() {
         val state = meetingAddState.value.projectState
@@ -323,6 +272,61 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
                         updateState(state.copy(paginationState = state.paginationState.copy(isLoading = false)))
 
                         ErrorHandler.handle(e, TAG, "getProjects")
+                    }
+            }
+        }
+    }
+
+    /* 프로젝트 투입 인력 목록 조회 */
+    fun getPersonnel(target: MeetingTarget) {
+        val projectId = when (target) {
+            MeetingTarget.ADD -> meetingAddState.value.inputData.projectId
+            MeetingTarget.EDIT -> meetingEditState.value.projectId
+        }
+
+        if (target == MeetingTarget.ADD && projectId == "") {
+            return
+        }
+
+        val state = when (target) {
+            MeetingTarget.ADD -> meetingAddState.value.employeeState
+            MeetingTarget.EDIT -> meetingEditState.value.employeeState
+        }
+
+        val updateState: (ProjectEmployeeSearchState) -> Unit = { newState ->
+            when (target) {
+                MeetingTarget.ADD -> _meetingAddState.update { it.copy(employeeState = newState) }
+                MeetingTarget.EDIT -> _meetingEditState.update { it.copy(employeeState = newState) }
+            }
+        }
+
+        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = true)))
+
+        viewModelScope.launch {
+            projectRepository.getPersonnel(
+                projectId = projectId,
+                userName = state.searchText,
+                page = state.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedEmployees = if (isFirstPage) data.content else state.employees + data.content
+
+                        updateState(state.copy(
+                            employees = updatedEmployees,
+                            paginationState = state.paginationState.copy(
+                                currentPage = state.paginationState.currentPage + 1,
+                                totalPage = data.totalPages,
+                                isLoading = false
+                            )
+                        ))
+
+                        Log.d(TAG, "[getPersonnel] 프로젝트 투입 인력 목록 조회 성공\n${data.content}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "getPersonnel")
                     }
             }
         }

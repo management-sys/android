@@ -79,11 +79,8 @@ import com.example.attendancemanagementapp.ui.hr.employee.search.EmployeeInfoIte
 import com.example.attendancemanagementapp.ui.project.ProjectViewModel
 import com.example.attendancemanagementapp.ui.project.add.BottomSheetType
 import com.example.attendancemanagementapp.ui.project.add.EmployeeItem
-import com.example.attendancemanagementapp.ui.project.add.ProjectAddEvent
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddField
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddSearchField
-import com.example.attendancemanagementapp.ui.project.add.ProjectAddState
-import com.example.attendancemanagementapp.ui.project.edit.PersonnelItem
 import com.example.attendancemanagementapp.ui.theme.BackgroundColor
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.TextGray

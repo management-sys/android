@@ -84,9 +84,10 @@ import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
 import com.example.attendancemanagementapp.ui.meeting.MeetingViewModel
 import com.example.attendancemanagementapp.ui.meeting.add.AttendeeTypeDialog
+import com.example.attendancemanagementapp.ui.meeting.add.EmployeeItem
 import com.example.attendancemanagementapp.ui.meeting.add.ExpenseField
+import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddEvent
 import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddField
-import com.example.attendancemanagementapp.ui.project.add.EmployeeItem
 import com.example.attendancemanagementapp.ui.theme.ApprovalInfoItem_Red
 import com.example.attendancemanagementapp.ui.theme.BackgroundColor
 import com.example.attendancemanagementapp.ui.theme.DarkGray
@@ -487,7 +488,10 @@ private fun AttendeeEditCard(
     if (openSelectType) {
         AttendeeTypeDialog(
             onDismiss = { openSelectType = false },
-            onClickConfirm = { openSelectInternalAttendee = true },
+            onClickConfirm = {
+                onEvent(MeetingEditEvent.ClickedAddInnerAttendee)
+                openSelectInternalAttendee = true
+            },
             onClickDismiss = { openSelectExternalAttendee = true }
         )
     }
@@ -786,7 +790,7 @@ private fun EmployeeBottomSheet(
                 state = listState
             ) {
                 items(meetingEditState.employeeState.employees) { item ->
-                    val isChecked = meetingEditState.inputData.attendees.any { it.userId == item.userId }
+                    val isChecked = meetingEditState.inputData.attendees.any { it.userId == item.id }
                     EmployeeItem(
                         info = item,
                         isChecked = isChecked,

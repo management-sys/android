@@ -1,6 +1,5 @@
 package com.example.attendancemanagementapp.ui.project.personnel
 
-import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.data.param.PersonnelsQuery
 
 sealed interface ProjectPersonnelEvent {
@@ -31,6 +30,6 @@ sealed interface ProjectPersonnelEvent {
 
     /* 정보 조회할 투입 인력 선택 이벤트 */
     data class ClickedPersonnelWith(
-        val personnelInfo: ProjectDTO.PersonnelInfo
+        val userId: String
     ): ProjectPersonnelEvent
 }

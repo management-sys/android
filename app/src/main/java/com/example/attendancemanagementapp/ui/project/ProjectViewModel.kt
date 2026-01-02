@@ -3,7 +3,6 @@ package com.example.attendancemanagementapp.ui.project
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.data.repository.DepartmentRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
@@ -14,17 +13,20 @@ import com.example.attendancemanagementapp.ui.project.add.DepartmentSearchState
 import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddEvent
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddReducer
+import com.example.attendancemanagementapp.ui.project.add.ProjectAddSearchField
 import com.example.attendancemanagementapp.ui.project.add.ProjectAddState
 import com.example.attendancemanagementapp.ui.project.detail.ProjectDetailEvent
 import com.example.attendancemanagementapp.ui.project.detail.ProjectDetailReducer
 import com.example.attendancemanagementapp.ui.project.detail.ProjectDetailState
-import com.example.attendancemanagementapp.ui.project.add.ProjectAddSearchField
 import com.example.attendancemanagementapp.ui.project.edit.ProjectEditEvent
 import com.example.attendancemanagementapp.ui.project.edit.ProjectEditReducer
 import com.example.attendancemanagementapp.ui.project.edit.ProjectEditState
 import com.example.attendancemanagementapp.ui.project.personnel.ProjectPersonnelEvent
 import com.example.attendancemanagementapp.ui.project.personnel.ProjectPersonnelReducer
 import com.example.attendancemanagementapp.ui.project.personnel.ProjectPersonnelState
+import com.example.attendancemanagementapp.ui.project.personnelDetail.ProjectPersonnelDetailEvent
+import com.example.attendancemanagementapp.ui.project.personnelDetail.ProjectPersonnelDetailReducer
+import com.example.attendancemanagementapp.ui.project.personnelDetail.ProjectPersonnelDetailState
 import com.example.attendancemanagementapp.ui.project.status.ProjectStatusCnt
 import com.example.attendancemanagementapp.ui.project.status.ProjectStatusEvent
 import com.example.attendancemanagementapp.ui.project.status.ProjectStatusReducer
@@ -58,6 +60,8 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
     val projectEditState = _projectEditState.asStateFlow()
     private val _projectPersonnelState = MutableStateFlow(ProjectPersonnelState())
     val projectPersonnelState = _projectPersonnelState.asStateFlow()
+    private val _projectPersonnelDetailState = MutableStateFlow(ProjectPersonnelDetailState())
+    val projectPersonnelDetailState = _projectPersonnelDetailState.asStateFlow()
     private val _projectStatusState = MutableStateFlow(ProjectStatusState())
     val projectStatusState = _projectStatusState.asStateFlow()
 
@@ -150,10 +154,20 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
             ProjectPersonnelEvent.ClickedSearch -> getPersonnels()
             ProjectPersonnelEvent.ClickedInitSearchText -> getPersonnels()
             is ProjectPersonnelEvent.ClickedPersonnelWith -> {
-                _uiEffect.tryEmit(UiEffect.Navigate(""))
+                getPersonnelDetail(e.userId)
+                _uiEffect.tryEmit(UiEffect.Navigate("projectPersonnelDetail"))
             }
             ProjectPersonnelEvent.ClickedInitFilter -> getPersonnels()
             is ProjectPersonnelEvent.ClickedUseFilter -> getPersonnels()
+            else -> Unit
+        }
+    }
+
+    fun onPersonnelDetailEvent(e: ProjectPersonnelDetailEvent) {
+        _projectPersonnelDetailState.update { ProjectPersonnelDetailReducer.reduce(it, e) }
+
+        when (e) {
+
             else -> Unit
         }
     }
@@ -393,26 +407,6 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
         }
     }
 
-    /* 프로젝트 투입 인력 목록 조회 */
-    fun getPersonnel() {
-//        viewModelScope.launch {
-//            projectRepository.getPersonnel(
-//                projectId = TODO(), // 여기에 프로젝트 아이디 들어가는게 아닌거 같은데
-//                page = projectPersonnelState.value.paginationState.currentPage
-//            ).collect { result ->
-//                result
-//                    .onSuccess {
-//
-//
-//                        Log.d(TAG, "[getPersonnel] 프로젝트 투입 인력 목록 조회 성공")
-//                    }
-//                    .onFailure { e ->
-//                        ErrorHandler.handle(e, TAG, "getPersonnel")
-//                    }
-//            }
-//        }
-    }
-
     /* 프로젝트 현황 조회 */
     fun getProjectStatus() {
         val state = projectStatusState.value
@@ -554,6 +548,25 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
                         _projectPersonnelState.update { it.copy(paginationState = it.paginationState.copy(isLoading = false)) }
 
                         ErrorHandler.handle(e, TAG, "getPersonnels")
+                    }
+            }
+        }
+    }
+
+    /* 투입 현황 상세 조회 */
+    fun getPersonnelDetail(userId: String) {
+        viewModelScope.launch {
+            projectRepository.getPersonnelDetail(
+                userId = userId
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        _projectPersonnelDetailState.update { it.copy(personnelInfo = data) }
+
+                        Log.d(TAG, "[getPersonnelDetail] 투입 현황 상세 조회 성공\n${data}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "getPersonnelDetail")
                     }
             }
         }

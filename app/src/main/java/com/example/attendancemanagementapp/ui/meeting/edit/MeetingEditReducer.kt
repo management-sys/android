@@ -3,6 +3,7 @@ package com.example.attendancemanagementapp.ui.meeting.edit
 import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.dto.MeetingDTO
 import com.example.attendancemanagementapp.data.dto.MeetingDTO.AttendeesInfo
+import com.example.attendancemanagementapp.data.dto.ProjectDTO
 import com.example.attendancemanagementapp.ui.meeting.add.ExpenseField
 import com.example.attendancemanagementapp.ui.meeting.add.MeetingAddField
 
@@ -35,6 +36,7 @@ object MeetingEditReducer {
             title = data.title
         )
         return MeetingEditState(inputData = initData, projectName = data.projectName, meetingId = data.id)
+//        return MeetingEditState(inputData = initData, projectId = data.id, projectName = data.projectName, meetingId = data.id)
     }
 
     private val meetingUpdaters: Map<MeetingAddField, (MeetingDTO.UpdateMeetingRequest, String) -> MeetingDTO.UpdateMeetingRequest> =
@@ -99,11 +101,11 @@ object MeetingEditReducer {
     private fun handleCheckedAttendee(
         state: MeetingEditState,
         checked: Boolean,
-        employee: EmployeeDTO.ManageEmployeesInfo
+        employee: ProjectDTO.EmployeeInfo
     ): MeetingEditState {
-        val newAttendee = AttendeesInfo(type = "I", name = employee.name, grade = employee.grade, department = employee.department, userId = employee.userId, id = null)
+        val newAttendee = AttendeesInfo(type = "I", name = employee.name, grade = employee.grade, department = employee.department, userId = employee.id, id = null)
         val updatedList = if (checked) state.inputData.attendees + newAttendee else state.inputData.attendees - newAttendee
-        val sortedList = updatedList.sortedBy { attendee -> state.employeeState.employees.indexOfFirst { it.userId == attendee.userId } }
+        val sortedList = updatedList.sortedBy { attendee -> state.employeeState.employees.indexOfFirst { it.id == attendee.userId } }
 
         return state.copy(inputData = state.inputData.copy(attendees = sortedList))
     }

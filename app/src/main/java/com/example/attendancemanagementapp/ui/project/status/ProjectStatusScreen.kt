@@ -67,6 +67,9 @@ import com.example.attendancemanagementapp.ui.theme.AttendanceInfoItem_Gray
 import com.example.attendancemanagementapp.ui.theme.DarkGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.MiddleBlue
+import com.example.attendancemanagementapp.ui.theme.Schedule_Blue
+import com.example.attendancemanagementapp.ui.theme.Schedule_Green
+import com.example.attendancemanagementapp.ui.theme.Schedule_Yellow
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -247,7 +250,7 @@ private fun ProjectList(projectStatusState: ProjectStatusState, onEvent: (Projec
 
 /* 프로젝트 목록 아이템 */
 @Composable
-private fun ProjectListItem(projectInfo: ProjectDTO.ProjectStatusInfo, onClick: () -> Unit) {
+fun ProjectListItem(projectInfo: ProjectDTO.ProjectStatusInfo, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -268,6 +271,13 @@ private fun ProjectListItem(projectInfo: ProjectDTO.ProjectStatusInfo, onClick: 
 /* 프로젝트 구분, 상태 출력 바 */
 @Composable
 private fun ProjectTypeStatusBar(type: String, status: String) {
+    val typeColor = when (type) {
+        "국가과제" -> Schedule_Blue
+        "내부" -> Schedule_Green
+        "용역" -> Schedule_Yellow
+        else -> Color.Black
+    }
+
     val statusColor = when (status) {
         "진행" -> MainBlue
         "미진행" -> ApprovalInfoItem_Red
@@ -282,10 +292,12 @@ private fun ProjectTypeStatusBar(type: String, status: String) {
     ) {
         Text(
             text = type,
+            color = Color.White,
             modifier = Modifier
-                .background(color = MiddleBlue.copy(alpha = 0.3f), shape = RoundedCornerShape(20.dp))
+                .background(color = typeColor, shape = RoundedCornerShape(20.dp))
                 .padding(horizontal = 15.dp, vertical = 3.dp),
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
         )
 
         Text(
