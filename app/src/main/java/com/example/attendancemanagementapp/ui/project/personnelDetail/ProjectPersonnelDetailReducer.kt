@@ -1,10 +1,11 @@
 package com.example.attendancemanagementapp.ui.project.personnelDetail
 
 import java.time.LocalDate
+import java.time.YearMonth
 
 object ProjectPersonnelDetailReducer {
     fun reduce(s: ProjectPersonnelDetailState, e: ProjectPersonnelDetailEvent): ProjectPersonnelDetailState = when (e) {
-        ProjectPersonnelDetailEvent.Init -> handleInit()
+        ProjectPersonnelDetailEvent.Init -> handleInit(s)
         is ProjectPersonnelDetailEvent.ClickedPrev -> handleClickedPrev(s)
         is ProjectPersonnelDetailEvent.ClickedNext -> handleClickedNext(s)
         is ProjectPersonnelDetailEvent.ClickedDateWith -> handleClickedDate(s, e.date)
@@ -12,8 +13,10 @@ object ProjectPersonnelDetailReducer {
         else -> s
     }
 
-    private fun handleInit(): ProjectPersonnelDetailState {
-        return ProjectPersonnelDetailState()
+    private fun handleInit(
+        state: ProjectPersonnelDetailState
+    ): ProjectPersonnelDetailState {
+        return state.copy(yearMonth = YearMonth.now())
     }
 
     private fun handleClickedPrev(

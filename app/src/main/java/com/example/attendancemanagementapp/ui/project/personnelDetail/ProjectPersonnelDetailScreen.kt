@@ -95,6 +95,7 @@ fun ProjectPersonnelDetailScreen(navController: NavController, projectViewModel:
     if (projectPersonnelDetailState.openSheet) {
         ProjectsBottomSheet(
             projects = projectPersonnelDetailState.filteredProjects,
+            onEvent = onEvent,
             onDismiss = { onEvent(ProjectPersonnelDetailEvent.ClickedCloseSheet) }
         )
     }
@@ -153,7 +154,8 @@ fun ProjectPersonnelDetailScreen(navController: NavController, projectViewModel:
                             }
                             1 -> {  // 프로젝트 목록
                                 ProjectListCard(
-                                    projects = projectPersonnelDetailState.personnelInfo.projects
+                                    projects = projectPersonnelDetailState.personnelInfo.projects,
+                                    onEvent = onEvent
                                 )
                             }
                             2 -> {  // 일정 캘린더
@@ -202,7 +204,7 @@ private fun EmployeeInfoCard(personnelInfo: ProjectDTO.GetPersonnelDetailRespons
 
 /* 프로젝트 목록 출력 카드 */
 @Composable
-private fun ProjectListCard(projects: List<ProjectDTO.ProjectStatusInfo>) {
+private fun ProjectListCard(projects: List<ProjectDTO.ProjectStatusInfo>, onEvent: (ProjectPersonnelDetailEvent) -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -232,10 +234,10 @@ private fun ProjectListCard(projects: List<ProjectDTO.ProjectStatusInfo>) {
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(projects) { projectInfo ->
+                    items(projects) { project ->
                         ProjectListItem(
-                            projectInfo = projectInfo,
-                            onClick = {  }
+                            projectInfo = project,
+                            onClick = { onEvent(ProjectPersonnelDetailEvent.SelectedProject(project.projectId)) }
                         )
                     }
 
@@ -513,7 +515,7 @@ private fun DayBlockScheduleItem(currentDate: LocalDate, projectInfo: ProjectDTO
 /* 프로젝트 목록 바텀 시트 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProjectsBottomSheet(projects: List<ProjectDTO.ProjectStatusInfo>, onDismiss: () -> Unit) {
+private fun ProjectsBottomSheet(projects: List<ProjectDTO.ProjectStatusInfo>, onEvent: (ProjectPersonnelDetailEvent) -> Unit, onDismiss: () -> Unit) {
     val sheetState = rememberModalBottomSheetState()
 
     ModalBottomSheet(
@@ -546,7 +548,7 @@ private fun ProjectsBottomSheet(projects: List<ProjectDTO.ProjectStatusInfo>, on
                 items(projects) { project ->
                     ProjectListItem(
                         projectInfo = project,
-                        onClick = {}
+                        onClick = { onEvent(ProjectPersonnelDetailEvent.SelectedProject(project.projectId)) }
                     )
                 }
             }

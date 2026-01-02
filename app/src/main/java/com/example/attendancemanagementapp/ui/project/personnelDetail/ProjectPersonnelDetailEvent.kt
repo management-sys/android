@@ -19,4 +19,9 @@ sealed interface ProjectPersonnelDetailEvent {
 
     // 바텀 시트 닫기 이벤트
     data object ClickedCloseSheet: ProjectPersonnelDetailEvent
+
+    // 프로젝트 선택 이벤트
+    data class SelectedProject(
+        val projectId: String
+    ): ProjectPersonnelDetailEvent
 }

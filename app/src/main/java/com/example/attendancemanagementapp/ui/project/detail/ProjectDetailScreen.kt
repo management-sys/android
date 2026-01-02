@@ -267,7 +267,7 @@ private fun MeetingMinutesInfoCard(meetingMinutes: List<MeetingsInfo>, onEvent: 
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "조회된 결과가 없습니다",
+                        text = "회의록이 없습니다",
                         color = TextGray,
                         fontSize = 15.sp
                     )

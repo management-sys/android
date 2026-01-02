@@ -167,7 +167,10 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
         _projectPersonnelDetailState.update { ProjectPersonnelDetailReducer.reduce(it, e) }
 
         when (e) {
-
+            is ProjectPersonnelDetailEvent.SelectedProject -> {
+                getProject(e.projectId)
+                _uiEffect.tryEmit(UiEffect.Navigate("projectDetail"))
+            }
             else -> Unit
         }
     }
