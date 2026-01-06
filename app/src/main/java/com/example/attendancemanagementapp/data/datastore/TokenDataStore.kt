@@ -21,11 +21,13 @@ class TokenDataStore (private val context: Context) {
         private const val TAG = "TokenDataStore"
         val ACCESS_TOKEN = stringPreferencesKey("access_token")
         val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
+        val USERID = stringPreferencesKey("userId")
         val LOGOUT_FLAG = booleanPreferencesKey("logout_flag")
     }
 
     val accessTokenFlow = context.dataStore.data.map { it[ACCESS_TOKEN] ?: "" }
     val refreshTokenFlow = context.dataStore.data.map { it[REFRESH_TOKEN] ?: "" }
+    val userIdFlow = context.dataStore.data.map { it[USERID] ?: "" }
     val logoutFlagFlow = context.dataStore.data.map { it[LOGOUT_FLAG] ?: false }
 
     private val _uiEffect = MutableSharedFlow<UiEffect>(extraBufferCapacity = 1)
@@ -38,6 +40,14 @@ class TokenDataStore (private val context: Context) {
             it[REFRESH_TOKEN] = tokenInfo.refreshToken
         }
         Log.d(TAG, "[saveTokens] 토큰 저장\nACCESS_TOKEN: ${tokenInfo.accessToken}\nREFRESH_TOKEN: ${tokenInfo.refreshToken}")
+    }
+
+    /* 사용자 아이디 저장 */
+    suspend fun saveUserId(userId: String) {
+        context.dataStore.edit {
+            it[USERID] = userId
+        }
+        Log.d(TAG, "[saveUserId] 사용자 아이디 저장\nUSERID: ${userId}")
     }
 
     /* 토큰 초기화 */

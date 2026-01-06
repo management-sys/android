@@ -111,12 +111,12 @@ fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (
                         NavigationDrawerItem(
                             label = { Text("휴가 현황") },
                             selected = false,
-                            onClick = { /* Handle click */ }
+                            onClick = { onItemClick("vacationStatus") }
                         )
                         NavigationDrawerItem(
                             label = { Text("휴가 신청") },
                             selected = false,
-                            onClick = { /* Handle click */ }
+                            onClick = { onItemClick("vacationAdd") }
                         )
                         NavigationDrawerItem(
                             label = { Text("출장 현황") },

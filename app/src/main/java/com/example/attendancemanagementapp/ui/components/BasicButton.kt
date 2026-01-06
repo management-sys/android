@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -24,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.attendancemanagementapp.ui.theme.DarkGray
@@ -48,10 +50,10 @@ fun BasicFloatingButton(onClick: () -> Unit) {
 
 /* 기본 버튼 */
 @Composable
-fun BasicButton(name: String, onClick: () -> Unit) {
+fun BasicButton(name: String, wrapContent: Boolean = false, onClick: () -> Unit) {
     Button(
-        modifier = Modifier.width(60.dp).height(40.dp),
-        contentPadding = PaddingValues(0.dp),
+        modifier = Modifier.height(40.dp).then(if (wrapContent) Modifier.wrapContentWidth() else Modifier.width(60.dp)),
+        contentPadding = if (wrapContent) PaddingValues(horizontal = 12.dp) else PaddingValues(0.dp),
         onClick = { onClick() },
         shape = RoundedCornerShape(10.dp),
         colors = ButtonDefaults.buttonColors(
@@ -62,17 +64,18 @@ fun BasicButton(name: String, onClick: () -> Unit) {
         Text(
             text = name,
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1
         )
     }
 }
 
 /* 부 버튼 */
 @Composable
-fun SubButton(name: String, onClick: () -> Unit) {
+fun SubButton(name: String, wrapContent: Boolean = false, onClick: () -> Unit) {
     OutlinedButton(
-        modifier = Modifier.width(60.dp).height(40.dp),
-        contentPadding = PaddingValues(0.dp),
+        modifier = Modifier.height(40.dp).then(if (wrapContent) Modifier.wrapContentWidth() else Modifier.width(60.dp)),
+        contentPadding = if (wrapContent) PaddingValues(horizontal = 12.dp) else PaddingValues(0.dp),
         onClick = { onClick() },
         shape = RoundedCornerShape(10.dp),
         colors = ButtonDefaults.buttonColors(
@@ -84,7 +87,8 @@ fun SubButton(name: String, onClick: () -> Unit) {
         Text(
             text = name,
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1
         )
     }
 }

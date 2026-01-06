@@ -265,7 +265,7 @@ private fun EmployeeEditCard(employeeAddState: EmployeeAddState, onEvent: (Emplo
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            ProfileImage() // TODO: 이미지 수정 기능
+            ProfileImage()
 
             Spacer(modifier = Modifier.height(20.dp))
 

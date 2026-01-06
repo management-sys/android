@@ -7,6 +7,7 @@ import com.example.attendancemanagementapp.retrofit.service.DepartmentService
 import com.example.attendancemanagementapp.retrofit.service.EmployeeService
 import com.example.attendancemanagementapp.retrofit.service.MeetingService
 import com.example.attendancemanagementapp.retrofit.service.ProjectService
+import com.example.attendancemanagementapp.retrofit.service.VacationService
 import com.example.attendancemanagementapp.retrofit.token.AuthInterceptor
 import com.example.attendancemanagementapp.retrofit.token.TokenAuthenticator
 import com.squareup.moshi.KotlinJsonAdapterFactory
@@ -110,4 +111,9 @@ object NetworkModule {
     @Singleton
     fun provideMeetingService(retrofit: Retrofit): MeetingService =
         retrofit.create(MeetingService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideVacationService(retrofit: Retrofit): VacationService =
+        retrofit.create(VacationService::class.java)
 }

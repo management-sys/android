@@ -17,6 +17,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.attendancemanagementapp.data.datastore.TokenDataStore
+import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
+import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddScreen
+import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailScreen
+import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailState
+import com.example.attendancemanagementapp.ui.attendance.vacation.status.VacationStatusScreen
 import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
 import com.example.attendancemanagementapp.ui.commoncode.add.CodeAddScreen
@@ -74,6 +79,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
     val myPageViewModel: MyPageViewModel = hiltViewModel()
     val projectViewModel: ProjectViewModel = hiltViewModel()
     val meetingViewModel: MeetingViewModel = hiltViewModel()
+    val vacationViewModel: VacationViewModel = hiltViewModel()
 
     val logoutFlag by tokenDataStore.logoutFlagFlow.collectAsState(initial = false)
 
@@ -95,7 +101,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
         myPageViewModel.uiEffect,
         tokenDataStore.uiEffect,
         projectViewModel.uiEffect,
-        meetingViewModel.uiEffect
+        meetingViewModel.uiEffect,
+        vacationViewModel.uiEffect
     )
 
     BasicDrawer(
@@ -144,6 +151,10 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
                 composable("meetingDetail") { MeetingDetailScreen(navController, meetingViewModel) }    // 회의록 상세 화면
                 composable("meetingEdit") { MeetingEditScreen(navController, meetingViewModel) }        // 회의록 수정 화면
                 composable("meetingStatus") { MeetingStatusScreen(navController, meetingViewModel) }    // 회의록 현황 화면
+
+                composable("vacationAdd") { VacationAddScreen(navController, vacationViewModel) }       // 휴가 신청 화면
+                composable("vacationDetail") { VacationDetailScreen(navController, vacationViewModel) } // 휴가 상세 화면
+                composable("vacationStatus") { VacationStatusScreen(navController, vacationViewModel) } // 휴가 현황 화면
             }
         }
     }
