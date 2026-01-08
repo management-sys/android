@@ -1,6 +1,8 @@
 package com.example.attendancemanagementapp.retrofit.service
 
 import com.example.attendancemanagementapp.data.dto.VacationDTO
+import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -8,6 +10,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Streaming
 
 interface VacationService {
     // 휴가 신청
@@ -33,6 +36,13 @@ interface VacationService {
     suspend fun cancelVacation(
         @Path("vcatnId") vacationId: String
     ): VacationDTO.GetVacationResponse
+
+    // 휴가 신청서 다운로드(PDF)
+    @Streaming  // InputStream에 저장
+    @GET("/api/vcatns/{vcatnId}/download/pdf")
+    suspend fun downloadVacationPdf(
+        @Path("vcatnId") vacationId: String
+    ): Response<ResponseBody>
 
     // 이전 승인자 불러오기
     @GET("/api/vcatns/latest-confmers/{userId}")

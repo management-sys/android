@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.ui.attendance.vacation
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -69,6 +70,7 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
         when (e) {
             VacationDetailEvent.ClickedCancel -> cancelVacation()
             VacationDetailEvent.ClickedDelete -> deleteVacation()
+            is VacationDetailEvent.ClickedDownloadWith -> downloadVacationPdf(e.context)
             else -> Unit
         }
     }
@@ -214,6 +216,26 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "getVacations")
+                    }
+            }
+        }
+    }
+
+    /* 휴가 신청서 다운로드(PDF) */
+    fun downloadVacationPdf(context: Context) {
+        viewModelScope.launch {
+            vacationRepository.downloadVacationPdf(
+                context = context,
+                vacationId = vacationDetailState.value.vacationInfo.id
+            ).collect { result ->
+                result
+                    .onSuccess { uri ->
+                        _uiEffect.emit(UiEffect.ShowToast("다운로드가 완료되었습니다"))
+
+                        Log.d(TAG, "[downloadVacationPdf] 휴가 신청서 다운로드 성공: ${uri}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "downloadVacationPdf")
                     }
             }
         }

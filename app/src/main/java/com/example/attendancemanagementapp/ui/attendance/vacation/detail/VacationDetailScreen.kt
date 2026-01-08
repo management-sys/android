@@ -4,19 +4,25 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,8 +33,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.VacationDTO
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
@@ -37,6 +46,7 @@ import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TowLineInfoBar
+import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.util.formatDateYYYYMMDDHHmm
 import com.example.attendancemanagementapp.util.rememberOnce
 import java.time.LocalDate
@@ -49,6 +59,7 @@ fun VacationDetailScreen(navController: NavController, vacationViewModel: Vacati
     val vacationDetailState by vacationViewModel.vacationDetailState.collectAsState()
 
     val focusManager = LocalFocusManager.current    // 포커스 관리
+    val context = LocalContext.current
 
     var openDelete by remember { mutableStateOf(false) }
     var openCancel by remember { mutableStateOf(false) }
@@ -106,7 +117,7 @@ fun VacationDetailScreen(navController: NavController, vacationViewModel: Vacati
                     BasicButton(
                         name = "신청서 다운로드",
                         wrapContent = true,
-                        onClick = {}
+                        onClick = { onEvent(VacationDetailEvent.ClickedDownloadWith(context))}
                     )
                 }
 
