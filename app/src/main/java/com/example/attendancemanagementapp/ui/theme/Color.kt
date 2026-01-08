@@ -30,3 +30,6 @@ val TodayBlockColor = Color(0xFFfffadf)
 val Schedule_Yellow = Color(0xffffd60a) // 회의
 val Schedule_Green = Color(0xff2a9d8f)  // 무급휴가
 val Schedule_Blue = Color(0xff487d9e)   // 국내 출장
+
+val Vacation_PurPle = Color(0xFFa36cd4)
+val Vacation_Orange = Color(0xFFf7941c)

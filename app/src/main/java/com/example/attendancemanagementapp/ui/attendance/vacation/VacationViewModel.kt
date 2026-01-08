@@ -77,10 +77,13 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
         _vacationStatusState.update { VacationStatusReducer.reduce(it, e) }
 
         when (e) {
-            is VacationStatusEvent.ClickedVacation -> {
+            VacationStatusEvent.Init -> getVacations(isInit = true)
+            is VacationStatusEvent.ClickedVacationWith -> {
                 getVacation(e.id)
                 _uiEffect.tryEmit(UiEffect.Navigate("vacationDetail"))
             }
+            is VacationStatusEvent.ClickedVacationTypeWith -> getVacations()
+            is VacationStatusEvent.SelectedYearWith -> getVacations()
             else -> Unit
         }
     }
@@ -186,6 +189,31 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "getPrevApprovers")
+                    }
+            }
+        }
+    }
+
+    /* 휴가 현황 목록 조회 */
+    fun getVacations(isInit: Boolean = false) {
+        viewModelScope.launch {
+            vacationRepository.getVacations(
+                userId = userId,
+                query = vacationStatusState.value.query,
+                page = vacationStatusState.value.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        if (isInit) {
+                            _vacationStatusState.update { it.copy(vacationStatusInfo = data, query = it.query.copy(year = data.years.size - 1)) }
+                        } else {
+                            _vacationStatusState.update { it.copy(vacationStatusInfo = data) }
+                        }
+
+                        Log.d(TAG, "[getVacations] 휴가 현황 목록 조회 성공\n${data}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "getVacations")
                     }
             }
         }

@@ -106,7 +106,7 @@ fun VacationDetailScreen(navController: NavController, vacationViewModel: Vacati
                     BasicButton(
                         name = "신청서 다운로드",
                         wrapContent = true,
-                        onClick = {  }
+                        onClick = {}
                     )
                 }
 
@@ -131,10 +131,6 @@ fun VacationDetailScreen(navController: NavController, vacationViewModel: Vacati
 /* 휴가 정보 출력 카드 */
 @Composable
 private fun VacationInfoCard(vacationInfo: VacationDTO.GetVacationResponse) {
-    val startDate = if (vacationInfo.startDate.isNotBlank()) LocalDate.parse(vacationInfo.startDate.take(10)) else LocalDate.now()
-    val endDate = if (vacationInfo.endDate.isNotBlank()) LocalDate.parse(vacationInfo.endDate.take(10)) else LocalDate.now()
-    val date = ChronoUnit.DAYS.between(startDate, endDate) + 1
-
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -150,7 +146,7 @@ private fun VacationInfoCard(vacationInfo: VacationDTO.GetVacationResponse) {
             TowLineInfoBar(name = "신청자", value = vacationInfo.userName)
             TowLineInfoBar(name = "부서", value = vacationInfo.departmentName)
             TowLineInfoBar(name = "직급", value = vacationInfo.grade)
-            TowLineInfoBar(name = "기간", value = "${formatDateYYYYMMDDHHmm(vacationInfo.startDate)} ~ ${formatDateYYYYMMDDHHmm(vacationInfo.endDate)}\n(${date}일)")
+            TowLineInfoBar(name = "기간", value = "${formatDateYYYYMMDDHHmm(vacationInfo.startDate)} ~ ${formatDateYYYYMMDDHHmm(vacationInfo.endDate)}\n(${vacationInfo.period})")
             TowLineInfoBar(name = "세부사항", value = vacationInfo.detail.ifBlank { "-" })
             TowLineInfoBar(name = "신청일", value = formatDateYYYYMMDDHHmm(vacationInfo.appliedDate))
             TowLineInfoBar(name = "상태", value = vacationInfo.status)

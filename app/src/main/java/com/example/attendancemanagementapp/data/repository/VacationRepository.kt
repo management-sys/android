@@ -1,6 +1,7 @@
 package com.example.attendancemanagementapp.data.repository
 
 import com.example.attendancemanagementapp.data.dto.VacationDTO
+import com.example.attendancemanagementapp.data.param.VacationsQuery
 import com.example.attendancemanagementapp.retrofit.service.VacationService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -52,6 +53,19 @@ class VacationRepository @Inject constructor(private val service: VacationServic
     fun getPrevApprovers(userId: String): Flow<Result<VacationDTO.GetPrevApproversResponse>> = flow {
         val response = service.getPrevApprovers(
             userId = userId
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 휴가 현황 목록 조회
+    fun getVacations(userId: String, query: VacationsQuery, page: Int): Flow<Result<VacationDTO.GetVacationsResponse>> = flow {
+        val response = service.getVacations(
+            userId = userId,
+            year = if (query.year == 0) null else query.year,
+            filter =  query.filter.toKey(),
+            page = page
         )
         emit(Result.success(response))
     }.catch { e ->
