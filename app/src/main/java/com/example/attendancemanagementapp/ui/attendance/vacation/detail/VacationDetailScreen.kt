@@ -1,12 +1,17 @@
 package com.example.attendancemanagementapp.ui.attendance.vacation.detail
 
+import android.R
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,8 +26,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,6 +53,8 @@ import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TowLineInfoBar
+import com.example.attendancemanagementapp.ui.theme.LightBlue
+import com.example.attendancemanagementapp.ui.theme.LightGray
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.util.formatDateYYYYMMDDHHmm
 import com.example.attendancemanagementapp.util.rememberOnce
@@ -104,6 +113,10 @@ fun VacationDetailScreen(navController: NavController, vacationViewModel: Vacati
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            ApproverInfoCard(
+                vacationsInfo = vacationDetailState.vacationInfo
+            )
+            
             VacationInfoCard(
                 vacationInfo = vacationDetailState.vacationInfo
             )
@@ -124,7 +137,7 @@ fun VacationDetailScreen(navController: NavController, vacationViewModel: Vacati
                 Row {
                     BasicButton(
                         name = "수정",
-                        onClick = {  }
+                        onClick = { onEvent(VacationDetailEvent.ClickedUpdate) }
                     )
 
                     Spacer(modifier = Modifier.width(10.dp))
@@ -132,6 +145,60 @@ fun VacationDetailScreen(navController: NavController, vacationViewModel: Vacati
                     SubButton(
                         name = "취소",
                         onClick = { openCancel = true }
+                    )
+                }
+            }
+        }
+    }
+}
+
+/* 승인자 정보 출력 카드 */
+@Composable
+private fun ApproverInfoCard(vacationsInfo: VacationDTO.GetVacationResponse) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min).border(width = 0.5.dp, color = LightGray)
+        ) {
+            Box(
+                modifier = Modifier.weight(0.4f).fillMaxHeight().background(color = LightBlue),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "승인자",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp
+                )
+            }
+
+            VerticalDivider(thickness = 0.5.dp, color = LightGray)
+
+            Column(
+                modifier = Modifier.weight(0.6f).height(IntrinsicSize.Min)
+            ) { 
+                Row(
+                    modifier = Modifier.weight(1f).fillMaxWidth().background(color = LightBlue),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = vacationsInfo.approverName,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(vertical = 10.dp)
+                    )
+                }
+
+                Divider(thickness = 0.5.dp, color = LightGray)
+
+                Row(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = if (vacationsInfo.status == "승인" || vacationsInfo.status == "반려") vacationsInfo.status else "",
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(vertical = 10.dp)
                     )
                 }
             }

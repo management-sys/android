@@ -258,10 +258,17 @@ private fun VacationStatusCard(vacationStatusState: VacationStatusState, onEvent
                 )
             }
 
-            Divider(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp), color = LightGray)
+            Divider(modifier = Modifier.fillMaxWidth().padding(top = 10.dp), color = LightGray)
+
+            Text(
+                text = "목록을 조회할 휴가 종류를 클릭하세요",
+                fontSize = 14.sp,
+                color = TextGray,
+                modifier = Modifier.padding(vertical = 10.dp)
+            )
 
             Row(
-                modifier = Modifier.padding(bottom = 6.dp)
+                modifier = Modifier.padding(top = 10.dp, bottom = 6.dp)
             ) {
                 VacationTypeItem(
                     modifier = Modifier,
