@@ -268,7 +268,7 @@ private fun VacationStatusCard(vacationStatusState: VacationStatusState, onEvent
             )
 
             Row(
-                modifier = Modifier.padding(top = 10.dp, bottom = 6.dp)
+                modifier = Modifier.padding(bottom = 6.dp)
             ) {
                 VacationTypeItem(
                     modifier = Modifier,

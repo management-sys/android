@@ -5,17 +5,22 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.attendancemanagementapp.data.datastore.TokenDataStore
+import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.data.repository.VacationRepository
+import com.example.attendancemanagementapp.retrofit.param.SearchType
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddEvent
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddReducer
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddState
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailEvent
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailReducer
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailState
+import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditEvent
+import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditReducer
 import com.example.attendancemanagementapp.ui.attendance.vacation.status.VacationStatusEvent
 import com.example.attendancemanagementapp.ui.attendance.vacation.status.VacationStatusReducer
 import com.example.attendancemanagementapp.ui.attendance.vacation.status.VacationStatusState
+import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditState
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 import com.example.attendancemanagementapp.util.ErrorHandler
@@ -30,8 +35,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
+enum class VacationTarget { ADD, EDIT }
+
 @HiltViewModel
-class VacationViewModel @Inject constructor(private val vacationRepository: VacationRepository, private val employeeRepository: EmployeeRepository, private val tokenDataStore: TokenDataStore) : ViewModel() {
+class VacationViewModel @Inject constructor(private val vacationRepository: VacationRepository, private val employeeRepository: EmployeeRepository, private val commonCodeRepository: CommonCodeRepository, private val tokenDataStore: TokenDataStore) : ViewModel() {
     companion object {
         private const val TAG = "VacationViewModel"
     }
@@ -47,19 +54,25 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
     val vacationAddState = _vacationAddState.asStateFlow()
     private val _vacationDetailState = MutableStateFlow(VacationDetailState())
     val vacationDetailState = _vacationDetailState.asStateFlow()
+    private val _vacationEditState = MutableStateFlow(VacationEditState())
+    val vacationEditState = _vacationEditState.asStateFlow()
     private val _vacationStatusState = MutableStateFlow(VacationStatusState())
     val vacationStatusState = _vacationStatusState.asStateFlow()
+
 
     fun onAddEvent(e: VacationAddEvent) {
         _vacationAddState.update { VacationAddReducer.reduce(it, e) }
 
         when (e) {
-            is VacationAddEvent.InitWith -> getEmployees()
-            VacationAddEvent.ClickedSearch -> getEmployees()
-            VacationAddEvent.ClickedSearchInit -> getEmployees()
-            VacationAddEvent.LoadNextPage -> getEmployees()
+            is VacationAddEvent.InitWith -> {
+                getEmployees(VacationTarget.ADD)
+                getVacationType(VacationTarget.ADD)
+            }
+            VacationAddEvent.ClickedSearch -> getEmployees(VacationTarget.ADD)
+            VacationAddEvent.ClickedSearchInit -> getEmployees(VacationTarget.ADD)
+            VacationAddEvent.LoadNextPage -> getEmployees(VacationTarget.ADD)
             VacationAddEvent.ClickedAdd -> addVacation()
-            VacationAddEvent.ClickedGetPrevApprover -> getPrevApprovers()
+            VacationAddEvent.ClickedGetPrevApprover -> getPrevApprovers(VacationTarget.ADD)
             else -> Unit
         }
     }
@@ -71,6 +84,23 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
             VacationDetailEvent.ClickedCancel -> cancelVacation()
             VacationDetailEvent.ClickedDelete -> deleteVacation()
             is VacationDetailEvent.ClickedDownloadWith -> downloadVacationPdf(e.context)
+            else -> Unit
+        }
+    }
+
+    fun onEditEvent(e: VacationEditEvent) {
+        _vacationEditState.update { VacationEditReducer.reduce(it, e) }
+
+        when (e) {
+            is VacationEditEvent.InitWith -> {
+                getEmployees(VacationTarget.EDIT)
+                getVacationType(VacationTarget.EDIT)
+            }
+            VacationEditEvent.ClickedSearch -> getEmployees(VacationTarget.EDIT)
+            VacationEditEvent.ClickedSearchInit -> getEmployees(VacationTarget.EDIT)
+            VacationEditEvent.LoadNextPage -> getEmployees(VacationTarget.EDIT)
+            VacationEditEvent.ClickedGetPrevApprover -> getPrevApprovers(VacationTarget.EDIT)
+            VacationEditEvent.ClickedUpdate -> updateVacation()
             else -> Unit
         }
     }
@@ -129,6 +159,34 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
         }
     }
 
+    /* 휴가 정보 수정 */
+    fun updateVacation() {
+        // 결재(승인/반려) 이전에만 수정 가능
+        if (vacationDetailState.value.vacationInfo.status == "승인" || vacationDetailState.value.vacationInfo.status == "반려") {
+            return
+        }
+
+        viewModelScope.launch {
+            vacationRepository.updateVacation(
+                vacationId = vacationEditState.value.vacationId,
+                request = vacationEditState.value.inputData
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        _vacationDetailState.update { it.copy(vacationInfo = data) }
+
+                        _uiEffect.emit(UiEffect.ShowToast("수정이 완료되었습니다"))
+                        _uiEffect.emit(UiEffect.NavigateBack)
+
+                        Log.d(TAG, "[updateVacation] 휴가 정보 수정 성공\n${data}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "updateVacation")
+                    }
+            }
+        }
+    }
+
     /* 휴가 신청 삭제 */
     fun deleteVacation() {
         val vacationId = vacationDetailState.value.vacationInfo.id
@@ -175,7 +233,7 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
     }
 
     /* 이전 승인자 불러오기 */
-    fun getPrevApprovers() {
+    fun getPrevApprovers(target: VacationTarget) {
         viewModelScope.launch {
             vacationRepository.getPrevApprovers(
                 userId = userId
@@ -183,14 +241,18 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
                 result
                     .onSuccess { data ->
                         val newApproverIds = data.approvers.map { it.userId }
-                        _vacationAddState.update { it.copy(it.inputData.copy(approverIds = newApproverIds)) }
+
+                        when(target) {
+                            VacationTarget.ADD -> _vacationAddState.update { it.copy(it.inputData.copy(approverIds = newApproverIds)) }
+                            VacationTarget.EDIT -> _vacationEditState.update { it.copy(it.inputData.copy(approverIds = newApproverIds)) }
+                        }
 
                         _uiEffect.emit(UiEffect.ShowToast("이전 승인자를 불러왔습니다"))
 
-                        Log.d(TAG, "[getPrevApprovers] 이전 승인자 불러오기 성공\n${data}")
+                        Log.d(TAG, "[getPrevApprovers-${target}] 이전 승인자 불러오기 성공\n${data}")
                     }
                     .onFailure { e ->
-                        ErrorHandler.handle(e, TAG, "getPrevApprovers")
+                        ErrorHandler.handle(e, TAG, "getPrevApprovers-${target}")
                     }
             }
         }
@@ -242,11 +304,20 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
     }
 
     /* 직원 목록 조회 */
-    fun getEmployees() {
-        val state = vacationAddState.value.employeeState
-        val updateState: (EmployeeSearchState) -> Unit = { newState ->
-            _vacationAddState.update { it.copy(employeeState = newState) }
+    fun getEmployees(target: VacationTarget) {
+        val state = when (target) {
+            VacationTarget.ADD -> vacationAddState.value.employeeState
+            VacationTarget.EDIT -> vacationEditState.value.employeeState
         }
+
+        val updateState: (EmployeeSearchState) -> Unit = { newState ->
+            when (target) {
+                VacationTarget.ADD -> _vacationAddState.update { it.copy(employeeState = newState) }
+                VacationTarget.EDIT -> _vacationEditState.update { it.copy(employeeState = newState) }
+            }
+        }
+
+        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = true)))
 
         viewModelScope.launch {
             employeeRepository.getManageEmployees(
@@ -271,14 +342,41 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
                             )
                         ))
 
-                        Log.d(TAG, "[getEmployees] 직원 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${vacationAddState.value.employeeState.searchText})\n${data.content}")
+                        Log.d(TAG, "[getEmployees-${target}] 직원 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.totalPages}, 검색(${vacationAddState.value.employeeState.searchText})\n${data.content}")
                     }
                     .onFailure { e ->
                         updateState(state.copy(paginationState = state.paginationState.copy(isLoading = false)))
 
-                        ErrorHandler.handle(e, TAG, "getEmployees")
+                        ErrorHandler.handle(e, TAG, "getEmployees-${target}")
                     }
             }
         }
     }
+
+    /* 공통코드 목록에서 휴가 종류 조회 */
+    fun getVacationType(target: VacationTarget) {
+        viewModelScope.launch {
+            commonCodeRepository.getCommonCodes(
+                searchType = SearchType.UPPER_CODE_NM,
+                searchKeyword = "휴가",
+                page = 0    // 개수가 더 늘어나면 페이지 관리도 해야함 지금은 필요 없음
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        val vacationTypeNames: List<String> = data.content.map { it.codeName }
+
+                        when (target) {
+                            VacationTarget.ADD -> _vacationAddState.update { it.copy(vacationTypeOptions = vacationTypeNames) }
+                            VacationTarget.EDIT -> { _vacationEditState.update { it.copy(vacationTypeOptions = vacationTypeNames) } }
+                        }
+
+                        Log.d(TAG, "[getVacationType-${target}] 휴가 종류 목록 조회 성공\n${vacationTypeNames}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "getVacationType-${target}")
+                    }
+            }
+        }
+    }
+
 }

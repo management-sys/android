@@ -25,6 +25,13 @@ interface VacationService {
         @Path("vcatnId") vacationId: String
     ): VacationDTO.GetVacationResponse
 
+    // 휴가 정보 수정
+    @PUT("/api/vcatns/{vcatnId}")
+    suspend fun updateVacation(
+        @Path("vcatnId") vacationId: String,
+        @Body request: VacationDTO.UpdateVacationRequest
+    ): VacationDTO.GetVacationResponse
+
     // 휴가 신청 삭제
     @DELETE("/api/vcatns/{vcatnId}")
     suspend fun deleteVacation(

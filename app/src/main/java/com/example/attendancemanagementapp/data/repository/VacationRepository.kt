@@ -40,6 +40,17 @@ class VacationRepository @Inject constructor(private val service: VacationServic
         emit(Result.failure(e))
     }
 
+    // 휴가 정보 수정
+    fun updateVacation(vacationId: String, request: VacationDTO.UpdateVacationRequest): Flow<Result<VacationDTO.GetVacationResponse>> = flow {
+        val response = service.updateVacation(
+            vacationId = vacationId,
+            request = request
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
     // 휴가 신청 삭제
     fun deleteVacation(vacationId: String): Flow<Result<Unit>> = flow {
         val response = service.deleteVacation(

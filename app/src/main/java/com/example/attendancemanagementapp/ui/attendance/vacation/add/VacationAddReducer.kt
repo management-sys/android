@@ -4,15 +4,16 @@ import com.example.attendancemanagementapp.data.dto.VacationDTO
 
 object VacationAddReducer {
     fun reduce(s: VacationAddState, e: VacationAddEvent): VacationAddState = when (e) {
-        is VacationAddEvent.InitWith -> handleInitWith(e.id)
+        is VacationAddEvent.InitWith -> handleInit(e.id)
         is VacationAddEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
+        is VacationAddEvent.SelectedTypeWith -> handleSelectedType(s, e.type)
         is VacationAddEvent.ChangedSearchValueWith -> handleChangedSearchValue(s, e.value)
         VacationAddEvent.ClickedSearchInit -> handleClickedSearchInit(s)
         is VacationAddEvent.SelectedApproverWith -> handleSelectedApprover(s, e. checked, e.id)
         else -> s
     }
 
-    private fun handleInitWith(
+    private fun handleInit(
         id: String
     ): VacationAddState {
         return VacationAddState(inputData = VacationDTO.AddVacationRequest(userId = id))
@@ -20,7 +21,6 @@ object VacationAddReducer {
 
     private val vacationUpdaters: Map<VacationAddField, (VacationDTO.AddVacationRequest, String) -> VacationDTO.AddVacationRequest> =
         mapOf(
-            VacationAddField.TYPE       to { s, v -> s.copy(type = v) },
             VacationAddField.START      to { s, v -> s.copy(startDate = v) },
             VacationAddField.END        to { s, v -> s.copy(endDate = v) },
             VacationAddField.DETAIL     to { s, v -> s.copy(detail = v) }
@@ -33,6 +33,13 @@ object VacationAddReducer {
     ): VacationAddState {
         val updater = vacationUpdaters[field] ?: return state
         return state.copy(inputData = updater(state.inputData, value))
+    }
+
+    private fun handleSelectedType(
+        state: VacationAddState,
+        type: String
+    ): VacationAddState {
+        return state.copy(inputData = state.inputData.copy(type = type))
     }
 
     private fun handleChangedSearchValue(

@@ -21,6 +21,8 @@ import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewMo
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailState
+import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditScreen
+import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditState
 import com.example.attendancemanagementapp.ui.attendance.vacation.status.VacationStatusScreen
 import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
@@ -154,6 +156,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
 
                 composable("vacationAdd") { VacationAddScreen(navController, vacationViewModel) }       // 휴가 신청 화면
                 composable("vacationDetail") { VacationDetailScreen(navController, vacationViewModel) } // 휴가 상세 화면
+                composable("vacationEdit") { VacationEditScreen(navController, vacationViewModel) }     // 휴가 수정 화면
                 composable("vacationStatus") { VacationStatusScreen(navController, vacationViewModel) } // 휴가 현황 화면
             }
         }

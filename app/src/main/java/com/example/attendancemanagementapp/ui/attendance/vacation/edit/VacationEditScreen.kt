@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.attendance.vacation.add
+package com.example.attendancemanagementapp.ui.attendance.vacation.edit
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarToday
@@ -50,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
+import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddEvent
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDatePickerDialog
 import com.example.attendancemanagementapp.ui.components.BasicOutlinedTextFieldColors
@@ -69,33 +72,31 @@ import com.example.attendancemanagementapp.util.formatTime
 import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-/* 휴가 신청 화면 */
+/* 휴가 수정 화면 */
 @Composable
-fun VacationAddScreen(navController: NavController, vacationViewModel: VacationViewModel) {
-    val onEvent = vacationViewModel::onAddEvent
-    val vacationAddState by vacationViewModel.vacationAddState.collectAsState()
+fun VacationEditScreen(navController: NavController, vacationViewModel: VacationViewModel) {
+    val onEvent = vacationViewModel::onEditEvent
+    val vacationEditState by vacationViewModel.vacationEditState.collectAsState()
 
     val focusManager = LocalFocusManager.current    // 포커스 관리
-
-    LaunchedEffect(Unit) {
-        onEvent(VacationAddEvent.InitWith(vacationViewModel.userId))
-    }
 
     Scaffold(
         modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
-                title = "휴가 신청",
+                title = "휴가 수정",
                 onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp, vertical = 10.dp),
+            modifier = Modifier.padding(paddingValues)
+                .padding(horizontal = 26.dp, vertical = 10.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            AddVacationCard(
-                vacationAddState = vacationAddState,
+            EditVacationCard(
+                vacationEditState = vacationEditState,
                 onEvent = onEvent
             )
 
@@ -107,26 +108,26 @@ fun VacationAddScreen(navController: NavController, vacationViewModel: VacationV
                 SubButton(
                     name = "이전 승인자 불러오기",
                     wrapContent = true,
-                    onClick = { onEvent(VacationAddEvent.ClickedGetPrevApprover) }
+                    onClick = { onEvent(VacationEditEvent.ClickedGetPrevApprover) }
                 )
 
                 BasicButton(
-                    name = "신청",
-                    onClick = { onEvent(VacationAddEvent.ClickedAdd) }
+                    name = "수정",
+                    onClick = { onEvent(VacationEditEvent.ClickedUpdate) }
                 )
             }
         }
     }
 }
 
-/* 휴가 신청 수정 카드 */
+/* 휴가 수정 카드 */
 @Composable
-private fun AddVacationCard(vacationAddState: VacationAddState, onEvent: (VacationAddEvent) -> Unit) {
+private fun EditVacationCard(vacationEditState: VacationEditState, onEvent: (VacationEditEvent) -> Unit) {
     var openSheet by remember { mutableStateOf(false) } // 승인자 선택 바텀 시트
 
     if (openSheet) {
         ApproverBottomSheet(
-            vacationAddState = vacationAddState,
+            vacationEditState = vacationEditState,
             onEvent = onEvent,
             onDismiss = { openSheet = false }
         )
@@ -144,21 +145,21 @@ private fun AddVacationCard(vacationAddState: VacationAddState, onEvent: (Vacati
             TwoLineDropdownEditBar(
                 name = "유형",
                 isRequired = true,
-                options = vacationAddState.vacationTypeOptions,
-                selected = vacationAddState.inputData.type,
-                onSelected = { onEvent(VacationAddEvent.SelectedTypeWith(it)) }
+                options = vacationEditState.vacationTypeOptions,
+                selected = vacationEditState.inputData.type,
+                onSelected = { onEvent(VacationEditEvent.SelectedTypeWith(it)) }
             )
 
             StartEndDateTimeEditItem(
-                startDateTime = vacationAddState.inputData.startDate,
-                endDateTime = vacationAddState.inputData.endDate,
+                startDateTime = vacationEditState.inputData.startDate,
+                endDateTime = vacationEditState.inputData.endDate,
                 onEvent = onEvent
             )
 
             TwoLineSearchEditBar(
                 name = "승인자",
-                value = vacationAddState.employeeState.employees
-                    .filter { it.userId in vacationAddState.inputData.approverIds }
+                value = vacationEditState.employeeState.employees
+                    .filter { it.userId in vacationEditState.inputData.approverIds }
                     .joinToString(", ") { it.name },
                 onClick = { openSheet = true },
                 isRequired = true
@@ -166,8 +167,8 @@ private fun AddVacationCard(vacationAddState: VacationAddState, onEvent: (Vacati
 
             TwoLineBigEditBar(
                 name = "세부사항",
-                value = vacationAddState.inputData.detail,
-                onValueChange = { onEvent(VacationAddEvent.ChangedValueWith(VacationAddField.DETAIL, it)) }
+                value = vacationEditState.inputData.detail,
+                onValueChange = { onEvent(VacationEditEvent.ChangedValueWith(VacationEditField.DETAIL, it)) }
             )
         }
     }
@@ -179,7 +180,7 @@ private fun AddVacationCard(vacationAddState: VacationAddState, onEvent: (Vacati
 private fun StartEndDateTimeEditItem(
     startDateTime: String,
     endDateTime: String,
-    onEvent: (VacationAddEvent) -> Unit
+    onEvent: (VacationEditEvent) -> Unit
 ) {
     var openStartDate by rememberSaveable { mutableStateOf(false) }
     var openEndDate by rememberSaveable { mutableStateOf(false) }
@@ -190,7 +191,7 @@ private fun StartEndDateTimeEditItem(
         BasicDatePickerDialog(
             initialDateTime = startDateTime,
             onDismiss = { openStartDate = false },
-            onConfirm = { onEvent(VacationAddEvent.ChangedValueWith(VacationAddField.START, it)) }
+            onConfirm = { onEvent(VacationEditEvent.ChangedValueWith(VacationEditField.START, it)) }
         )
     }
 
@@ -198,7 +199,7 @@ private fun StartEndDateTimeEditItem(
         BasicDatePickerDialog(
             initialDateTime = endDateTime,
             onDismiss = { openEndDate = false },
-            onConfirm = { onEvent(VacationAddEvent.ChangedValueWith(VacationAddField.END, it)) }
+            onConfirm = { onEvent(VacationEditEvent.ChangedValueWith(VacationEditField.END, it)) }
         )
     }
 
@@ -206,7 +207,7 @@ private fun StartEndDateTimeEditItem(
         BasicTimePickerDialog(
             initialDateTime = startDateTime,
             onDismiss = { openStartTime = false },
-            onConfirm = { onEvent(VacationAddEvent.ChangedValueWith(VacationAddField.START, it)) }
+            onConfirm = { onEvent(VacationEditEvent.ChangedValueWith(VacationEditField.START, it)) }
         )
     }
 
@@ -214,7 +215,7 @@ private fun StartEndDateTimeEditItem(
         BasicTimePickerDialog(
             initialDateTime = endDateTime,
             onDismiss = { openEndTime = false },
-            onConfirm = { onEvent(VacationAddEvent.ChangedValueWith(VacationAddField.END, it)) }
+            onConfirm = { onEvent(VacationEditEvent.ChangedValueWith(VacationEditField.END, it)) }
         )
     }
 
@@ -365,8 +366,8 @@ private fun StartEndDateTimeEditItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ApproverBottomSheet(
-    vacationAddState: VacationAddState,
-    onEvent: (VacationAddEvent) -> Unit,
+    vacationEditState: VacationEditState,
+    onEvent: (VacationEditEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -379,8 +380,8 @@ private fun ApproverBottomSheet(
             val total = info.totalItemsCount
             lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !vacationAddState.employeeState.paginationState.isLoading && vacationAddState.employeeState.paginationState.currentPage < vacationAddState.employeeState.paginationState.totalPage) {
-                onEvent(VacationAddEvent.LoadNextPage)
+            if (shouldLoad && !vacationEditState.employeeState.paginationState.isLoading && vacationEditState.employeeState.paginationState.currentPage < vacationEditState.employeeState.paginationState.totalPage) {
+                onEvent(VacationEditEvent.LoadNextPage)
             }
         }
     }
@@ -400,19 +401,19 @@ private fun ApproverBottomSheet(
             SearchBar(
                 modifier = Modifier.fillMaxWidth(),
                 searchState = SearchState(
-                    value = vacationAddState.employeeState.searchText,
-                    onValueChange = { onEvent(VacationAddEvent.ChangedSearchValueWith(it)) },
+                    value = vacationEditState.employeeState.searchText,
+                    onValueChange = { onEvent(VacationEditEvent.ChangedSearchValueWith(it)) },
                     onClickSearch = {
-                        if (vacationAddState.employeeState.paginationState.currentPage <= vacationAddState.employeeState.paginationState.totalPage) {
-                            onEvent(VacationAddEvent.ClickedSearch)
+                        if (vacationEditState.employeeState.paginationState.currentPage <= vacationEditState.employeeState.paginationState.totalPage) {
+                            onEvent(VacationEditEvent.ClickedSearch)
                         }
                     },
-                    onClickInit = { onEvent(VacationAddEvent.ClickedSearchInit) }
+                    onClickInit = { onEvent(VacationEditEvent.ClickedSearchInit) }
                 ),
                 hint = "직원명"
             )
 
-            if (vacationAddState.employeeState.employees.isEmpty()) {
+            if (vacationEditState.employeeState.employees.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -429,16 +430,16 @@ private fun ApproverBottomSheet(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     state = listState
                 ) {
-                    items(vacationAddState.employeeState.employees) { item ->
+                    items(vacationEditState.employeeState.employees) { item ->
                         val isChecked =
-                            vacationAddState.inputData.approverIds.any { it == item.userId }
+                            vacationEditState.inputData.approverIds.any { it == item.userId }
 
                         EmployeeItem(
                             info = item,
                             isChecked = isChecked,
                             onChecked = {
                                 onEvent(
-                                    VacationAddEvent.SelectedApproverWith(
+                                    VacationEditEvent.SelectedApproverWith(
                                         it,
                                         item.userId
                                     )

@@ -323,6 +323,8 @@ class MeetingViewModel @Inject constructor(private val meetingRepository: Meetin
                         Log.d(TAG, "[getPersonnel] 프로젝트 투입 인력 목록 조회 성공\n${data.content}")
                     }
                     .onFailure { e ->
+                        updateState(state.copy(paginationState = state.paginationState.copy(isLoading = false)))
+
                         ErrorHandler.handle(e, TAG, "getPersonnel")
                     }
             }

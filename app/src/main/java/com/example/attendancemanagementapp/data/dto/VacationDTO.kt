@@ -13,6 +13,15 @@ object VacationDTO {
         @Json(name = "vcatnKnd")    val type: String = ""                           // 휴가 종류 (연차/반차 등)
     )
 
+    /* 휴가 정보 수정 요청 */
+    data class UpdateVacationRequest(
+        @Json(name = "bgnde")       val startDate: String = "",                     // 시작일
+        @Json(name = "confmerIds")  val approverIds: List<String> = emptyList(),    // 승인자 아이디 목록 (승인 순서대로)
+        @Json(name = "detailCn")    val detail: String = "",                        // 세부사항
+        @Json(name = "endde")       val endDate: String = "",                       // 휴가 종료일
+        @Json(name = "vcatnKnd")    val type: String = ""                           // 휴가 종류 (연차/반차 등)
+    )
+
     /* 휴가 신청 상세 조회 응답 */
     data class GetVacationResponse(
         @Json(name = "beginHour")   val startHour: String = "",         // 휴가 시작 시

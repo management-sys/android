@@ -1,6 +1,5 @@
 package com.example.attendancemanagementapp.ui.attendance.vacation.detail
 
-import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -8,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,14 +14,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -48,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.VacationDTO
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
+import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditEvent
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -55,11 +51,8 @@ import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TowLineInfoBar
 import com.example.attendancemanagementapp.ui.theme.LightBlue
 import com.example.attendancemanagementapp.ui.theme.LightGray
-import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.util.formatDateYYYYMMDDHHmm
 import com.example.attendancemanagementapp.util.rememberOnce
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 /* 휴가 상세 화면 */
 @Composable
@@ -136,8 +129,16 @@ fun VacationDetailScreen(navController: NavController, vacationViewModel: Vacati
 
                 Row {
                     BasicButton(
-                        name = "수정",
-                        onClick = { onEvent(VacationDetailEvent.ClickedUpdate) }
+                        name = if (vacationDetailState.vacationInfo.rejection.isNullOrBlank()) "수정" else "재신청",
+                        wrapContent = true,
+                        onClick = {
+                            if (vacationDetailState.vacationInfo.rejection.isNullOrBlank()) {
+                                vacationViewModel.onEditEvent(VacationEditEvent.InitWith(vacationDetailState.vacationInfo))
+                                navController.navigate("vacationEdit")
+                            } else {
+
+                            }
+                        }
                     )
 
                     Spacer(modifier = Modifier.width(10.dp))
@@ -228,6 +229,10 @@ private fun VacationInfoCard(vacationInfo: VacationDTO.GetVacationResponse) {
             TowLineInfoBar(name = "세부사항", value = vacationInfo.detail.ifBlank { "-" })
             TowLineInfoBar(name = "신청일", value = formatDateYYYYMMDDHHmm(vacationInfo.appliedDate))
             TowLineInfoBar(name = "상태", value = vacationInfo.status)
+
+            if (vacationInfo.status == "반려") {
+                TowLineInfoBar(name = "반려사유", value = vacationInfo.rejection ?: "-")
+            }
         }
     }
 }

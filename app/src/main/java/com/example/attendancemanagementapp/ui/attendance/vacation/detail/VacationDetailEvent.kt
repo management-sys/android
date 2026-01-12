@@ -13,7 +13,4 @@ sealed interface VacationDetailEvent {
     data class ClickedDownloadWith(
         val context: Context
     ): VacationDetailEvent
-
-    // 휴가 신청 수정 버튼 클릭 이벤트
-    data object ClickedUpdate: VacationDetailEvent
 }
