@@ -2,6 +2,7 @@ package com.example.attendancemanagementapp.di
 
 import com.example.attendancemanagementapp.retrofit.service.AuthService
 import com.example.attendancemanagementapp.retrofit.service.AuthorService
+import com.example.attendancemanagementapp.retrofit.service.CarService
 import com.example.attendancemanagementapp.retrofit.service.CommonCodeService
 import com.example.attendancemanagementapp.retrofit.service.DepartmentService
 import com.example.attendancemanagementapp.retrofit.service.EmployeeService
@@ -116,4 +117,9 @@ object NetworkModule {
     @Singleton
     fun provideVacationService(retrofit: Retrofit): VacationService =
         retrofit.create(VacationService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideCarService(retrofit: Retrofit): CarService =
+        retrofit.create(CarService::class.java)
 }

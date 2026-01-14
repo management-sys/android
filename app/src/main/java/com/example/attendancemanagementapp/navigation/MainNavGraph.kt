@@ -17,6 +17,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.attendancemanagementapp.data.datastore.TokenDataStore
+import com.example.attendancemanagementapp.ui.asset.car.CarViewModel
+import com.example.attendancemanagementapp.ui.asset.car.add.CarAddScreen
+import com.example.attendancemanagementapp.ui.asset.car.detail.CarDetailScreen
+import com.example.attendancemanagementapp.ui.asset.car.edit.CarEditScreen
+import com.example.attendancemanagementapp.ui.asset.car.manage.CarManageScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailScreen
@@ -82,6 +87,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
     val projectViewModel: ProjectViewModel = hiltViewModel()
     val meetingViewModel: MeetingViewModel = hiltViewModel()
     val vacationViewModel: VacationViewModel = hiltViewModel()
+    val carViewModel: CarViewModel = hiltViewModel()
 
     val logoutFlag by tokenDataStore.logoutFlagFlow.collectAsState(initial = false)
 
@@ -104,7 +110,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
         tokenDataStore.uiEffect,
         projectViewModel.uiEffect,
         meetingViewModel.uiEffect,
-        vacationViewModel.uiEffect
+        vacationViewModel.uiEffect,
+        carViewModel.uiEffect
     )
 
     BasicDrawer(
@@ -158,6 +165,11 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
                 composable("vacationDetail") { VacationDetailScreen(navController, vacationViewModel) } // 휴가 상세 화면
                 composable("vacationEdit") { VacationEditScreen(navController, vacationViewModel) }     // 휴가 수정 화면
                 composable("vacationStatus") { VacationStatusScreen(navController, vacationViewModel) } // 휴가 현황 화면
+
+                composable("carAdd") { CarAddScreen(navController, carViewModel) }          // 차량정보 등록 화면
+                composable("carDetail") { CarDetailScreen(navController, carViewModel) }    // 차량정보 상세 화면
+                composable("carEdit") { CarEditScreen(navController, carViewModel) }        // 차량정보 수정 화면
+                composable("carManage") { CarManageScreen(navController, carViewModel) }    // 차량정보 관리 화면
             }
         }
     }
