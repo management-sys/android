@@ -22,6 +22,7 @@ import com.example.attendancemanagementapp.ui.asset.car.add.CarAddScreen
 import com.example.attendancemanagementapp.ui.asset.car.detail.CarDetailScreen
 import com.example.attendancemanagementapp.ui.asset.car.edit.CarEditScreen
 import com.example.attendancemanagementapp.ui.asset.car.manage.CarManageScreen
+import com.example.attendancemanagementapp.ui.asset.car.usage.CarUsageScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailScreen
@@ -170,6 +171,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
                 composable("carDetail") { CarDetailScreen(navController, carViewModel) }    // 차량정보 상세 화면
                 composable("carEdit") { CarEditScreen(navController, carViewModel) }        // 차량정보 수정 화면
                 composable("carManage") { CarManageScreen(navController, carViewModel) }    // 차량정보 관리 화면
+                composable("carUsage") { CarUsageScreen(navController, carViewModel) }      // 차량 사용현황 화면
             }
         }
     }

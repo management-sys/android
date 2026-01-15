@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.data.repository
 
+import androidx.compose.runtime.key
 import com.example.attendancemanagementapp.data.dto.CarDTO
 import com.example.attendancemanagementapp.retrofit.service.CarService
 import com.example.attendancemanagementapp.retrofit.service.CommonCodeService
@@ -55,6 +56,30 @@ class CarRepository @Inject constructor(private val service: CarService) {
     fun deleteCar(id: String): Flow<Result<Unit>> = flow {
         val response = service.deleteCar(
             id = id
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 전체 차량 예약 현황 목록 조회 및 검색
+    fun getReservations(keyword: String, type: String, page: Int): Flow<Result<CarDTO.GetCarUsagesResponse>> = flow {
+        val response = service.getReservations(
+            keyword = keyword,
+            type = type,
+            page = page
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 전체 차량 사용 이력 목록 조회 및 검색
+    fun getHistories(keyword: String, type: String, page: Int): Flow<Result<CarDTO.GetCarUsagesResponse>> = flow {
+        val response = service.getHistories(
+            keyword = keyword,
+            type = type,
+            page = page
         )
         emit(Result.success(response))
     }.catch { e ->

@@ -55,4 +55,26 @@ object CarDTO {
         @Json(name = "vhcleUseHistId")  val id: String,         // 차량 사용 이력 아이디
         @Json(name = "vhcty")           val type: String,       // 차종
     )
+
+    /* 전체 차량 예약현황/사용이력 목록 조회 및 검색 응답 */
+    data class GetCarUsagesResponse(
+        @Json(name = "pageInfo")    val pageInfo: PageDTO.PageInfo = PageDTO.PageInfo(),    // 페이지 정보
+        @Json(name = "useHistList") val reservations: List<UsageInfo> = emptyList()         // 차량 예약현황/사용이력 목록
+    )
+
+    /* 차량 예약현황/사용이력 목록 데이터 */
+    data class UsageInfo(
+        @Json(name = "beginHour")       val startHour: String,      // 사용 시작 시
+        @Json(name = "beginMnt")        val startMin: String,       // 사용 시작 분
+        @Json(name = "bgnde")           val startDate: String,      // 사용 시작일시
+        @Json(name = "deptNm")          val departmentName: String, // 부서
+        @Json(name = "driverNm")        val driverName: String,     // 운행자
+        @Json(name = "endHour")         val endHour: String,        // 사용 종료 시
+        @Json(name = "endMnt")          val endMin: String,         // 사용 종료 분
+        @Json(name = "endde")           val endDate: String,        // 사용 종료일시
+        @Json(name = "vhcleNm")         val name: String,           // 차량명
+        @Json(name = "vhcleNo")         val number: String,         // 차량번호
+        @Json(name = "vhcleUseHistId")  val id: String,             // 차량 사용 이력 아이디
+        @Json(name = "vhcty")           val type: String,           // 차종
+    )
 }

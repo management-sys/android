@@ -41,4 +41,22 @@ interface CarService {
     suspend fun deleteCar(
         @Path("vhcleId") id: String,
     )
+
+    // 전체 차량 예약 현황 목록 조회 및 검색
+    @GET("/api/vhcles/rsrvs")
+    suspend fun getReservations(
+        @Query("keyword") keyword: String,
+        @Query("searchType") type: String,
+        @Query("page") page: Int? = null,  // 페이지 번호: 0부터 시작
+        @Query("size") size: Int? = null   // 페이지 당 데이터 개수
+    ): CarDTO.GetCarUsagesResponse
+
+    // 전체 차량 사용 이력 목록 조회 및 검색
+    @GET("/api/vhcles/usHst")
+    suspend fun getHistories(
+        @Query("keyword") keyword: String,
+        @Query("searchType") type: String,
+        @Query("page") page: Int? = null,  // 페이지 번호: 0부터 시작
+        @Query("size") size: Int? = null   // 페이지 당 데이터 개수
+    ): CarDTO.GetCarUsagesResponse
 }

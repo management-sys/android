@@ -1,0 +1,336 @@
+package com.example.attendancemanagementapp.ui.asset.car.usage
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.attendancemanagementapp.data.dto.CarDTO
+import com.example.attendancemanagementapp.ui.asset.car.CarViewModel
+import com.example.attendancemanagementapp.ui.components.BasicTopBar
+import com.example.attendancemanagementapp.ui.components.DropDownField
+import com.example.attendancemanagementapp.ui.components.TwoInfoBar
+import com.example.attendancemanagementapp.ui.components.search.SearchBar
+import com.example.attendancemanagementapp.ui.components.search.SearchState
+import com.example.attendancemanagementapp.ui.project.add.ProjectAddEvent
+import com.example.attendancemanagementapp.ui.project.add.ProjectAddSearchField
+import com.example.attendancemanagementapp.ui.theme.MainBlue
+import com.example.attendancemanagementapp.ui.theme.TextGray
+import com.example.attendancemanagementapp.util.rememberOnce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
+
+/* 차량 사용현황 화면 */
+@Composable
+fun CarUsageScreen(navController: NavController, carViewModel: CarViewModel) {
+    val onEvent = carViewModel::onUsageEvent
+    val carUsageState by carViewModel.carUsageState.collectAsState()
+
+    val focusManager = LocalFocusManager.current    // 포커스 관리
+
+    val tabs = listOf("예약현황", "사용이력")
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        onEvent(CarUsageEvent.Init)
+    }
+
+    Scaffold(
+        modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
+        topBar = {
+            BasicTopBar(
+                title = "차량 사용현황",
+                onClickNavIcon = rememberOnce { navController.popBackStack() }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            TabRow(
+                selectedTabIndex = pagerState.currentPage,
+                containerColor = MaterialTheme.colorScheme.background,
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                        color = MainBlue
+                    )
+                }
+            ) {
+                tabs.forEachIndexed { idx, title ->
+                    Tab(
+                        selected = pagerState.currentPage == idx,
+                        onClick = {
+                            coroutineScope.launch { pagerState.animateScrollToPage(idx) }
+                        },
+                        text = { Text(title) },
+                        selectedContentColor = MainBlue,
+                        unselectedContentColor = Color.Black
+                    )
+                }
+            }
+
+            Box(Modifier.weight(1f)) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 26.dp, vertical = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        when (page) {
+                            0 -> {  // 예약현황 정보
+                                DropDownField(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    options = listOf("전체", "차량명", "차량번호", "운행자"),
+                                    selected = carUsageState.reservationState.type,
+                                    onSelected = { onEvent(CarUsageEvent.SelectedTypeWith(CarUsageField.RESERVATION, it)) }
+                                )
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                SearchBar(
+                                    searchState = SearchState(
+                                        value = carUsageState.reservationState.searchText,
+                                        onValueChange = { onEvent(CarUsageEvent.ChangedSearchTextWith(CarUsageField.RESERVATION, it)) },
+                                        onClickSearch = {
+                                            if (carUsageState.reservationState.paginationState.currentPage <= carUsageState.reservationState.paginationState.totalPage) {
+                                                onEvent(CarUsageEvent.ClickedSearchWith(CarUsageField.RESERVATION))
+                                            } },
+                                        onClickInit = { onEvent(CarUsageEvent.ClickedInitSearchTextWith(CarUsageField.RESERVATION)) }
+                                    )
+                                )
+
+                                Spacer(Modifier.height(15.dp))
+
+                                ReservationInfoCard(
+                                    reservationState = carUsageState.reservationState,
+                                    onEvent = onEvent
+                                )
+                            }
+
+                            1 -> {  // 사용이력 정보
+                                DropDownField(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    options = listOf("전체", "차량명", "차량번호", "운행자"),
+                                    selected = carUsageState.usageState.type,
+                                    onSelected = { onEvent(CarUsageEvent.SelectedTypeWith(CarUsageField.USAGE, it)) }
+                                )
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                SearchBar(
+                                    searchState = SearchState(
+                                        value = carUsageState.usageState.searchText,
+                                        onValueChange = { onEvent(CarUsageEvent.ChangedSearchTextWith(CarUsageField.USAGE, it)) },
+                                        onClickSearch = {
+                                            if (carUsageState.usageState.paginationState.currentPage <= carUsageState.usageState.paginationState.totalPage) {
+                                                onEvent(CarUsageEvent.ClickedSearchWith(CarUsageField.USAGE))
+                                            } },
+                                        onClickInit = { onEvent(CarUsageEvent.ClickedInitSearchTextWith(CarUsageField.USAGE)) }
+                                    )
+                                )
+
+                                Spacer(Modifier.height(15.dp))
+
+                                UsageInfoCard(
+                                    usageState = carUsageState.usageState,
+                                    onEvent = onEvent
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* 예약현황 정보 카드 */
+@Composable
+private fun ReservationInfoCard(reservationState: CarUsageSearchState, onEvent: (CarUsageEvent) -> Unit) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val lastVisibleIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
+        }.distinctUntilChanged().collect { shouldLoad ->
+            if (shouldLoad && !reservationState.paginationState.isLoading && reservationState.paginationState.currentPage < reservationState.paginationState.totalPage) {
+                onEvent(CarUsageEvent.LoadNextPage(CarUsageField.RESERVATION))
+            }
+        }
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 14.dp, horizontal = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (reservationState.histories.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "예약 내역이 없습니다",
+                        color = TextGray,
+                        fontSize = 15.sp
+                    )
+                }
+            }
+            else {
+                Spacer(modifier = Modifier.height(15.dp))
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(reservationState.histories) { historyInfo ->
+                        CarUsageItem(
+                            usageInfo = historyInfo
+                        )
+                    }
+
+                    item {
+                        Spacer(Modifier.height(15.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* 사용이력 정보 카드 */
+@Composable
+private fun UsageInfoCard(usageState: CarUsageSearchState, onEvent: (CarUsageEvent) -> Unit) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val lastVisibleIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
+        }.distinctUntilChanged().collect { shouldLoad ->
+            if (shouldLoad && !usageState.paginationState.isLoading && usageState.paginationState.currentPage < usageState.paginationState.totalPage) {
+                onEvent(CarUsageEvent.LoadNextPage(CarUsageField.USAGE))
+            }
+        }
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 14.dp, horizontal = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (usageState.histories.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "사용 이력이 없습니다",
+                        color = TextGray,
+                        fontSize = 15.sp
+                    )
+                }
+            }
+            else {
+                Spacer(modifier = Modifier.height(15.dp))
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(usageState.histories) { historyInfo ->
+                        CarUsageItem(
+                            usageInfo = historyInfo
+                        )
+                    }
+
+                    item {
+                        Spacer(Modifier.height(15.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* 예약현황/사용이력 목록 아이템 */
+@Composable
+private fun CarUsageItem(usageInfo: CarDTO.UsageInfo) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(10.dp),
+        border = BorderStroke(width = 0.5.dp, color = DividerDefaults.color.copy(alpha = 0.8f))
+    ) {
+        Spacer(modifier = Modifier.height(12.dp))
+
+        TwoInfoBar(usageInfo.type, "", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+        TwoInfoBar(usageInfo.name, usageInfo.number, fontSize = 15.sp)
+
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), thickness = 1.dp, color = DividerDefaults.color.copy(alpha = 0.8f))
+
+        TwoInfoBar(usageInfo.departmentName, usageInfo.driverName, fontSize = 15.sp)
+        TwoInfoBar("${usageInfo.startDate} ~ ${usageInfo.endDate}", "", color = TextGray, fontSize = 14.sp)
+
+        Spacer(modifier = Modifier.height(14.dp))
+    }
+}

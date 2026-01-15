@@ -3,7 +3,6 @@ package com.example.attendancemanagementapp.ui.asset.car
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.attendancemanagementapp.data.dto.CarDTO
 import com.example.attendancemanagementapp.data.repository.CarRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.ui.asset.car.add.CarAddEvent
@@ -17,6 +16,10 @@ import com.example.attendancemanagementapp.ui.asset.car.edit.CarEditState
 import com.example.attendancemanagementapp.ui.asset.car.manage.CarManageEvent
 import com.example.attendancemanagementapp.ui.asset.car.manage.CarManageReducer
 import com.example.attendancemanagementapp.ui.asset.car.manage.CarManageState
+import com.example.attendancemanagementapp.ui.asset.car.usage.CarUsageEvent
+import com.example.attendancemanagementapp.ui.asset.car.usage.CarUsageField
+import com.example.attendancemanagementapp.ui.asset.car.usage.CarUsageReducer
+import com.example.attendancemanagementapp.ui.asset.car.usage.CarUsageState
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 import com.example.attendancemanagementapp.util.ErrorHandler
@@ -50,6 +53,8 @@ class CarViewModel @Inject constructor(private val carRepository: CarRepository,
     val carEditState = _carEditState.asStateFlow()
     private val _carManageState = MutableStateFlow(CarManageState())
     val carManageState = _carManageState.asStateFlow()
+    private val _carUsageState = MutableStateFlow(CarUsageState())
+    val carUsageState = _carUsageState.asStateFlow()
 
     fun onAddEvent(e: CarAddEvent) {
         _carAddState.update { CarAddReducer.reduce(it, e) }
@@ -98,6 +103,42 @@ class CarViewModel @Inject constructor(private val carRepository: CarRepository,
             is CarManageEvent.ClickedCarWith -> {
                 getCar(e.id)
                 _uiEffect.tryEmit(UiEffect.Navigate("carDetail"))
+            }
+            else -> Unit
+        }
+    }
+
+    fun onUsageEvent(e: CarUsageEvent) {
+        _carUsageState.update { CarUsageReducer.reduce(it, e) }
+
+        when (e) {
+            CarUsageEvent.Init -> {
+                getReservations()
+                getHistories()
+            }
+            is CarUsageEvent.ClickedSearchWith -> {
+                when (e.field) {
+                    CarUsageField.RESERVATION -> getReservations()
+                    CarUsageField.USAGE -> getHistories()
+                }
+            }
+            is CarUsageEvent.ClickedInitSearchTextWith -> {
+                when (e.field) {
+                    CarUsageField.RESERVATION -> getReservations()
+                    CarUsageField.USAGE -> getHistories()
+                }
+            }
+            is CarUsageEvent.SelectedTypeWith -> {
+                when (e.field) {
+                    CarUsageField.RESERVATION -> getReservations()
+                    CarUsageField.USAGE -> getHistories()
+                }
+            }
+            is CarUsageEvent.LoadNextPage -> {
+                when (e.field) {
+                    CarUsageField.RESERVATION -> getReservations()
+                    CarUsageField.USAGE -> getHistories()
+                }
             }
             else -> Unit
         }
@@ -205,6 +246,82 @@ class CarViewModel @Inject constructor(private val carRepository: CarRepository,
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "deleteCar")
+                    }
+            }
+        }
+    }
+
+    /* 전체 차량 예약 현황 목록 조회 및 검색 */
+    fun getReservations() {
+        val state = carUsageState.value.reservationState
+
+        _carUsageState.update { it.copy(reservationState = it.reservationState.copy(paginationState = it.reservationState.paginationState.copy(isLoading = true))) }
+
+        viewModelScope.launch {
+            carRepository.getReservations(
+                keyword = state.searchText,
+                type = state.type,
+                page = state.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedEmployees = if (isFirstPage) data.reservations else state.histories + data.reservations
+
+                        _carUsageState.update { it.copy(reservationState = it.reservationState.copy(
+                            histories = updatedEmployees,
+                            paginationState = it.reservationState.paginationState.copy(
+                                currentPage = it.reservationState.paginationState.currentPage + 1,
+                                totalPage = data.pageInfo.totalPages,
+                                isLoading = false
+                            )
+                        )) }
+
+                        Log.d(TAG, "[getReservations] 전체 차량 예약 현황 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.pageInfo.totalPages}, 검색([${carUsageState.value.reservationState.type}] ${carUsageState.value.reservationState.searchText})\n${data}")
+                    }
+                    .onFailure { e ->
+                        _carUsageState.update { it.copy(reservationState = it.reservationState.copy(paginationState = it.reservationState.paginationState.copy(isLoading = false))) }
+
+                        ErrorHandler.handle(e, TAG, "getReservations")
+                    }
+            }
+        }
+    }
+
+    /* 전체 차량 사용 이력 목록 조회 및 검색 */
+    fun getHistories() {
+        val state = carUsageState.value.usageState
+
+        _carUsageState.update { it.copy(usageState = it.usageState.copy(paginationState = it.usageState.paginationState.copy(isLoading = true))) }
+
+        viewModelScope.launch {
+            carRepository.getHistories(
+                keyword = state.searchText,
+                type = state.type,
+                page = state.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedEmployees = if (isFirstPage) data.reservations else state.histories + data.reservations
+
+                        _carUsageState.update { it.copy(usageState = it.usageState.copy(
+                            histories = updatedEmployees,
+                            paginationState = it.usageState.paginationState.copy(
+                                currentPage = it.usageState.paginationState.currentPage + 1,
+                                totalPage = data.pageInfo.totalPages,
+                                isLoading = false
+                            )
+                        )) }
+
+                        Log.d(TAG, "[getHistories] 전체 차량 사용 이력 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.pageInfo.totalPages}, 검색([${carUsageState.value.usageState.type}] ${carUsageState.value.usageState.searchText})\n${data}")
+                    }
+                    .onFailure { e ->
+                        _carUsageState.update { it.copy(usageState = it.usageState.copy(paginationState = it.usageState.paginationState.copy(isLoading = false))) }
+
+                        ErrorHandler.handle(e, TAG, "getHistories")
                     }
             }
         }
