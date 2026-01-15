@@ -28,6 +28,7 @@ import com.example.attendancemanagementapp.ui.asset.card.add.CardAddScreen
 import com.example.attendancemanagementapp.ui.asset.card.detail.CardDetailScreen
 import com.example.attendancemanagementapp.ui.asset.card.edit.CardEditScreen
 import com.example.attendancemanagementapp.ui.asset.card.manage.CardManageScreen
+import com.example.attendancemanagementapp.ui.asset.card.usage.CardUsageScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailScreen
@@ -182,6 +183,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
                 composable("cardDetail") { CardDetailScreen(navController, cardViewModel) } // 카드정보 상세 화면
                 composable("cardEdit") { CardEditScreen(navController, cardViewModel) }     // 카드정보 수정 화면
                 composable("cardManage") { CardManageScreen(navController, cardViewModel) } // 카드정보 관리 화면
+                composable("cardUsage") { CardUsageScreen(navController, cardViewModel) }   // 카드 사용현황 화면
             }
         }
     }

@@ -266,10 +266,10 @@ class CarViewModel @Inject constructor(private val carRepository: CarRepository,
                     .onSuccess { data ->
                         val isFirstPage = state.paginationState.currentPage == 0
 
-                        val updatedEmployees = if (isFirstPage) data.usages else state.histories + data.usages
+                        val updatedHistories = if (isFirstPage) data.usages else state.histories + data.usages
 
                         _carUsageState.update { it.copy(reservationState = it.reservationState.copy(
-                            histories = updatedEmployees,
+                            histories = updatedHistories,
                             paginationState = it.reservationState.paginationState.copy(
                                 currentPage = it.reservationState.paginationState.currentPage + 1,
                                 totalPage = data.pageInfo.totalPages,
@@ -304,10 +304,10 @@ class CarViewModel @Inject constructor(private val carRepository: CarRepository,
                     .onSuccess { data ->
                         val isFirstPage = state.paginationState.currentPage == 0
 
-                        val updatedEmployees = if (isFirstPage) data.usages else state.histories + data.usages
+                        val updatedHistories = if (isFirstPage) data.usages else state.histories + data.usages
 
                         _carUsageState.update { it.copy(usageState = it.usageState.copy(
-                            histories = updatedEmployees,
+                            histories = updatedHistories,
                             paginationState = it.usageState.paginationState.copy(
                                 currentPage = it.usageState.paginationState.currentPage + 1,
                                 totalPage = data.pageInfo.totalPages,

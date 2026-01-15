@@ -213,7 +213,7 @@ fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (
                         NavigationDrawerItem(
                             label = { Text("법인카드 사용현황") },
                             selected = false,
-                            onClick = { /* Handle click */ }
+                            onClick = { onItemClick("cardUsage") }
                         )
                         NavigationDrawerItem(
                             label = { Text("카드정보 관리") },

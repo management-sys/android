@@ -5,12 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.attendancemanagementapp.data.repository.CardRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
-import com.example.attendancemanagementapp.ui.asset.car.CarTarget
-import com.example.attendancemanagementapp.ui.asset.car.CarViewModel
-import com.example.attendancemanagementapp.ui.asset.car.detail.CarDetailEvent
-import com.example.attendancemanagementapp.ui.asset.car.detail.CarDetailState
-import com.example.attendancemanagementapp.ui.asset.car.edit.CarEditEvent
-import com.example.attendancemanagementapp.ui.asset.car.edit.CarEditReducer
 import com.example.attendancemanagementapp.ui.asset.card.add.CardAddEvent
 import com.example.attendancemanagementapp.ui.asset.card.add.CardAddReducer
 import com.example.attendancemanagementapp.ui.asset.card.add.CardAddState
@@ -22,6 +16,10 @@ import com.example.attendancemanagementapp.ui.asset.card.edit.CardEditState
 import com.example.attendancemanagementapp.ui.asset.card.manage.CardManageEvent
 import com.example.attendancemanagementapp.ui.asset.card.manage.CardManageReducer
 import com.example.attendancemanagementapp.ui.asset.card.manage.CardManageState
+import com.example.attendancemanagementapp.ui.asset.card.usage.CardUsageEvent
+import com.example.attendancemanagementapp.ui.asset.card.usage.CardUsageField
+import com.example.attendancemanagementapp.ui.asset.card.usage.CardUsageReducer
+import com.example.attendancemanagementapp.ui.asset.card.usage.CardUsageState
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 import com.example.attendancemanagementapp.util.ErrorHandler
@@ -55,6 +53,8 @@ class CardViewModel @Inject constructor(private val cardRepository: CardReposito
     val cardEditState = _cardEditState.asStateFlow()
     private val _cardManageState = MutableStateFlow(CardManageState())
     val cardManageState = _cardManageState.asStateFlow()
+    private val _cardUsageState = MutableStateFlow(CardUsageState())
+    val cardUsageState = _cardUsageState.asStateFlow()
 
     fun onAddEvent(e: CardAddEvent) {
         _cardAddState.update { CardAddReducer.reduce(it, e) }
@@ -103,6 +103,42 @@ class CardViewModel @Inject constructor(private val cardRepository: CardReposito
             is CardManageEvent.ClickedCarWith -> {
                 getCard(e.id)
                 _uiEffect.tryEmit(UiEffect.Navigate("cardDetail"))
+            }
+            else -> Unit
+        }
+    }
+
+    fun onUsageEvent(e: CardUsageEvent) {
+        _cardUsageState.update { CardUsageReducer.reduce(it, e) }
+
+        when (e) {
+            CardUsageEvent.Init -> {
+                getReservations()
+                getHistories()
+            }
+            is CardUsageEvent.ClickedSearchWith -> {
+                when (e.field) {
+                    CardUsageField.RESERVATION -> getReservations()
+                    CardUsageField.USAGE -> getHistories()
+                }
+            }
+            is CardUsageEvent.ClickedInitSearchTextWith -> {
+                when (e.field) {
+                    CardUsageField.RESERVATION -> getReservations()
+                    CardUsageField.USAGE -> getHistories()
+                }
+            }
+            is CardUsageEvent.SelectedTypeWith -> {
+                when (e.field) {
+                    CardUsageField.RESERVATION -> getReservations()
+                    CardUsageField.USAGE -> getHistories()
+                }
+            }
+            is CardUsageEvent.LoadNextPage -> {
+                when (e.field) {
+                    CardUsageField.RESERVATION -> getReservations()
+                    CardUsageField.USAGE -> getHistories()
+                }
             }
             else -> Unit
         }
@@ -209,6 +245,82 @@ class CardViewModel @Inject constructor(private val cardRepository: CardReposito
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "deleteCard")
+                    }
+            }
+        }
+    }
+
+    /* 전체 카드 예약 현황 목록 조회 및 검색 */
+    fun getReservations() {
+        val state = cardUsageState.value.reservationState
+
+        _cardUsageState.update { it.copy(reservationState = it.reservationState.copy(paginationState = it.reservationState.paginationState.copy(isLoading = true))) }
+
+        viewModelScope.launch {
+            cardRepository.getReservations(
+                keyword = state.searchText,
+                type = state.type,
+                page = state.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedHistories = if (isFirstPage) data.usages else state.histories + data.usages
+
+                        _cardUsageState.update { it.copy(reservationState = it.reservationState.copy(
+                            histories = updatedHistories,
+                            paginationState = it.reservationState.paginationState.copy(
+                                currentPage = it.reservationState.paginationState.currentPage + 1,
+                                totalPage = data.pageInfo.totalPages,
+                                isLoading = false
+                            )
+                        )) }
+
+                        Log.d(TAG, "[getReservations] 전체 카드 예약 현황 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.pageInfo.totalPages}, 검색([${cardUsageState.value.reservationState.type}] ${cardUsageState.value.reservationState.searchText})\n${data}")
+                    }
+                    .onFailure { e ->
+                        _cardUsageState.update { it.copy(reservationState = it.reservationState.copy(paginationState = it.reservationState.paginationState.copy(isLoading = false))) }
+
+                        ErrorHandler.handle(e, TAG, "getReservations")
+                    }
+            }
+        }
+    }
+
+    /* 전체 카드 사용 이력 목록 조회 및 검색 */
+    fun getHistories() {
+        val state = cardUsageState.value.usageState
+
+        _cardUsageState.update { it.copy(usageState = it.usageState.copy(paginationState = it.usageState.paginationState.copy(isLoading = true))) }
+
+        viewModelScope.launch {
+            cardRepository.getHistories(
+                keyword = state.searchText,
+                type = state.type,
+                page = state.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedHistories = if (isFirstPage) data.usages else state.histories + data.usages
+
+                        _cardUsageState.update { it.copy(usageState = it.usageState.copy(
+                            histories = updatedHistories,
+                            paginationState = it.usageState.paginationState.copy(
+                                currentPage = it.usageState.paginationState.currentPage + 1,
+                                totalPage = data.pageInfo.totalPages,
+                                isLoading = false
+                            )
+                        )) }
+
+                        Log.d(TAG, "[getHistories] 전체 카드 사용 이력 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.pageInfo.totalPages}, 검색([${cardUsageState.value.usageState.type}] ${cardUsageState.value.usageState.searchText})\n${data}")
+                    }
+                    .onFailure { e ->
+                        _cardUsageState.update { it.copy(usageState = it.usageState.copy(paginationState = it.usageState.paginationState.copy(isLoading = false))) }
+
+                        ErrorHandler.handle(e, TAG, "getHistories")
                     }
             }
         }
