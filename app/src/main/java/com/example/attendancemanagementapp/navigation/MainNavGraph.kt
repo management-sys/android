@@ -23,12 +23,15 @@ import com.example.attendancemanagementapp.ui.asset.car.detail.CarDetailScreen
 import com.example.attendancemanagementapp.ui.asset.car.edit.CarEditScreen
 import com.example.attendancemanagementapp.ui.asset.car.manage.CarManageScreen
 import com.example.attendancemanagementapp.ui.asset.car.usage.CarUsageScreen
+import com.example.attendancemanagementapp.ui.asset.card.CardViewModel
+import com.example.attendancemanagementapp.ui.asset.card.add.CardAddScreen
+import com.example.attendancemanagementapp.ui.asset.card.detail.CardDetailScreen
+import com.example.attendancemanagementapp.ui.asset.card.edit.CardEditScreen
+import com.example.attendancemanagementapp.ui.asset.card.manage.CardManageScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailScreen
-import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailState
 import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditScreen
-import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditState
 import com.example.attendancemanagementapp.ui.attendance.vacation.status.VacationStatusScreen
 import com.example.attendancemanagementapp.ui.base.CollectUiEffect
 import com.example.attendancemanagementapp.ui.commoncode.CodeViewModel
@@ -89,6 +92,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
     val meetingViewModel: MeetingViewModel = hiltViewModel()
     val vacationViewModel: VacationViewModel = hiltViewModel()
     val carViewModel: CarViewModel = hiltViewModel()
+    val cardViewModel: CardViewModel = hiltViewModel()
 
     val logoutFlag by tokenDataStore.logoutFlagFlow.collectAsState(initial = false)
 
@@ -112,7 +116,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
         projectViewModel.uiEffect,
         meetingViewModel.uiEffect,
         vacationViewModel.uiEffect,
-        carViewModel.uiEffect
+        carViewModel.uiEffect,
+        cardViewModel.uiEffect
     )
 
     BasicDrawer(
@@ -172,6 +177,11 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
                 composable("carEdit") { CarEditScreen(navController, carViewModel) }        // 차량정보 수정 화면
                 composable("carManage") { CarManageScreen(navController, carViewModel) }    // 차량정보 관리 화면
                 composable("carUsage") { CarUsageScreen(navController, carViewModel) }      // 차량 사용현황 화면
+
+                composable("cardAdd") { CardAddScreen(navController, cardViewModel) }       // 카드정보 등록 화면
+                composable("cardDetail") { CardDetailScreen(navController, cardViewModel) } // 카드정보 상세 화면
+                composable("cardEdit") { CardEditScreen(navController, cardViewModel) }     // 카드정보 수정 화면
+                composable("cardManage") { CardManageScreen(navController, cardViewModel) } // 카드정보 관리 화면
             }
         }
     }

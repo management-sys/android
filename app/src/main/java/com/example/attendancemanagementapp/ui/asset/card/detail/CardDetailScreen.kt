@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.asset.car.detail
+package com.example.attendancemanagementapp.ui.asset.card.detail
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -45,9 +45,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.attendancemanagementapp.data.dto.CarDTO
-import com.example.attendancemanagementapp.ui.asset.car.CarViewModel
-import com.example.attendancemanagementapp.ui.asset.car.edit.CarEditEvent
+import com.example.attendancemanagementapp.data.dto.CardDTO
+import com.example.attendancemanagementapp.ui.asset.card.CardViewModel
+import com.example.attendancemanagementapp.ui.asset.card.edit.CardEditEvent
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -58,15 +58,15 @@ import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.launch
 
-/* 차량 상세 화면 */
+/* 카드 상세 화면 */
 @Composable
-fun CarDetailScreen(navController: NavController, carViewModel: CarViewModel) {
-    val onEvent = carViewModel::onDetailEvent
-    val carDetailState by carViewModel.carDetailState.collectAsState()
+fun CardDetailScreen(navController: NavController, cardViewModel: CardViewModel) {
+    val onEvent = cardViewModel::onDetailEvent
+    val cardDetailState by cardViewModel.cardDetailState.collectAsState()
 
     val focusManager = LocalFocusManager.current    // 포커스 관리
 
-    val tabs = listOf("차량 정보", "예약현황")
+    val tabs = listOf("카드 정보", "예약현황")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
 
@@ -74,10 +74,10 @@ fun CarDetailScreen(navController: NavController, carViewModel: CarViewModel) {
 
     if (openDelete) {
         BasicDialog(
-            title = "차량을 삭제하시겠습니까?",
+            title = "카드를 삭제하시겠습니까?",
             onDismiss = { openDelete = false },
             onClickConfirm = {
-                onEvent(CarDetailEvent.ClickedDelete)
+                onEvent(CardDetailEvent.ClickedDelete)
                 openDelete = false
             }
         )
@@ -87,7 +87,7 @@ fun CarDetailScreen(navController: NavController, carViewModel: CarViewModel) {
         modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
-                title = "차량 상세",
+                title = "카드 상세",
                 actIcon = Icons.Default.Delete,
                 actTint = Color.Red,
                 onClickNavIcon = rememberOnce { navController.popBackStack() },
@@ -134,12 +134,12 @@ fun CarDetailScreen(navController: NavController, carViewModel: CarViewModel) {
                         verticalArrangement = Arrangement.Top
                     ) {
                         when (page) {
-                            0 -> {  // 차량 정보
+                            0 -> {  // 카드 정보
                                 Column(
                                     modifier = Modifier.verticalScroll(rememberScrollState())
                                 ) {
-                                    CarInfoCard(
-                                        carInfo = carDetailState.carInfo
+                                    CardInfoCard(
+                                        cardInfo = cardDetailState.cardInfo
                                     )
 
                                     Row(
@@ -150,8 +150,8 @@ fun CarDetailScreen(navController: NavController, carViewModel: CarViewModel) {
                                         BasicButton(
                                             name = "수정",
                                             onClick = {
-                                                carViewModel.onEditEvent(CarEditEvent.InitWith(carDetailState.carInfo))
-                                                onEvent(CarDetailEvent.ClickedUpdate)
+                                                cardViewModel.onEditEvent(CardEditEvent.InitWith(cardDetailState.cardInfo))
+                                                onEvent(CardDetailEvent.ClickedUpdate)
                                             }
                                         )
                                     }
@@ -161,8 +161,8 @@ fun CarDetailScreen(navController: NavController, carViewModel: CarViewModel) {
                             }
 
                             1 -> {  // 예약현황
-                                CarReservationInfoCard(
-                                    carInfo = carDetailState.carInfo
+                                CardReservationInfoCard(
+                                    cardInfo = cardDetailState.cardInfo
                                 )
                             }
                         }
@@ -173,9 +173,9 @@ fun CarDetailScreen(navController: NavController, carViewModel: CarViewModel) {
     }
 }
 
-/* 차량 정보 출력 카드 */
+/* 카드 정보 출력 카드 */
 @Composable
-private fun CarInfoCard(carInfo: CarDTO.GetCarResponse) {
+private fun CardInfoCard(cardInfo: CardDTO.GetCardResponse) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -187,21 +187,17 @@ private fun CarInfoCard(carInfo: CarDTO.GetCarResponse) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            TowLineInfoBar(name = "차종", value = carInfo.type)
-            TowLineInfoBar(name = "차량번호", value = carInfo.number)
-            TowLineInfoBar(name = "연료종류", value = carInfo.fuelType)
-            TowLineInfoBar(name = "소유형태", value = carInfo.ownership)
-            TowLineInfoBar(name = "차량명", value = carInfo.name)
-            TowLineInfoBar(name = "담당자", value = carInfo.managerName)
-            TowLineInfoBar(name = "비고", value = carInfo.remark)
-            TowLineInfoBar(name = "상태", value = carInfo.status)
+            TowLineInfoBar(name = "카드명", value = cardInfo.name)
+            TowLineInfoBar(name = "담당자", value = cardInfo.managerName)
+            TowLineInfoBar(name = "비고", value = cardInfo.remark)
+            TowLineInfoBar(name = "상태", value = cardInfo.status)
         }
     }
 }
 
-/* 차량 예약현황 정보 출력 카드 */
+/* 카드 예약현황 정보 출력 카드 */
 @Composable
-private fun CarReservationInfoCard(carInfo: CarDTO.GetCarResponse) {
+private fun CardReservationInfoCard(cardInfo: CardDTO.GetCardResponse) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -213,7 +209,7 @@ private fun CarReservationInfoCard(carInfo: CarDTO.GetCarResponse) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            if (carInfo.histories.isEmpty()) {
+            if (cardInfo.histories.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -230,8 +226,8 @@ private fun CarReservationInfoCard(carInfo: CarDTO.GetCarResponse) {
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 5.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(carInfo.histories) { historyInfo ->
-                        CarReservationItem(
+                    items(cardInfo.histories) { historyInfo ->
+                        CardReservationItem(
                             historyInfo = historyInfo
                         )
                     }
@@ -241,9 +237,9 @@ private fun CarReservationInfoCard(carInfo: CarDTO.GetCarResponse) {
     }
 }
 
-/* 차량 예약현황 목록 아이템 */
+/* 카드 예약현황 목록 아이템 */
 @Composable
-private fun CarReservationItem(historyInfo: CarDTO.HistoryInfo) {
+private fun CardReservationItem(historyInfo: CardDTO.HistoryInfo) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -251,7 +247,7 @@ private fun CarReservationItem(historyInfo: CarDTO.HistoryInfo) {
         border = BorderStroke(width = 0.5.dp, color = DividerDefaults.color.copy(alpha = 0.8f))
     ) {
         Spacer(modifier = Modifier.height(12.dp))
-        TwoInfoBar(historyInfo.driverName, historyInfo.status, fontSize = 15.sp)
+        TwoInfoBar(historyInfo.applicantName, historyInfo.status, fontSize = 15.sp)
         TwoInfoBar("${historyInfo.startDate} ~ ${historyInfo.endDate}", "", color = TextGray, fontSize = 14.sp)
         Spacer(modifier = Modifier.height(14.dp))
     }

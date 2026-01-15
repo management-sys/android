@@ -15,9 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
@@ -51,8 +49,6 @@ import com.example.attendancemanagementapp.ui.components.DropDownField
 import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.search.SearchBar
 import com.example.attendancemanagementapp.ui.components.search.SearchState
-import com.example.attendancemanagementapp.ui.project.add.ProjectAddEvent
-import com.example.attendancemanagementapp.ui.project.add.ProjectAddSearchField
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.util.rememberOnce
@@ -238,7 +234,7 @@ private fun ReservationInfoCard(reservationState: CarUsageSearchState, onEvent: 
                 ) {
                     items(reservationState.histories) { historyInfo ->
                         CarUsageItem(
-                            usageInfo = historyInfo
+                            carUsageInfo = historyInfo
                         )
                     }
 
@@ -299,7 +295,7 @@ private fun UsageInfoCard(usageState: CarUsageSearchState, onEvent: (CarUsageEve
                 ) {
                     items(usageState.histories) { historyInfo ->
                         CarUsageItem(
-                            usageInfo = historyInfo
+                            carUsageInfo = historyInfo
                         )
                     }
 
@@ -314,7 +310,7 @@ private fun UsageInfoCard(usageState: CarUsageSearchState, onEvent: (CarUsageEve
 
 /* 예약현황/사용이력 목록 아이템 */
 @Composable
-private fun CarUsageItem(usageInfo: CarDTO.UsageInfo) {
+private fun CarUsageItem(carUsageInfo: CarDTO.CarUsageInfo) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -323,13 +319,13 @@ private fun CarUsageItem(usageInfo: CarDTO.UsageInfo) {
     ) {
         Spacer(modifier = Modifier.height(12.dp))
 
-        TwoInfoBar(usageInfo.type, "", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-        TwoInfoBar(usageInfo.name, usageInfo.number, fontSize = 15.sp)
+        TwoInfoBar(carUsageInfo.type, "", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+        TwoInfoBar(carUsageInfo.name, carUsageInfo.number, fontSize = 15.sp)
 
         HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), thickness = 1.dp, color = DividerDefaults.color.copy(alpha = 0.8f))
 
-        TwoInfoBar(usageInfo.departmentName, usageInfo.driverName, fontSize = 15.sp)
-        TwoInfoBar("${usageInfo.startDate} ~ ${usageInfo.endDate}", "", color = TextGray, fontSize = 14.sp)
+        TwoInfoBar(carUsageInfo.departmentName, carUsageInfo.driverName, fontSize = 15.sp)
+        TwoInfoBar("${carUsageInfo.startDate} ~ ${carUsageInfo.endDate}", "", color = TextGray, fontSize = 14.sp)
 
         Spacer(modifier = Modifier.height(14.dp))
     }

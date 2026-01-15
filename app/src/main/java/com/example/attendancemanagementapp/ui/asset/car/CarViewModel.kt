@@ -208,7 +208,6 @@ class CarViewModel @Inject constructor(private val carRepository: CarRepository,
     /* 차량 정보 수정 */
     fun updateCar() {
         val state = carEditState.value
-        Log.d(TAG, "[요청] ${state.inputData}")
 
         viewModelScope.launch {
             carRepository.updateCar(
@@ -267,7 +266,7 @@ class CarViewModel @Inject constructor(private val carRepository: CarRepository,
                     .onSuccess { data ->
                         val isFirstPage = state.paginationState.currentPage == 0
 
-                        val updatedEmployees = if (isFirstPage) data.reservations else state.histories + data.reservations
+                        val updatedEmployees = if (isFirstPage) data.usages else state.histories + data.usages
 
                         _carUsageState.update { it.copy(reservationState = it.reservationState.copy(
                             histories = updatedEmployees,
@@ -305,7 +304,7 @@ class CarViewModel @Inject constructor(private val carRepository: CarRepository,
                     .onSuccess { data ->
                         val isFirstPage = state.paginationState.currentPage == 0
 
-                        val updatedEmployees = if (isFirstPage) data.reservations else state.histories + data.reservations
+                        val updatedEmployees = if (isFirstPage) data.usages else state.histories + data.usages
 
                         _carUsageState.update { it.copy(usageState = it.usageState.copy(
                             histories = updatedEmployees,

@@ -31,7 +31,7 @@ object CarDTO {
         @Json(name = "chargerId")   val managerId: String = "",                             // 담당자 아이디
         @Json(name = "chargerNm")   val managerName: String = "",                           // 담당자
         @Json(name = "fuelKnd")     val fuelType: String = "",                              // 연료종류
-        @Json(name = "historyList") val history: List<HistoryInfo> = emptyList(),           // 예약 현황 목록
+        @Json(name = "historyList") val histories: List<HistoryInfo> = emptyList(),         // 예약 현황 목록
         @Json(name = "pageInfo")    val pageInfo: PageDTO.PageInfo = PageDTO.PageInfo(),    // 페이지 정보
         @Json(name = "posesnStle")  val ownership: String = "",                             // 소유형태
         @Json(name = "rm")          val remark: String = "",                                // 비고
@@ -59,11 +59,11 @@ object CarDTO {
     /* 전체 차량 예약현황/사용이력 목록 조회 및 검색 응답 */
     data class GetCarUsagesResponse(
         @Json(name = "pageInfo")    val pageInfo: PageDTO.PageInfo = PageDTO.PageInfo(),    // 페이지 정보
-        @Json(name = "useHistList") val reservations: List<UsageInfo> = emptyList()         // 차량 예약현황/사용이력 목록
+        @Json(name = "useHistList") val usages: List<CarUsageInfo> = emptyList()            // 차량 예약현황/사용이력 목록
     )
 
     /* 차량 예약현황/사용이력 목록 데이터 */
-    data class UsageInfo(
+    data class CarUsageInfo(
         @Json(name = "beginHour")       val startHour: String,      // 사용 시작 시
         @Json(name = "beginMnt")        val startMin: String,       // 사용 시작 분
         @Json(name = "bgnde")           val startDate: String,      // 사용 시작일시

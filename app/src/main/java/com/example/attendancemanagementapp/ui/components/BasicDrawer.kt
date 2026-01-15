@@ -218,7 +218,7 @@ fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (
                         NavigationDrawerItem(
                             label = { Text("카드정보 관리") },
                             selected = false,
-                            onClick = { /* Handle click */ }
+                            onClick = { onItemClick("cardManage") }
                         )
                     }
 
