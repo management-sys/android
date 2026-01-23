@@ -29,6 +29,9 @@ import com.example.attendancemanagementapp.ui.asset.card.detail.CardDetailScreen
 import com.example.attendancemanagementapp.ui.asset.card.edit.CardEditScreen
 import com.example.attendancemanagementapp.ui.asset.card.manage.CardManageScreen
 import com.example.attendancemanagementapp.ui.asset.card.usage.CardUsageScreen
+import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
+import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddScreen
+import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddState
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailScreen
@@ -94,6 +97,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
     val vacationViewModel: VacationViewModel = hiltViewModel()
     val carViewModel: CarViewModel = hiltViewModel()
     val cardViewModel: CardViewModel = hiltViewModel()
+    val tripViewModel: TripViewModel = hiltViewModel()
 
     val logoutFlag by tokenDataStore.logoutFlagFlow.collectAsState(initial = false)
 
@@ -118,7 +122,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
         meetingViewModel.uiEffect,
         vacationViewModel.uiEffect,
         carViewModel.uiEffect,
-        cardViewModel.uiEffect
+        cardViewModel.uiEffect,
+        tripViewModel.uiEffect
     )
 
     BasicDrawer(
@@ -184,6 +189,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
                 composable("cardEdit") { CardEditScreen(navController, cardViewModel) }     // 카드정보 수정 화면
                 composable("cardManage") { CardManageScreen(navController, cardViewModel) } // 카드정보 관리 화면
                 composable("cardUsage") { CardUsageScreen(navController, cardViewModel) }   // 카드 사용현황 화면
+
+                composable("tripAdd") { TripAddScreen(navController, tripViewModel) }   // 출장 신청 화면
             }
         }
     }

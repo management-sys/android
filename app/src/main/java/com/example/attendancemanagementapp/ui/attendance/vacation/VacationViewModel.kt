@@ -366,11 +366,21 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
                         val vacationTypeNames: List<String> = data.content.map { it.codeName }
 
                         when (target) {
-                            VacationTarget.ADD -> _vacationAddState.update { it.copy(vacationTypeOptions = vacationTypeNames) }
-                            VacationTarget.EDIT -> { _vacationEditState.update { it.copy(vacationTypeOptions = vacationTypeNames) } }
+                            VacationTarget.ADD -> _vacationAddState.update {
+                                it.copy(
+                                    vacationTypeOptions = vacationTypeNames
+                                )
+                            }
+
+                            VacationTarget.EDIT -> {
+                                _vacationEditState.update { it.copy(vacationTypeOptions = vacationTypeNames) }
+                            }
                         }
 
-                        Log.d(TAG, "[getVacationType-${target}] 휴가 종류 목록 조회 성공\n${vacationTypeNames}")
+                        Log.d(
+                            TAG,
+                            "[getVacationType-${target}] 휴가 종류 목록 조회 성공\n${vacationTypeNames}"
+                        )
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "getVacationType-${target}")

@@ -1,0 +1,80 @@
+package com.example.attendancemanagementapp.data.dto
+
+import com.squareup.moshi.Json
+
+object TripDTO {
+    /* 출장 신청 요청 */
+    data class AddTripRequest(
+        @Json(name = "bgnde")           val startDate: String = "",                         // 출장 시작일시
+        @Json(name = "bsrpPlace")       val place: String = "",                             // 출장지
+        @Json(name = "bsrpPurps")       val purpose: String = "",                           // 출장목적
+        @Json(name = "bsrpSe")          val type: String = "",                              // 출장구분 (국내/해외)
+        @Json(name = "cardUseList")     val cardUsages: List<CardUsagesInfo> = emptyList(), // 법인카드 사용 목록
+        @Json(name = "cn")              val content: String = "",                           // 품의 내용
+        @Json(name = "confmerIds")      val approverIds: List<String> = emptyList(),        // 승인자 아이디 목록 (승인 순서대로)
+        @Json(name = "endde")           val endDate: String = "",                           // 출장 종료일시
+        @Json(name = "nmprs")           val attendeeIds: List<String> = emptyList(),        // 동행자 아이디 목록
+        @Json(name = "vhcleUseList")    val carUsages: List<CarUsagesInfo> = emptyList()    // 법인차량 사용 목록
+    )
+
+    /* 법인카드 사용 목록 데이터 */
+    data class CardUsagesInfo(
+        @Json(name = "bgnde")   val startDate: String = "", // 사용 시작일시
+        @Json(name = "cardId")  val id: String = "",        // 카드 아이디
+        @Json(name = "endde")   val endDate: String = ""    // 사용 종료일시
+    )
+
+    /* 법인차량 사용 목록 데이터 */
+    data class CarUsagesInfo(
+        @Json(name = "bgnde")       val startDate: String = "", // 사용 시작일시
+        @Json(name = "driverId")    val driverId: String = "",  // 운전자 아이디
+        @Json(name = "endde")       val endDate: String = "",   // 사용 종료일시
+        @Json(name = "vhcleId")     val id: String = ""         // 차량 아이디
+    )
+
+    /* 출장 현황 상세 조회 응답 */
+    data class GetTripResponse(
+        @Json(name = "beginHour")   val startHour: String = "",                         // 출장 시작 시
+        @Json(name = "beginMnt")    val startMin: String = "",                          // 출장 시작 분
+        @Json(name = "bgnde")       val startDate: String = "",                         // 출장 시작일시
+        @Json(name = "bsrpId")      val id: String = "",                                // 출장 아이디
+        @Json(name = "bsrpPlace")   val place: String = "",                             // 출장지
+        @Json(name = "bsrpPurps")   val purpose: String = "",                           // 출장 목적
+        @Json(name = "bsrpSe")      val type: String = "",                              // 출장 구분
+        @Json(name = "cardList")    val cards: List<CardsInfo> = emptyList(),           // 법인카드 목록
+        @Json(name = "clsf")        val grade: String = "",                             // 직급
+        @Json(name = "cn")          val content: String = "",                           // 품의 내용
+        @Json(name = "confmAt")     val status: String = "",                            // 상태
+        @Json(name = "confmerId")   val approverId: String = "",                        // 승인자 아이디
+        @Json(name = "confmerNm")   val approverName: String = "",                      // 승인자 이름
+        @Json(name = "deptNm")      val departmentName: String = "",                    // 부서명
+        @Json(name = "endHour")     val endHour: String = "",                           // 출장 종료 시
+        @Json(name = "endMnt")      val endMin: String = "",                            // 출장 종료 분
+        @Json(name = "endde")       val endDate: String = "",                           // 출장 종료일시
+        @Json(name = "nmprList")    val attendees: List<AttendeesInfo> = emptyList(),   // 동행자 목록
+        @Json(name = "period")      val period: String = "",                            // 출장 기간
+        @Json(name = "returnResn")  val rejection: String = "",                         // 반려사유
+        @Json(name = "rgsde")       val appliedDate: String = "",                       // 신청일
+        @Json(name = "userId")      val userId: String = "",                            // 사용자 아이디
+        @Json(name = "userNm")      val userName: String = "",                          // 이름
+        @Json(name = "vhcleList")   val cars: List<CarsInfo> = emptyList(),             // 법인차량 목록
+    )
+
+    /* 법인카드 목록 데이터 */
+    data class CardsInfo(
+        @Json(name = "id")      val id: String,     // 아이디
+        @Json(name = "name")    val name: String    // 이름
+    )
+
+    /* 동행자 목록 데이터 */
+    data class AttendeesInfo(
+        @Json(name = "id")      val id: String,     // 아이디
+        @Json(name = "name")    val name: String    // 이름
+    )
+
+    /* 법인차량 목록 데이터 */
+    data class CarsInfo(
+        @Json(name = "id")      val id: String,     // 아이디
+        @Json(name = "name")    val name: String    // 이름
+    )
+}

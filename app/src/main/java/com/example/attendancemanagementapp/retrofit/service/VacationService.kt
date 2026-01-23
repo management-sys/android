@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.retrofit.service
 
+import com.example.attendancemanagementapp.data.dto.ApproverDTO
 import com.example.attendancemanagementapp.data.dto.VacationDTO
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -55,7 +56,7 @@ interface VacationService {
     @GET("/api/vcatns/latest-confmers/{userId}")
     suspend fun getPrevApprovers(
         @Path("userId") userId: String
-    ): VacationDTO.GetPrevApproversResponse
+    ): ApproverDTO.GetPrevApproversResponse
 
     // 휴가 현황 목록 조회
     @GET("/api/vcatns/users/{userId}")

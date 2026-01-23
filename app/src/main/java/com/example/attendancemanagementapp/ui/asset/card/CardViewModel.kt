@@ -100,7 +100,7 @@ class CardViewModel @Inject constructor(private val cardRepository: CardReposito
             CardManageEvent.ClickedSearch -> getCards()
             CardManageEvent.ClickedInitSearchText -> getCards()
             is CardManageEvent.SelectedTypeWith -> getCards()
-            is CardManageEvent.ClickedCarWith -> {
+            is CardManageEvent.ClickedCardWith -> {
                 getCard(e.id)
                 _uiEffect.tryEmit(UiEffect.Navigate("cardDetail"))
             }

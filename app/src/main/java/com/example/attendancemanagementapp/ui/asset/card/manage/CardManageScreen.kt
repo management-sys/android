@@ -30,10 +30,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.attendancemanagementapp.data.dto.CarDTO
 import com.example.attendancemanagementapp.data.dto.CardDTO
-import com.example.attendancemanagementapp.ui.asset.car.manage.CarManageEvent
-import com.example.attendancemanagementapp.ui.asset.car.manage.CarManageState
 import com.example.attendancemanagementapp.ui.asset.card.CardViewModel
 import com.example.attendancemanagementapp.ui.components.BasicFloatingButton
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -136,7 +133,7 @@ private fun CardListCard(cardManageState: CardManageState, onEvent: (CardManageE
                     items(cardManageState.cards) { cardInfo ->
                         CardListItem(
                             cardInfo = cardInfo,
-                            onClick = { onEvent(CardManageEvent.ClickedCarWith(cardInfo.id)) }
+                            onClick = { onEvent(CardManageEvent.ClickedCardWith(cardInfo.id)) }
                         )
                     }
 

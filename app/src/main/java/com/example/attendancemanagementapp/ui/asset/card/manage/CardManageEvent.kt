@@ -20,8 +20,8 @@ sealed interface CardManageEvent {
     // 검색어 초기화 버튼 클릭 이벤트
     data object ClickedInitSearchText: CardManageEvent
 
-    // 조회할 차량 클릭 이벤트
-    data class ClickedCarWith(
+    // 조회할 카드 클릭 이벤트
+    data class ClickedCardWith(
         val id: String
     ): CardManageEvent
 }

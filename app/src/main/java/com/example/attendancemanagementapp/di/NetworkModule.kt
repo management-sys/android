@@ -9,6 +9,7 @@ import com.example.attendancemanagementapp.retrofit.service.DepartmentService
 import com.example.attendancemanagementapp.retrofit.service.EmployeeService
 import com.example.attendancemanagementapp.retrofit.service.MeetingService
 import com.example.attendancemanagementapp.retrofit.service.ProjectService
+import com.example.attendancemanagementapp.retrofit.service.TripService
 import com.example.attendancemanagementapp.retrofit.service.VacationService
 import com.example.attendancemanagementapp.retrofit.token.AuthInterceptor
 import com.example.attendancemanagementapp.retrofit.token.TokenAuthenticator
@@ -128,4 +129,9 @@ object NetworkModule {
     @Singleton
     fun provideCardService(retrofit: Retrofit): CardService =
         retrofit.create(CardService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideTripService(retrofit: Retrofit): TripService =
+        retrofit.create(TripService::class.java)
 }

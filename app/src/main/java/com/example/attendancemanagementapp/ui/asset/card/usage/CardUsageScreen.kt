@@ -75,7 +75,7 @@ fun CardUsageScreen(navController: NavController, cardViewModel: CardViewModel) 
         modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
-                title = "차량 사용현황",
+                title = "카드 사용현황",
                 onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         }

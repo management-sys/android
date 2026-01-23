@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import com.example.attendancemanagementapp.data.dto.ApproverDTO
 import com.example.attendancemanagementapp.data.dto.VacationDTO
 import com.example.attendancemanagementapp.data.param.VacationsQuery
 import com.example.attendancemanagementapp.retrofit.service.VacationService
@@ -72,7 +73,7 @@ class VacationRepository @Inject constructor(private val service: VacationServic
     }
 
     // 이전 승인자 불러오기
-    fun getPrevApprovers(userId: String): Flow<Result<VacationDTO.GetPrevApproversResponse>> = flow {
+    fun getPrevApprovers(userId: String): Flow<Result<ApproverDTO.GetPrevApproversResponse>> = flow {
         val response = service.getPrevApprovers(
             userId = userId
         )

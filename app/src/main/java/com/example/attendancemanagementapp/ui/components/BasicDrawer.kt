@@ -126,7 +126,7 @@ fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (
                         NavigationDrawerItem(
                             label = { Text("출장 신청") },
                             selected = false,
-                            onClick = { /* Handle click */ }
+                            onClick = { onItemClick("tripAdd") }
                         )
                     }
 
