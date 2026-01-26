@@ -32,6 +32,7 @@ import com.example.attendancemanagementapp.ui.asset.card.usage.CardUsageScreen
 import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
 import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddScreen
 import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddState
+import com.example.attendancemanagementapp.ui.attendance.trip.status.TripStatusScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddScreen
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailScreen
@@ -190,7 +191,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
                 composable("cardManage") { CardManageScreen(navController, cardViewModel) } // 카드정보 관리 화면
                 composable("cardUsage") { CardUsageScreen(navController, cardViewModel) }   // 카드 사용현황 화면
 
-                composable("tripAdd") { TripAddScreen(navController, tripViewModel) }   // 출장 신청 화면
+                composable("tripAdd") { TripAddScreen(navController, tripViewModel) }       // 출장 신청 화면
+                composable("tripStatus") { TripStatusScreen(navController, tripViewModel) } // 출장 현황 화면
             }
         }
     }

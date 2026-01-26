@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.attendancemanagementapp.data.dto.TripDTO
+import com.example.attendancemanagementapp.data.param.TripsQuery
 import com.example.attendancemanagementapp.data.repository.CarRepository
 import com.example.attendancemanagementapp.data.repository.CardRepository
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
@@ -18,6 +19,9 @@ import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddEvent
 import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddReducer
 import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddState
 import com.example.attendancemanagementapp.ui.attendance.trip.add.TripSearchField
+import com.example.attendancemanagementapp.ui.attendance.trip.status.TripStatusEvent
+import com.example.attendancemanagementapp.ui.attendance.trip.status.TripStatusReducer
+import com.example.attendancemanagementapp.ui.attendance.trip.status.TripStatusState
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationTarget
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddEvent
@@ -32,6 +36,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.io.path.Path
 
 enum class TripTarget {
     ADD, EDIT
@@ -48,6 +53,8 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
 
     private val _tripAddState = MutableStateFlow(TripAddState())
     val tripAddState = _tripAddState.asStateFlow()
+    private val _tripStatusState = MutableStateFlow(TripStatusState())
+    val tripStatusState = _tripStatusState.asStateFlow()
 
     fun onAddEvent(e: TripAddEvent) {
         _tripAddState.update { TripAddReducer.reduce(it, e) }
@@ -81,6 +88,71 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
             TripAddEvent.ClickedAdd -> addTrip()
             TripAddEvent.ClickedGetPrevApprover -> getPrevApprovers(TripTarget.ADD)
             else -> Unit
+        }
+    }
+
+    fun onStatusEvent(e: TripStatusEvent) {
+        _tripStatusState.update { TripStatusReducer.reduce(it, e) }
+
+        when (e) {
+            TripStatusEvent.Init -> getTrips(isInit = true)
+            is TripStatusEvent.SelectedYearWith -> getTrips()
+            is TripStatusEvent.SelectedFilterWith -> getTrips()
+            is TripStatusEvent.ClickedTripWith -> {
+                getTrip(e.id)
+                _uiEffect.tryEmit(UiEffect.Navigate("tripDetail"))
+            }
+            TripStatusEvent.LoadNextPage -> getTrips()
+            else -> Unit
+        }
+    }
+
+    /* 출장 현황 목록 조회 */
+    fun getTrips(isInit: Boolean = false) {
+        val state = tripStatusState.value
+
+        _tripStatusState.update { it.copy(paginationState = it.paginationState.copy(isLoading = true)) }
+
+        viewModelScope.launch {
+            tripRepository.getTrips(
+                query = state.query.copy(filter = if (state.query.filter == "전체") "" else state.query.filter),
+                page = state.paginationState.currentPage
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedTrips = if (isFirstPage) data.trips else state.tripStatusInfo.trips + data.trips
+                        val updatedTripStatus = data.copy(trips = updatedTrips)
+
+                        if (isInit) {
+                            _tripStatusState.update { it.copy(
+                                tripStatusInfo = updatedTripStatus,
+                                paginationState = it.paginationState.copy(
+                                    currentPage = it.paginationState.currentPage + 1,
+                                    totalPage = data.pageInfo.totalPages,
+                                    isLoading = false
+                                )
+                            ) }
+                        } else {
+                            _tripStatusState.update { it.copy(
+                                tripStatusInfo = updatedTripStatus,
+                                paginationState = it.paginationState.copy(
+                                    currentPage = it.paginationState.currentPage + 1,
+                                    totalPage = data.pageInfo.totalPages,
+                                    isLoading = false
+                                )
+                            ) }
+                        }
+
+                        Log.d(TAG, "[getTrips] 출장 현황 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.pageInfo.totalPages}, 검색(${state.query.year}년차, ${state.query.filter})\n${data}")
+                    }
+                    .onFailure { e ->
+                        _tripStatusState.update { it.copy(paginationState = it.paginationState.copy(isLoading = false)) }
+
+                        ErrorHandler.handle(e, TAG, "getTrips")
+                    }
+            }
         }
     }
 
@@ -136,6 +208,26 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "getTrip")
+                    }
+            }
+        }
+    }
+
+    /* 출장 품의서 수정 */
+    fun updateTrip(id: String, request: TripDTO.UpdateTripRequest) {
+        viewModelScope.launch {
+            tripRepository.updateTrip(
+                id = id,
+                request = request
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+
+
+                        Log.d(TAG, "[updateTrip] 출장 품의서 수정 성공\n${data}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "updateTrip")
                     }
             }
         }
