@@ -13,13 +13,21 @@ object VacationStatusReducer {
         state: VacationStatusState,
         type: VacationsSearchType
     ): VacationStatusState {
-        return state.copy(vacationStatusInfo = state.vacationStatusInfo.copy(vacations = emptyList()), query = state.query.copy(filter = type))
+        return state.copy(
+            vacationStatusInfo = state.vacationStatusInfo.copy(vacations = emptyList()),
+            query = state.query.copy(filter = type),
+            paginationState = state.paginationState.copy(currentPage = 0)
+        )
     }
 
     private fun handleSelectedYearWith(
         state: VacationStatusState,
-        year: Int
+        year: Int?
     ): VacationStatusState {
-        return state.copy(vacationStatusInfo = state.vacationStatusInfo.copy(vacations = emptyList()), query = state.query.copy(year = year))
+        return state.copy(
+            vacationStatusInfo = state.vacationStatusInfo.copy(vacations = emptyList()),
+            query = state.query.copy(year = year),
+            paginationState = state.paginationState.copy(currentPage = 0)
+        )
     }
 }

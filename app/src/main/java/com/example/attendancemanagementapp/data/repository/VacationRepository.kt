@@ -86,7 +86,7 @@ class VacationRepository @Inject constructor(private val service: VacationServic
     fun getVacations(userId: String, query: VacationsQuery, page: Int): Flow<Result<VacationDTO.GetVacationsResponse>> = flow {
         val response = service.getVacations(
             userId = userId,
-            year = if (query.year == 0) null else query.year,
+            year = query.year,
             filter =  query.filter.toKey(),
             page = page
         )

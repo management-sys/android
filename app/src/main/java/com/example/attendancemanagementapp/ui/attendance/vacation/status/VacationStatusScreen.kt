@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Card
@@ -39,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.VacationDTO
 import com.example.attendancemanagementapp.data.param.VacationsSearchType
+import com.example.attendancemanagementapp.ui.attendance.trip.status.TripStatusEvent
 import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
 import com.example.attendancemanagementapp.ui.components.BasicOutlinedTextField
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -66,6 +69,7 @@ import com.example.attendancemanagementapp.ui.theme.TextGray
 import com.example.attendancemanagementapp.ui.theme.Vacation_Orange
 import com.example.attendancemanagementapp.ui.theme.Vacation_PurPle
 import com.example.attendancemanagementapp.util.rememberOnce
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 휴가 현황 화면 */
 @Composable
@@ -103,8 +107,22 @@ fun VacationStatusScreen(navController: NavController, vacationViewModel: Vacati
 /* 휴가 목록 바텀 시트 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun VacationsBottomSheet(vacations: List<VacationDTO.VacationsInfo>, onEvent: (VacationStatusEvent) -> Unit, onDismiss: () -> Unit) {
+private fun VacationsBottomSheet(vacationStatusState: VacationStatusState, onEvent: (VacationStatusEvent) -> Unit, onDismiss: () -> Unit) {
     val sheetState = rememberModalBottomSheetState()
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val lastVisibleIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
+        }.distinctUntilChanged().collect { shouldLoad ->
+            if (shouldLoad && !vacationStatusState.paginationState.isLoading && vacationStatusState.paginationState.currentPage < vacationStatusState.paginationState.totalPage) {
+                onEvent(VacationStatusEvent.LoadNextPage)
+            }
+        }
+    }
 
     ModalBottomSheet(
         modifier = Modifier.fillMaxHeight(),
@@ -118,7 +136,7 @@ private fun VacationsBottomSheet(vacations: List<VacationDTO.VacationsInfo>, onE
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            if (vacations.isEmpty()) {
+            if (vacationStatusState.vacationStatusInfo.vacations.isEmpty()) {
                 item {
                     Text(
                         text = "조회된 결과가 없습니다",
@@ -127,7 +145,7 @@ private fun VacationsBottomSheet(vacations: List<VacationDTO.VacationsInfo>, onE
                     )
                 }
             } else {
-                items(vacations) { vacationInfo ->
+                items(vacationStatusState.vacationStatusInfo.vacations) { vacationInfo ->
                     VacationInfoItem(
                         vacationInfo = vacationInfo,
                         onClick = {
@@ -211,7 +229,7 @@ private fun VacationStatusCard(vacationStatusState: VacationStatusState, onEvent
 
     if (openSheet) {
         VacationsBottomSheet(
-            vacations = vacationStatusState.vacationStatusInfo.vacations,
+            vacationStatusState = vacationStatusState,
             onEvent = onEvent,
             onDismiss = { openSheet = false }
         )
@@ -228,9 +246,9 @@ private fun VacationStatusCard(vacationStatusState: VacationStatusState, onEvent
         ) {
             DropDownField(
                 modifier = Modifier,
-                options = vacationStatusState.vacationStatusInfo.years.map { "${it.year}년차" },
-                selected = "${vacationStatusState.query.year}년차",
-                onSelected = { onEvent(VacationStatusEvent.SelectedYearWith(it.dropLast(2).toInt())) }
+                options = listOf("전체") + vacationStatusState.vacationStatusInfo.years.map { "${it.year}년차" },
+                selected = if (vacationStatusState.query.year == null) "전체" else "${vacationStatusState.query.year}년차",
+                onSelected = { onEvent(VacationStatusEvent.SelectedYearWith(if (it == "전체") null else it.dropLast(2).toInt())) }
             )
 
             Row(
@@ -240,7 +258,7 @@ private fun VacationStatusCard(vacationStatusState: VacationStatusState, onEvent
             ) {
                 BasicOutlinedTextField(
                     modifier = Modifier.weight(1f),
-                    value = if (vacationStatusState.vacationStatusInfo.years.isEmpty()) "" else vacationStatusState.vacationStatusInfo.years[vacationStatusState.query.year].startDate,
+                    value = if (vacationStatusState.vacationStatusInfo.years.isEmpty()) "" else vacationStatusState.vacationStatusInfo.years[vacationStatusState.query.year ?: 0].startDate,
                     enabled = false,
                     onValueChange = {}
                 )
@@ -252,7 +270,7 @@ private fun VacationStatusCard(vacationStatusState: VacationStatusState, onEvent
 
                 BasicOutlinedTextField(
                     modifier = Modifier.weight(1f),
-                    value = if (vacationStatusState.vacationStatusInfo.years.isEmpty()) "" else vacationStatusState.vacationStatusInfo.years[vacationStatusState.query.year].endDate,
+                    value = if (vacationStatusState.vacationStatusInfo.years.isEmpty()) "" else vacationStatusState.vacationStatusInfo.years[vacationStatusState.query.year ?: 0].endDate,
                     enabled = false,
                     onValueChange = {}
                 )

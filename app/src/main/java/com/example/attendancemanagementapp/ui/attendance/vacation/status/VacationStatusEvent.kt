@@ -1,6 +1,7 @@
 package com.example.attendancemanagementapp.ui.attendance.vacation.status
 
 import com.example.attendancemanagementapp.data.param.VacationsSearchType
+import com.example.attendancemanagementapp.ui.attendance.trip.status.TripStatusEvent
 
 sealed interface VacationStatusEvent {
     // 초기화
@@ -18,6 +19,9 @@ sealed interface VacationStatusEvent {
 
     // 연차 선택 이벤트
     data class SelectedYearWith(
-        val year: Int
+        val year: Int?
     ): VacationStatusEvent
+
+    /* 다음 페이지 조회 이벤트 */
+    data object LoadNextPage: VacationStatusEvent
 }

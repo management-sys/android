@@ -9,6 +9,7 @@ import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.data.repository.VacationRepository
 import com.example.attendancemanagementapp.retrofit.param.SearchType
+import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddEvent
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddReducer
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddState
@@ -116,6 +117,7 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
             }
             is VacationStatusEvent.ClickedVacationTypeWith -> getVacations()
             is VacationStatusEvent.SelectedYearWith -> getVacations()
+            VacationStatusEvent.LoadNextPage -> getVacations()
             else -> Unit
         }
     }
@@ -260,6 +262,10 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
 
     /* 휴가 현황 목록 조회 */
     fun getVacations(isInit: Boolean = false) {
+        val state = vacationStatusState.value
+
+        _vacationStatusState.update { it.copy(paginationState = it.paginationState.copy(isLoading = true)) }
+
         viewModelScope.launch {
             vacationRepository.getVacations(
                 userId = userId,
@@ -268,15 +274,36 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
             ).collect { result ->
                 result
                     .onSuccess { data ->
+                        val isFirstPage = state.paginationState.currentPage == 0
+
+                        val updatedVacations = if (isFirstPage) data.vacations else state.vacationStatusInfo.vacations + data.vacations
+                        val updatedVacationStatus = data.copy(vacations = updatedVacations)
+
                         if (isInit) {
-                            _vacationStatusState.update { it.copy(vacationStatusInfo = data, query = it.query.copy(year = data.years.size - 1)) }
+                            _vacationStatusState.update { it.copy(
+                                vacationStatusInfo = updatedVacationStatus,
+                                paginationState = it.paginationState.copy(
+                                    currentPage = it.paginationState.currentPage + 1,
+                                    totalPage = data.pageInfo.totalPages,
+                                    isLoading = false
+                                )
+                            ) }
                         } else {
-                            _vacationStatusState.update { it.copy(vacationStatusInfo = data) }
+                            _vacationStatusState.update { it.copy(
+                                vacationStatusInfo = updatedVacationStatus,
+                                paginationState = it.paginationState.copy(
+                                    currentPage = it.paginationState.currentPage + 1,
+                                    totalPage = data.pageInfo.totalPages,
+                                    isLoading = false
+                                )
+                            ) }
                         }
 
-                        Log.d(TAG, "[getVacations] 휴가 현황 목록 조회 성공\n${data}")
+                        Log.d(TAG, "[getVacations] 휴가 현황 목록 조회 성공: ${state.paginationState.currentPage + 1}/${data.pageInfo.totalPages}, 검색(${state.query.year}년차, ${state.query.filter.name})\n${data}")
                     }
                     .onFailure { e ->
+                        _vacationStatusState.update { it.copy(paginationState = it.paginationState.copy(isLoading = false)) }
+
                         ErrorHandler.handle(e, TAG, "getVacations")
                     }
             }

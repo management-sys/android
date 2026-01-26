@@ -4,7 +4,7 @@ import com.example.attendancemanagementapp.data.param.ProjectStatusSearchType.AL
 
 /* 휴가 현황 목록 조회에서 사용하는 쿼리 데이터 */
 data class VacationsQuery(
-    val year: Int = 0,
+    val year: Int? = null,
     val filter: VacationsSearchType = VacationsSearchType.TOTAL
 )
 
