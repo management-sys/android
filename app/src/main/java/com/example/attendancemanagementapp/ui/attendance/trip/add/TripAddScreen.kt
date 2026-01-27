@@ -340,7 +340,8 @@ private fun AddTripCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> U
             TwoLineBigEditBar(
                 name = "품의내용",
                 value = tripAddState.inputData.content,
-                onValueChange = { onEvent(TripAddEvent.ChangedValueWith(TripAddField.CONTENT, it)) }
+                onValueChange = { onEvent(TripAddEvent.ChangedValueWith(TripAddField.CONTENT, it)) },
+                isRequired = true
             )
         }
     }

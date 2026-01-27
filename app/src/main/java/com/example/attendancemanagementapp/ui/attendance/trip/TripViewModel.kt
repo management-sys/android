@@ -34,6 +34,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 enum class TripTarget {
@@ -95,8 +98,8 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
 
     fun onDetailEvent(e: TripDetailEvent) {
         when (e) {
-            TripDetailEvent.ClickedCancel -> {}
-            TripDetailEvent.ClickedDelete -> {}
+            TripDetailEvent.ClickedCancel -> cancelTrip()
+            TripDetailEvent.ClickedDelete -> deleteTrip()
             TripDetailEvent.ClickedUpdate -> {
                 // 결재(승인/반려) 이전에만 수정 가능
                 if (tripDetailState.value.tripInfo.status == "승인" || tripDetailState.value.tripInfo.status == "반려") {
@@ -309,6 +312,47 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "updateTrip")
+                    }
+            }
+        }
+    }
+
+    /* 출장 신청 삭제 */
+    fun deleteTrip() {
+        viewModelScope.launch {
+            tripRepository.deleteTrip(
+                id = tripDetailState.value.tripInfo.id
+            ).collect { result ->
+                result
+                    .onSuccess {
+                        _uiEffect.emit(UiEffect.ShowToast("출장 신청이 삭제되었습니다"))
+                        _uiEffect.emit(UiEffect.NavigateBack)
+
+                        Log.d(TAG, "[deleteTrip] 출장 신청 삭제 성공")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "deleteTrip")
+                    }
+            }
+        }
+    }
+
+    /* 출장 신청 취소 */
+    fun cancelTrip() {
+        viewModelScope.launch {
+            tripRepository.cancelTrip(
+                id = tripDetailState.value.tripInfo.id
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        _tripDetailState.update { it.copy(tripInfo = data) }
+
+                        _uiEffect.emit(UiEffect.ShowToast("출장 신청이 취소되었습니다"))
+
+                        Log.d(TAG, "[cancelTrip] 출장 신청 취소 성공\n${data}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "cancelTrip")
                     }
             }
         }

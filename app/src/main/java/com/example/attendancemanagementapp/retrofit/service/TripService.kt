@@ -3,6 +3,7 @@ package com.example.attendancemanagementapp.retrofit.service
 import com.example.attendancemanagementapp.data.dto.ApproverDTO
 import com.example.attendancemanagementapp.data.dto.TripDTO
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -36,6 +37,18 @@ interface TripService {
     suspend fun updateTrip(
         @Path("bsrpId") id: String,
         @Body request: TripDTO.UpdateTripRequest
+    ): TripDTO.GetTripResponse
+
+    // 출장 신청 삭제
+    @DELETE("/api/bsrps/{bsrpId}")
+    suspend fun deleteTrip(
+        @Path("bsrpId") id: String
+    )
+
+    // 출장 신청 취소
+    @PUT("/api/bsrps/{bsrpId}/cancel")
+    suspend fun cancelTrip(
+        @Path("bsrpId") id: String
     ): TripDTO.GetTripResponse
 
     // 이전 승인자 불러오기

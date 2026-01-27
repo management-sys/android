@@ -1,10 +1,23 @@
 package com.example.attendancemanagementapp.ui.attendance.trip.status
 
+import com.example.attendancemanagementapp.data.param.TripsQuery
+import com.example.attendancemanagementapp.retrofit.param.PaginationState
+
 object TripStatusReducer {
     fun reduce(s: TripStatusState, e: TripStatusEvent): TripStatusState = when (e) {
+        TripStatusEvent.Init -> handleInit(s)
         is TripStatusEvent.SelectedYearWith -> handleSelectedYear(s, e.year)
         is TripStatusEvent.SelectedFilterWith -> handleSelectedFilter(s, e.filter)
         else -> s
+    }
+
+    private fun handleInit(
+        state: TripStatusState
+    ): TripStatusState {
+        return state.copy(
+            query = TripsQuery(),
+            paginationState = PaginationState()
+        )
     }
 
     private fun handleSelectedYear(

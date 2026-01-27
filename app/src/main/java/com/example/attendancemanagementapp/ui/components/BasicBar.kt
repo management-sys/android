@@ -375,14 +375,23 @@ fun TwoLineBigEditBar(
     name: String,
     value: String,
     onValueChange: (String) -> Unit = {},
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    isRequired: Boolean = false
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         Text(
-            text = name,
+            text = buildAnnotatedString {
+                append(name)
+                if (isRequired) {
+                    append(" ")
+                    withStyle(style = SpanStyle(color = Color.Red)) {
+                        append("*")
+                    }
+                }
+            },
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold
         )
