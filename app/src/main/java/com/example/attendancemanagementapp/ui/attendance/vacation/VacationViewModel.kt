@@ -1,6 +1,5 @@
 package com.example.attendancemanagementapp.ui.attendance.vacation
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +8,6 @@ import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.data.repository.VacationRepository
 import com.example.attendancemanagementapp.retrofit.param.SearchType
-import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddEvent
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddReducer
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddState
@@ -17,10 +15,10 @@ import com.example.attendancemanagementapp.ui.attendance.vacation.detail.Vacatio
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailState
 import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditEvent
 import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditReducer
+import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditState
 import com.example.attendancemanagementapp.ui.attendance.vacation.status.VacationStatusEvent
 import com.example.attendancemanagementapp.ui.attendance.vacation.status.VacationStatusReducer
 import com.example.attendancemanagementapp.ui.attendance.vacation.status.VacationStatusState
-import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditState
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 import com.example.attendancemanagementapp.util.ErrorHandler
@@ -84,7 +82,7 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
         when (e) {
             VacationDetailEvent.ClickedCancel -> cancelVacation()
             VacationDetailEvent.ClickedDelete -> deleteVacation()
-            is VacationDetailEvent.ClickedDownloadWith -> downloadVacationPdf(e.context)
+            VacationDetailEvent.ClickedDownload -> downloadVacationPdf()
             else -> Unit
         }
     }
@@ -320,10 +318,9 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
     }
 
     /* 휴가 신청서 다운로드(PDF) */
-    fun downloadVacationPdf(context: Context) {
+    fun downloadVacationPdf() {
         viewModelScope.launch {
             vacationRepository.downloadVacationPdf(
-                context = context,
                 vacationId = vacationDetailState.value.vacationInfo.id
             ).collect { result ->
                 result

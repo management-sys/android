@@ -61,7 +61,6 @@ fun VacationDetailScreen(navController: NavController, vacationViewModel: Vacati
     val vacationDetailState by vacationViewModel.vacationDetailState.collectAsState()
 
     val focusManager = LocalFocusManager.current    // 포커스 관리
-    val context = LocalContext.current
 
     var openDelete by remember { mutableStateOf(false) }
     var openCancel by remember { mutableStateOf(false) }
@@ -123,7 +122,7 @@ fun VacationDetailScreen(navController: NavController, vacationViewModel: Vacati
                     BasicButton(
                         name = "신청서 다운로드",
                         wrapContent = true,
-                        onClick = { onEvent(VacationDetailEvent.ClickedDownloadWith(context))}
+                        onClick = { onEvent(VacationDetailEvent.ClickedDownload) }
                     )
                 }
 

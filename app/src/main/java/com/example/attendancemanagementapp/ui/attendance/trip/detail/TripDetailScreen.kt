@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.TripDTO
 import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
-import com.example.attendancemanagementapp.ui.attendance.trip.edit.TripEditEvent
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -51,7 +50,6 @@ import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TowLineInfoBar
 import com.example.attendancemanagementapp.ui.theme.LightBlue
 import com.example.attendancemanagementapp.ui.theme.LightGray
-import com.example.attendancemanagementapp.util.formatDateYYYYMMDDHHmm
 import com.example.attendancemanagementapp.util.rememberOnce
 
 /* 출장 상세 화면 */
@@ -123,23 +121,36 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel)
                     BasicButton(
                         name = "품의서 다운로드",
                         wrapContent = true,
-                        onClick = { onEvent(TripDetailEvent.ClickedDownloadWith(context))}
+                        onClick = { onEvent(TripDetailEvent.ClickedDownload) }
                     )
                 }
 
                 Row {
-                    BasicButton(
-                        name = if (tripDetailState.tripInfo.rejection.isNullOrBlank()) "수정" else "재신청",
-                        wrapContent = true,
-                        onClick = { onEvent(TripDetailEvent.ClickedUpdate) }
-                    )
+                    if (tripDetailState.tripInfo.status != "승인") {
+                        BasicButton(
+                            name = if (tripDetailState.tripInfo.rejection.isNullOrBlank()) "수정" else "재신청",
+                            wrapContent = true,
+                            onClick = { onEvent(TripDetailEvent.ClickedUpdate) }
+                        )
 
-                    Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
+                    }
 
                     SubButton(
                         name = "취소",
                         onClick = { openCancel = true }
                     )
+
+                    // 승인되었으면 복명서 작성 버튼 활성화
+                    if (tripDetailState.tripInfo.status == "승인") {
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        BasicButton(
+                            name = "복명서 작성",
+                            wrapContent = true,
+                            onClick = {  }
+                        )
+                    }
                 }
             }
         }

@@ -3,7 +3,6 @@ package com.example.attendancemanagementapp.ui.attendance.trip
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.attendancemanagementapp.data.dto.TripDTO
 import com.example.attendancemanagementapp.data.repository.CarRepository
 import com.example.attendancemanagementapp.data.repository.CardRepository
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
@@ -34,9 +33,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 enum class TripTarget {
@@ -109,7 +105,7 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
                     _uiEffect.tryEmit(UiEffect.Navigate("tripEdit"))
                 }
             }
-            is TripDetailEvent.ClickedDownloadWith -> {}
+            TripDetailEvent.ClickedDownload -> downloadTripPdf()
             else -> Unit
         }
     }
@@ -339,6 +335,18 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
 
     /* 출장 신청 취소 */
     fun cancelTrip() {
+        // 복명서 작성 전까지만 취소 가능
+        if (tripDetailState.value.tripInfo.hasReport == "Y") {
+            _uiEffect.tryEmit(UiEffect.ShowToast("복명서 작성 전에만 취소할 수 있습니다"))
+            return
+        }
+
+        // 이미 취소 상태인 경우 토스트
+        if (tripDetailState.value.tripInfo.status == "C") {
+            _uiEffect.tryEmit(UiEffect.ShowToast("이미 취소 상태입니다"))
+            return
+        }
+
         viewModelScope.launch {
             tripRepository.cancelTrip(
                 id = tripDetailState.value.tripInfo.id
@@ -353,6 +361,25 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "cancelTrip")
+                    }
+            }
+        }
+    }
+
+    /* 출장 품의서 다운로드(PDF) */
+    fun downloadTripPdf() {
+        viewModelScope.launch {
+            tripRepository.downloadTripPdf(
+                id = tripDetailState.value.tripInfo.id
+            ).collect { result ->
+                result
+                    .onSuccess { uri ->
+                        _uiEffect.emit(UiEffect.ShowToast("다운로드가 완료되었습니다"))
+
+                        Log.d(TAG, "[downloadTripPdf] 출장 품의서 다운로드 성공: ${uri}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "downloadTripPdf")
                     }
             }
         }

@@ -56,6 +56,7 @@ object TripDTO {
         @Json(name = "period")      val period: String = "",                            // 출장 기간
         @Json(name = "returnResn")  val rejection: String? = "",                        // 반려사유
         @Json(name = "rgsde")       val appliedDate: String = "",                       // 신청일
+        @Json(name = "rportAt")     val hasReport: String = "",                         // 출장 복명서 등록 여부
         @Json(name = "userId")      val userId: String = "",                            // 사용자 아이디
         @Json(name = "userNm")      val userName: String = "",                          // 이름
         @Json(name = "vhcleList")   val cars: List<CarsInfo> = emptyList(),             // 법인차량 목록

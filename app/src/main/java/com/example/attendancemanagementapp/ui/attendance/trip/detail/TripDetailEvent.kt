@@ -13,7 +13,5 @@ sealed interface TripDetailEvent {
     data object ClickedUpdate: TripDetailEvent
 
     // 품의서 다운로드 버튼 클릭 이벤트
-    data class ClickedDownloadWith(
-        val context: Context
-    ): TripDetailEvent
+    data object ClickedDownload: TripDetailEvent
 }
