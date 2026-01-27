@@ -4,27 +4,26 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.attendancemanagementapp.data.dto.TripDTO
-import com.example.attendancemanagementapp.data.param.TripsQuery
 import com.example.attendancemanagementapp.data.repository.CarRepository
 import com.example.attendancemanagementapp.data.repository.CardRepository
 import com.example.attendancemanagementapp.data.repository.CommonCodeRepository
 import com.example.attendancemanagementapp.data.repository.EmployeeRepository
 import com.example.attendancemanagementapp.data.repository.TripRepository
 import com.example.attendancemanagementapp.retrofit.param.SearchType
-import com.example.attendancemanagementapp.ui.asset.car.CarViewModel
 import com.example.attendancemanagementapp.ui.asset.car.manage.CarManageState
-import com.example.attendancemanagementapp.ui.asset.card.CardViewModel
 import com.example.attendancemanagementapp.ui.asset.card.manage.CardManageState
 import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddEvent
 import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddReducer
 import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddState
 import com.example.attendancemanagementapp.ui.attendance.trip.add.TripSearchField
+import com.example.attendancemanagementapp.ui.attendance.trip.detail.TripDetailEvent
+import com.example.attendancemanagementapp.ui.attendance.trip.detail.TripDetailState
+import com.example.attendancemanagementapp.ui.attendance.trip.edit.TripEditEvent
+import com.example.attendancemanagementapp.ui.attendance.trip.edit.TripEditReducer
+import com.example.attendancemanagementapp.ui.attendance.trip.edit.TripEditState
 import com.example.attendancemanagementapp.ui.attendance.trip.status.TripStatusEvent
 import com.example.attendancemanagementapp.ui.attendance.trip.status.TripStatusReducer
 import com.example.attendancemanagementapp.ui.attendance.trip.status.TripStatusState
-import com.example.attendancemanagementapp.ui.attendance.vacation.VacationTarget
-import com.example.attendancemanagementapp.ui.attendance.vacation.VacationViewModel
-import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddEvent
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 import com.example.attendancemanagementapp.util.ErrorHandler
@@ -36,7 +35,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.io.path.Path
 
 enum class TripTarget {
     ADD, EDIT
@@ -53,6 +51,10 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
 
     private val _tripAddState = MutableStateFlow(TripAddState())
     val tripAddState = _tripAddState.asStateFlow()
+    private val _tripDetailState = MutableStateFlow(TripDetailState())
+    val tripDetailState = _tripDetailState.asStateFlow()
+    private val _tripEditState = MutableStateFlow(TripEditState())
+    val tripEditState = _tripEditState.asStateFlow()
     private val _tripStatusState = MutableStateFlow(TripStatusState())
     val tripStatusState = _tripStatusState.asStateFlow()
 
@@ -87,6 +89,59 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
             TripAddEvent.LoadNextPage -> getEmployees(TripTarget.ADD)
             TripAddEvent.ClickedAdd -> addTrip()
             TripAddEvent.ClickedGetPrevApprover -> getPrevApprovers(TripTarget.ADD)
+            else -> Unit
+        }
+    }
+
+    fun onDetailEvent(e: TripDetailEvent) {
+        when (e) {
+            TripDetailEvent.ClickedCancel -> {}
+            TripDetailEvent.ClickedDelete -> {}
+            TripDetailEvent.ClickedUpdate -> {
+                // 결재(승인/반려) 이전에만 수정 가능
+                if (tripDetailState.value.tripInfo.status == "승인" || tripDetailState.value.tripInfo.status == "반려") {
+                    _uiEffect.tryEmit(UiEffect.ShowToast("결재 이전에만 수정 가능합니다"))
+                } else {
+                    onEditEvent(TripEditEvent.InitWith(tripDetailState.value.tripInfo))
+                    _uiEffect.tryEmit(UiEffect.Navigate("tripEdit"))
+                }
+            }
+            is TripDetailEvent.ClickedDownloadWith -> {}
+            else -> Unit
+        }
+    }
+
+    fun onEditEvent(e: TripEditEvent) {
+        _tripEditState.update { TripEditReducer.reduce(it, e) }
+
+        when (e) {
+            is TripEditEvent.InitWith -> {
+                getTripType(TripTarget.EDIT)
+                getEmployees(TripTarget.EDIT)
+                getCards(TripTarget.EDIT)
+                getCars(TripTarget.EDIT)
+            }
+            is TripEditEvent.ClickedSearch -> {
+                when (e.field) {
+                    TripSearchField.APPROVER -> getEmployees(TripTarget.EDIT)
+                    TripSearchField.ATTENDEE -> getEmployees(TripTarget.EDIT)
+                    TripSearchField.CARD -> getCards(TripTarget.EDIT)
+                    TripSearchField.CAR -> getCars(TripTarget.EDIT)
+                    TripSearchField.DRIVER -> getEmployees(TripTarget.EDIT)
+                }
+            }
+            is TripEditEvent.ClickedSearchInit -> {
+                when (e.field) {
+                    TripSearchField.APPROVER -> getEmployees(TripTarget.EDIT)
+                    TripSearchField.ATTENDEE -> getEmployees(TripTarget.EDIT)
+                    TripSearchField.CARD -> getCards(TripTarget.EDIT)
+                    TripSearchField.CAR -> getCars(TripTarget.EDIT)
+                    TripSearchField.DRIVER -> getEmployees(TripTarget.EDIT)
+                }
+            }
+            TripEditEvent.LoadNextPage -> getEmployees(TripTarget.EDIT)
+            TripEditEvent.ClickedUpdate -> updateTrip()
+            TripEditEvent.ClickedGetPrevApprover -> getPrevApprovers(TripTarget.EDIT)
             else -> Unit
         }
     }
@@ -202,7 +257,7 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
             ).collect { result ->
                 result
                     .onSuccess { data ->
-//                        _vacationDetailState.update { it.copy(vacationInfo = data) }
+                        _tripDetailState.update { it.copy(tripInfo = data) }
 
                         Log.d(TAG, "[getTrip] 출장 현황 상세 조회 성공\n${data}")
                     }
@@ -214,15 +269,41 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
     }
 
     /* 출장 품의서 수정 */
-    fun updateTrip(id: String, request: TripDTO.UpdateTripRequest) {
+    fun updateTrip() {
+        // 결재(승인/반려) 이전에만 수정 가능
+        if (tripDetailState.value.tripInfo.status == "승인" || tripDetailState.value.tripInfo.status == "반려") {
+            return
+        }
+
+        val state = tripEditState.value
+        val request = state.inputData.copy(
+            startDate = state.inputData.startDate.take(16),
+            endDate = state.inputData.endDate.take(16),
+            cardUsages = state.inputData.cardUsages.map { card ->
+                card.copy(
+                    startDate = card.startDate.take(16),
+                    endDate = card.endDate.take(16)
+                )
+            },
+            carUsages = state.inputData.carUsages.map { car ->
+                car.copy(
+                    startDate = car.startDate.take(16),
+                    endDate = car.endDate.take(16)
+                )
+            }
+        )
+
         viewModelScope.launch {
             tripRepository.updateTrip(
-                id = id,
+                id = state.tripId,
                 request = request
             ).collect { result ->
                 result
                     .onSuccess { data ->
+                        _tripDetailState.update { it.copy(tripInfo = data) }
 
+                        _uiEffect.emit(UiEffect.ShowToast("수정이 완료되었습니다"))
+                        _uiEffect.emit(UiEffect.NavigateBack)
 
                         Log.d(TAG, "[updateTrip] 출장 품의서 수정 성공\n${data}")
                     }
@@ -243,7 +324,7 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
 
                         when(target) {
                             TripTarget.ADD -> _tripAddState.update { it.copy(it.inputData.copy(approverIds = newApproverIds)) }
-                            TripTarget.EDIT -> _tripAddState.update { it.copy(it.inputData.copy(approverIds = newApproverIds)) }
+                            TripTarget.EDIT -> _tripEditState.update { it.copy(it.inputData.copy(approverIds = newApproverIds)) }
                         }
 
                         _uiEffect.emit(UiEffect.ShowToast("이전 승인자를 불러왔습니다"))
@@ -261,13 +342,13 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
     fun getCars(target: TripTarget) {
         val state = when (target) {
             TripTarget.ADD -> tripAddState.value.carState
-            TripTarget.EDIT -> tripAddState.value.carState
+            TripTarget.EDIT -> tripEditState.value.carState
         }
 
         val updateState: (CarManageState) -> Unit = { newState ->
             when (target) {
                 TripTarget.ADD -> _tripAddState.update { it.copy(carState = newState) }
-                TripTarget.EDIT -> _tripAddState.update { it.copy(carState = newState) }
+                TripTarget.EDIT -> _tripEditState.update { it.copy(carState = newState) }
             }
         }
 
@@ -293,13 +374,13 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
     fun getCards(target: TripTarget) {
         val state = when (target) {
             TripTarget.ADD -> tripAddState.value.cardState
-            TripTarget.EDIT -> tripAddState.value.cardState
+            TripTarget.EDIT -> tripEditState.value.cardState
         }
 
         val updateState: (CardManageState) -> Unit = { newState ->
             when (target) {
                 TripTarget.ADD -> _tripAddState.update { it.copy(cardState = newState) }
-                TripTarget.EDIT -> _tripAddState.update { it.copy(cardState = newState) }
+                TripTarget.EDIT -> _tripEditState.update { it.copy(cardState = newState) }
             }
         }
 
@@ -325,13 +406,13 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
     fun getEmployees(target: TripTarget) {
         val state = when (target) {
             TripTarget.ADD -> tripAddState.value.employeeState
-            TripTarget.EDIT -> tripAddState.value.employeeState
+            TripTarget.EDIT -> tripEditState.value.employeeState
         }
 
         val updateState: (EmployeeSearchState) -> Unit = { newState ->
             when (target) {
                 TripTarget.ADD -> _tripAddState.update { it.copy(employeeState = newState) }
-                TripTarget.EDIT -> _tripAddState.update { it.copy(employeeState = newState) }
+                TripTarget.EDIT -> _tripEditState.update { it.copy(employeeState = newState) }
             }
         }
 
@@ -385,7 +466,7 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
 
                         when (target) {
                             TripTarget.ADD -> _tripAddState.update { it.copy(tripTypeNames = tripTypeNames) }
-                            TripTarget.EDIT -> _tripAddState.update { it.copy(tripTypeNames = tripTypeNames) }
+                            TripTarget.EDIT -> _tripEditState.update { it.copy(tripTypeNames = tripTypeNames) }
                         }
 
                         Log.d(TAG, "[getTripType-${target}] 출장 종류 목록 조회 성공\n${tripTypeNames}")

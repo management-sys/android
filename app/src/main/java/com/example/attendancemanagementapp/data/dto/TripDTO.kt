@@ -54,7 +54,7 @@ object TripDTO {
         @Json(name = "endde")       val endDate: String = "",                           // 출장 종료일시
         @Json(name = "nmprList")    val attendees: List<AttendeesInfo> = emptyList(),   // 동행자 목록
         @Json(name = "period")      val period: String = "",                            // 출장 기간
-        @Json(name = "returnResn")  val rejection: String = "",                         // 반려사유
+        @Json(name = "returnResn")  val rejection: String? = "",                        // 반려사유
         @Json(name = "rgsde")       val appliedDate: String = "",                       // 신청일
         @Json(name = "userId")      val userId: String = "",                            // 사용자 아이디
         @Json(name = "userNm")      val userName: String = "",                          // 이름
@@ -63,8 +63,14 @@ object TripDTO {
 
     /* 법인카드 목록 데이터 */
     data class CardsInfo(
-        @Json(name = "id")      val id: String,     // 아이디
-        @Json(name = "name")    val name: String    // 이름
+        @Json(name = "beginHour")   val startHour: String = "", // 시작 시
+        @Json(name = "beginMnt")    val startMin: String = "",  // 시작 분
+        @Json(name = "bgnde")       val startDate: String = "", // 시작일시
+        @Json(name = "endHour")     val endHour: String = "",   // 종료 시
+        @Json(name = "endMnt")      val endMin: String = "",    // 종료 분
+        @Json(name = "endde")       val endDate: String = "",   // 종료일시
+        @Json(name = "id")          val id: String,             // 아이디
+        @Json(name = "name")        val name: String            // 이름
     )
 
     /* 동행자 목록 데이터 */
@@ -75,8 +81,16 @@ object TripDTO {
 
     /* 법인차량 목록 데이터 */
     data class CarsInfo(
-        @Json(name = "id")      val id: String,     // 아이디
-        @Json(name = "name")    val name: String    // 이름
+        @Json(name = "beginHour")   val startHour: String = "", // 시작 시
+        @Json(name = "beginMnt")    val startMin: String = "",  // 시작 분
+        @Json(name = "bgnde")       val startDate: String = "", // 시작일시
+        @Json(name = "driverId")    val driverId: String = "",  // 운전자 아이디
+        @Json(name = "driverNm")    val driverNm: String = "",  // 운전자 이름
+        @Json(name = "endHour")     val endHour: String = "",   // 종료 시
+        @Json(name = "endMnt")      val endMin: String = "",    // 종료 분
+        @Json(name = "endde")       val endDate: String = "",   // 종료일시
+        @Json(name = "id")          val id: String = "",        // 아이디
+        @Json(name = "name")        val name: String = ""       // 이름
     )
 
     /* 출장 현황 목록 조회 응답 */

@@ -1,9 +1,7 @@
-package com.example.attendancemanagementapp.ui.attendance.trip.add
+package com.example.attendancemanagementapp.ui.attendance.trip.edit
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,9 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -34,7 +30,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -49,7 +44,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -57,24 +51,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.attendancemanagementapp.data.dto.CarDTO
-import com.example.attendancemanagementapp.data.dto.CardDTO
 import com.example.attendancemanagementapp.data.dto.TripDTO
 import com.example.attendancemanagementapp.ui.asset.car.edit.ManagerInfoItem
 import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
+import com.example.attendancemanagementapp.ui.attendance.trip.add.CarListItem
+import com.example.attendancemanagementapp.ui.attendance.trip.add.CardListItem
+import com.example.attendancemanagementapp.ui.attendance.trip.add.CardUsageItem
+import com.example.attendancemanagementapp.ui.attendance.trip.add.StartEndDateTimeEditItem
+import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddField
+import com.example.attendancemanagementapp.ui.attendance.trip.add.TripSearchField
 import com.example.attendancemanagementapp.ui.components.BasicButton
-import com.example.attendancemanagementapp.ui.components.BasicCheckbox
-import com.example.attendancemanagementapp.ui.components.BasicDatePickerDialog
 import com.example.attendancemanagementapp.ui.components.BasicOutlinedTextField
-import com.example.attendancemanagementapp.ui.components.BasicOutlinedTextFieldColors
-import com.example.attendancemanagementapp.ui.components.BasicTimePickerDialog
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.DropDownField
 import com.example.attendancemanagementapp.ui.components.SubButton
@@ -88,8 +79,6 @@ import com.example.attendancemanagementapp.ui.project.add.EmployeeItem
 import com.example.attendancemanagementapp.ui.theme.BackgroundColor
 import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.ui.theme.TextGray
-import com.example.attendancemanagementapp.util.formatDateYY
-import com.example.attendancemanagementapp.util.formatTime
 import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -97,11 +86,11 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-/* 출장 신청 화면 */
+/* 출장 수정 화면 */
 @Composable
-fun TripAddScreen(navController: NavController,  tripViewModel: TripViewModel) {
-    val onEvent = tripViewModel::onAddEvent
-    val tripAddState by tripViewModel.tripAddState.collectAsState()
+fun TripEditScreen(navController: NavController, tripViewModel: TripViewModel) {
+    val onEvent = tripViewModel::onEditEvent
+    val tripEditState by tripViewModel.tripEditState.collectAsState()
 
     val focusManager = LocalFocusManager.current    // 포커스 관리
 
@@ -109,15 +98,11 @@ fun TripAddScreen(navController: NavController,  tripViewModel: TripViewModel) {
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        onEvent(TripAddEvent.Init)
-    }
-
     Scaffold(
         modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
-                title = "출장 신청",
+                title = "출장품의서 수정",
                 onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         }
@@ -163,8 +148,8 @@ fun TripAddScreen(navController: NavController,  tripViewModel: TripViewModel) {
                     ) {
                         when (page) {
                             0 -> {  // 기본 정보
-                                AddTripCard(
-                                    tripAddState = tripAddState,
+                                EditTripCard(
+                                    tripEditState = tripEditState,
                                     onEvent = onEvent
                                 )
 
@@ -175,7 +160,7 @@ fun TripAddScreen(navController: NavController,  tripViewModel: TripViewModel) {
                                     SubButton(
                                         name = "이전 승인자 불러오기",
                                         wrapContent = true,
-                                        onClick = { onEvent(TripAddEvent.ClickedGetPrevApprover) }
+                                        onClick = { onEvent(TripEditEvent.ClickedGetPrevApprover) }
                                     )
 
                                     BasicButton(
@@ -185,8 +170,8 @@ fun TripAddScreen(navController: NavController,  tripViewModel: TripViewModel) {
                                 }
                             }
                             1 -> {  // 카드 정보
-                                AddCardCard(
-                                    tripAddState = tripAddState,
+                                EditCardCard(
+                                    tripEditState = tripEditState,
                                     onEvent = onEvent
                                 )
 
@@ -206,8 +191,8 @@ fun TripAddScreen(navController: NavController,  tripViewModel: TripViewModel) {
                                 }
                             }
                             2 -> {  // 차량 정보
-                                AddCarCard(
-                                    tripAddState = tripAddState,
+                                EditCarCard(
+                                    tripEditState = tripEditState,
                                     onEvent = onEvent
                                 )
 
@@ -222,7 +207,7 @@ fun TripAddScreen(navController: NavController,  tripViewModel: TripViewModel) {
 
                                     BasicButton(
                                         name = "저장",
-                                        onClick = { onEvent(TripAddEvent.ClickedAdd) }
+                                        onClick = { onEvent(TripEditEvent.ClickedUpdate) }
                                     )
                                 }
                             }
@@ -236,29 +221,29 @@ fun TripAddScreen(navController: NavController,  tripViewModel: TripViewModel) {
 
 /* 출장 신청 수정 카드 */
 @Composable
-private fun AddTripCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> Unit) {
+private fun EditTripCard(tripEditState: TripEditState, onEvent: (TripEditEvent) -> Unit) {
     var openSheet by remember { mutableStateOf("") } // 바텀 시트
 
     if (openSheet.isNotBlank()) {
         when (openSheet) {
             "Attendee" -> {
                 AttendeeApproverBottomSheet(
-                    tripAddState = tripAddState,
+                    tripEditState = tripEditState,
                     field = TripSearchField.ATTENDEE,
                     onEvent = onEvent,
                     onDismiss = {
-                        onEvent(TripAddEvent.ClickedSearchInit(TripSearchField.ATTENDEE))
+                        onEvent(TripEditEvent.ClickedSearchInit(TripSearchField.ATTENDEE))
                         openSheet = ""
                     }
                 )
             }
             "Approver" -> {
                 AttendeeApproverBottomSheet(
-                    tripAddState = tripAddState,
+                    tripEditState = tripEditState,
                     field = TripSearchField.APPROVER,
                     onEvent = onEvent,
                     onDismiss = {
-                        onEvent(TripAddEvent.ClickedSearchInit(TripSearchField.APPROVER))
+                        onEvent(TripEditEvent.ClickedSearchInit(TripSearchField.APPROVER))
                         openSheet = ""
                     }
                 )
@@ -266,11 +251,11 @@ private fun AddTripCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> U
         }
     }
 
-    val dates = if (tripAddState.inputData.startDate == "" || tripAddState.inputData.endDate == "") "0" else {
+    val dates = if (tripEditState.inputData.startDate == "" || tripEditState.inputData.endDate == "") "0" else {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
 
-        val startDate = LocalDateTime.parse(tripAddState.inputData.startDate, formatter).toLocalDate()
-        val endDate = LocalDateTime.parse(tripAddState.inputData.endDate, formatter).toLocalDate()
+        val startDate = LocalDateTime.parse(tripEditState.inputData.startDate, formatter).toLocalDate()
+        val endDate = LocalDateTime.parse(tripEditState.inputData.endDate, formatter).toLocalDate()
 
         (ChronoUnit.DAYS.between(startDate, endDate) + 1).toString()
     }
@@ -287,30 +272,30 @@ private fun AddTripCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> U
             TwoLineDropdownEditBar(
                 name = "출장구분",
                 isRequired = true,
-                options = tripAddState.tripTypeNames,
-                selected = tripAddState.inputData.type,
-                onSelected = { onEvent(TripAddEvent.SelectedTypeWith(it)) }
+                options = tripEditState.tripTypeNames,
+                selected = tripEditState.inputData.type,
+                onSelected = { onEvent(TripEditEvent.SelectedTypeWith(it)) }
             )
 
             TwoLineEditBar(
                 name = "출장지",
                 isRequired = true,
-                value = tripAddState.inputData.place,
-                onValueChange = { onEvent(TripAddEvent.ChangedValueWith(TripAddField.PLACE, it)) }
+                value = tripEditState.inputData.place,
+                onValueChange = { onEvent(TripEditEvent.ChangedValueWith(TripAddField.PLACE, it)) }
             )
 
             TwoLineEditBar(
                 name = "출장목적",
                 isRequired = true,
-                value = tripAddState.inputData.purpose,
-                onValueChange = { onEvent(TripAddEvent.ChangedValueWith(TripAddField.PURPOSE, it)) }
+                value = tripEditState.inputData.purpose,
+                onValueChange = { onEvent(TripEditEvent.ChangedValueWith(TripAddField.PURPOSE, it)) }
             )
 
             StartEndDateTimeEditItem(
-                startDateTime = tripAddState.inputData.startDate,
-                endDateTime = tripAddState.inputData.endDate,
-                onStartChanged = { onEvent(TripAddEvent.ChangedValueWith(TripAddField.START, it)) },
-                onEndChanged = { onEvent(TripAddEvent.ChangedValueWith(TripAddField.END, it)) }
+                startDateTime = tripEditState.inputData.startDate,
+                endDateTime = tripEditState.inputData.endDate,
+                onStartChanged = { onEvent(TripEditEvent.ChangedValueWith(TripAddField.START, it)) },
+                onEndChanged = { onEvent(TripEditEvent.ChangedValueWith(TripAddField.END, it)) }
             )
 
             TwoLineEditBar(
@@ -322,16 +307,16 @@ private fun AddTripCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> U
 
             TwoLineSearchEditBar(
                 name = "동행자",
-                value = tripAddState.employeeState.employees
-                    .filter { it.userId in tripAddState.inputData.attendeeIds }
+                value = tripEditState.employeeState.employees
+                    .filter { it.userId in tripEditState.inputData.attendeeIds }
                     .joinToString(", ") { it.name },
                 onClick = { openSheet = "Attendee" }
             )
 
             TwoLineSearchEditBar(
                 name = "승인자",
-                value = tripAddState.employeeState.employees
-                    .filter { it.userId in tripAddState.inputData.approverIds }
+                value = tripEditState.employeeState.employees
+                    .filter { it.userId in tripEditState.inputData.approverIds }
                     .joinToString(", ") { it.name },
                 onClick = { openSheet = "Approver" },
                 isRequired = true
@@ -339,198 +324,9 @@ private fun AddTripCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> U
 
             TwoLineBigEditBar(
                 name = "품의내용",
-                value = tripAddState.inputData.content,
-                onValueChange = { onEvent(TripAddEvent.ChangedValueWith(TripAddField.CONTENT, it)) }
+                value = tripEditState.inputData.content,
+                onValueChange = { onEvent(TripEditEvent.ChangedValueWith(TripAddField.CONTENT, it)) }
             )
-        }
-    }
-}
-
-/* 일시 수정 아이템 */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun StartEndDateTimeEditItem(
-    startDateTime: String,
-    endDateTime: String,
-    onStartChanged: (String) -> Unit,
-    onEndChanged: (String) -> Unit
-) {
-    var openStartDate by rememberSaveable { mutableStateOf(false) }
-    var openEndDate by rememberSaveable { mutableStateOf(false) }
-    var openStartTime by rememberSaveable { mutableStateOf(false) }
-    var openEndTime by rememberSaveable { mutableStateOf(false) }
-
-    if (openStartDate) {
-        BasicDatePickerDialog(
-            initialDateTime = startDateTime,
-            onDismiss = { openStartDate = false },
-            onConfirm = { onStartChanged(it) }
-        )
-    }
-
-    if (openEndDate) {
-        BasicDatePickerDialog(
-            initialDateTime = endDateTime,
-            onDismiss = { openEndDate = false },
-            onConfirm = { onEndChanged(it) }
-        )
-    }
-
-    if (openStartTime) {
-        BasicTimePickerDialog(
-            initialDateTime = startDateTime,
-            onDismiss = { openStartTime = false },
-            onConfirm = { onStartChanged(it) }
-        )
-    }
-
-    if (openEndTime) {
-        BasicTimePickerDialog(
-            initialDateTime = endDateTime,
-            onDismiss = { openEndTime = false },
-            onConfirm = { onEndChanged(it) }
-        )
-    }
-
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp)
-    ) {
-        Text(
-            text = buildAnnotatedString {
-                append("일시 ")
-                withStyle(style = SpanStyle(color = Color.Red)) {
-                    append("*")
-                }
-            },
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                OutlinedTextField(
-                    value = formatDateYY(startDateTime),
-                    onValueChange = {},
-                    singleLine = true,
-                    readOnly = true,
-                    shape = RoundedCornerShape(5.dp),
-                    colors = BasicOutlinedTextFieldColors(),
-                    placeholder = {
-                        Text(
-                            text = startDateTime.ifBlank { "연도-월-일" },
-                            fontSize = 12.sp
-                        )
-                    },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.CalendarToday,
-                            contentDescription = "캘린더 열기",
-                            modifier =
-                                Modifier.clickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() }
-                                ) { openStartDate = true }
-                        )
-                    }
-                )
-
-                OutlinedTextField(
-                    value = formatTime(startDateTime),
-                    onValueChange = {},
-                    singleLine = true,
-                    readOnly = true,
-                    shape = RoundedCornerShape(5.dp),
-                    colors = BasicOutlinedTextFieldColors(),
-                    placeholder = {
-                        Text(
-                            text = startDateTime.ifBlank { "시간:분" },
-                            fontSize = 12.sp
-                        )
-                    },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.AccessTime,
-                            contentDescription = "시간 선택 팝업 열기",
-                            modifier =
-                                Modifier.clickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() }
-                                ) { openStartTime = true }
-                        )
-                    }
-                )
-            }
-
-            Text(
-                modifier = Modifier.padding(horizontal = 10.dp),
-                text = "~",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                OutlinedTextField(
-                    value = formatDateYY(endDateTime),
-                    onValueChange = {},
-                    singleLine = true,
-                    readOnly = true,
-                    shape = RoundedCornerShape(5.dp),
-                    colors = BasicOutlinedTextFieldColors(),
-                    placeholder = {
-                        Text(
-                            text = endDateTime.ifBlank { "연도-월-일" },
-                            fontSize = 12.sp
-                        )
-                    },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.CalendarToday,
-                            contentDescription = "캘린더 열기",
-                            modifier =
-                                Modifier.clickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() }
-                                ) { openEndDate = true }
-                        )
-                    }
-                )
-
-                OutlinedTextField(
-                    value = formatTime(endDateTime),
-                    onValueChange = {},
-                    singleLine = true,
-                    readOnly = true,
-                    shape = RoundedCornerShape(5.dp),
-                    colors = BasicOutlinedTextFieldColors(),
-                    placeholder = {
-                        Text(
-                            text = endDateTime.ifBlank { "시간:분" },
-                            fontSize = 12.sp
-                        )
-                    },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.AccessTime,
-                            contentDescription = "시간 선택 팝업 열기",
-                            modifier =
-                                Modifier.clickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() }
-                                ) { openEndTime = true }
-                        )
-                    }
-                )
-            }
         }
     }
 }
@@ -539,9 +335,9 @@ fun StartEndDateTimeEditItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AttendeeApproverBottomSheet(
-    tripAddState: TripAddState,
+    tripEditState: TripEditState,
     field: TripSearchField,
-    onEvent: (TripAddEvent) -> Unit,
+    onEvent: (TripEditEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -554,8 +350,8 @@ private fun AttendeeApproverBottomSheet(
             val total = info.totalItemsCount
             lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !tripAddState.employeeState.paginationState.isLoading && tripAddState.employeeState.paginationState.currentPage < tripAddState.employeeState.paginationState.totalPage) {
-                onEvent(TripAddEvent.LoadNextPage)
+            if (shouldLoad && !tripEditState.employeeState.paginationState.isLoading && tripEditState.employeeState.paginationState.currentPage < tripEditState.employeeState.paginationState.totalPage) {
+                onEvent(TripEditEvent.LoadNextPage)
             }
         }
     }
@@ -575,19 +371,19 @@ private fun AttendeeApproverBottomSheet(
             SearchBar(
                 modifier = Modifier.fillMaxWidth(),
                 searchState = SearchState(
-                    value = tripAddState.employeeState.searchText,
-                    onValueChange = { onEvent(TripAddEvent.ChangedSearchValueWith(field, it)) },
+                    value = tripEditState.employeeState.searchText,
+                    onValueChange = { onEvent(TripEditEvent.ChangedSearchValueWith(field, it)) },
                     onClickSearch = {
-                        if (tripAddState.employeeState.paginationState.currentPage <= tripAddState.employeeState.paginationState.totalPage) {
-                            onEvent(TripAddEvent.ClickedSearch(field))
+                        if (tripEditState.employeeState.paginationState.currentPage <= tripEditState.employeeState.paginationState.totalPage) {
+                            onEvent(TripEditEvent.ClickedSearch(field))
                         }
                     },
-                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInit(field)) }
+                    onClickInit = { onEvent(TripEditEvent.ClickedSearchInit(field)) }
                 ),
                 hint = "직원명"
             )
 
-            if (tripAddState.employeeState.employees.isEmpty()) {
+            if (tripEditState.employeeState.employees.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -604,8 +400,8 @@ private fun AttendeeApproverBottomSheet(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     state = listState
                 ) {
-                    items(tripAddState.employeeState.employees) { item ->
-                        val isChecked = if (field == TripSearchField.APPROVER) tripAddState.inputData.approverIds.any { it == item.userId } else tripAddState.inputData.attendeeIds.any { it == item.userId }
+                    items(tripEditState.employeeState.employees) { item ->
+                        val isChecked = if (field == TripSearchField.APPROVER) tripEditState.inputData.approverIds.any { it == item.userId } else tripEditState.inputData.attendeeIds.any { it == item.userId }
 
                         EmployeeItem(
                             info = item,
@@ -613,14 +409,14 @@ private fun AttendeeApproverBottomSheet(
                             onChecked = {
                                 if (field == TripSearchField.APPROVER) {
                                     onEvent(
-                                        TripAddEvent.SelectedApproverWith(
+                                        TripEditEvent.SelectedApproverWith(
                                             it,
                                             item.userId
                                         )
                                     )
                                 } else {
                                     onEvent(
-                                        TripAddEvent.SelectedAttendeeWith(
+                                        TripEditEvent.SelectedAttendeeWith(
                                             it,
                                             item.userId
                                         )
@@ -641,15 +437,15 @@ private fun AttendeeApproverBottomSheet(
 
 /* 카드 사용 수정 카드 */
 @Composable
-private fun AddCardCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> Unit) {
+private fun EditCardCard(tripEditState: TripEditState, onEvent: (TripEditEvent) -> Unit) {
     var openSheet by remember { mutableStateOf(false) } // 바텀 시트
 
     if (openSheet) {
         CardBottomSheet(
-            tripAddState = tripAddState,
+            tripEditState = tripEditState,
             onEvent = onEvent,
             onDismiss = {
-                onEvent(TripAddEvent.ClickedSearchInit(TripSearchField.CARD))
+                onEvent(TripEditEvent.ClickedSearchInit(TripSearchField.CARD))
                 openSheet = false
             }
         )
@@ -688,7 +484,7 @@ private fun AddCardCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> U
                 }
             }
 
-            if (tripAddState.cardState.cards.isEmpty()) {
+            if (tripEditState.cardState.cards.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -701,46 +497,15 @@ private fun AddCardCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> U
                 }
             }
             else {
-                tripAddState.inputData.cardUsages.forEach { cardUsage ->
+                tripEditState.inputData.cardUsages.forEach { cardUsage ->
                     CardUsageItem(
                         cardInfo = cardUsage,
-                        name = tripAddState.cardState.cards.find { it.id == cardUsage.id }?.name ?: "",
-                        onChangeStart = { onEvent(TripAddEvent.ChangedCardDateWith(cardUsage.id, true, it)) },
-                        onChangeEnd = { onEvent(TripAddEvent.ChangedCardDateWith(cardUsage.id, false, it)) }
+                        name = tripEditState.cardState.cards.find { it.id == cardUsage.id }?.name ?: "",
+                        onChangeStart = { onEvent(TripEditEvent.ChangedCardDateWith(cardUsage.id, true, it)) },
+                        onChangeEnd = { onEvent(TripEditEvent.ChangedCardDateWith(cardUsage.id, false, it)) }
                     )
                 }
             }
-        }
-    }
-}
-
-/* 카드 사용 현황 목록 아이템 */
-@Composable
-fun CardUsageItem(cardInfo: TripDTO.CardUsagesInfo, name: String, onChangeStart: (String) -> Unit, onChangeEnd: (String) -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(width = 0.5.dp, color = DividerDefaults.color.copy(alpha = 0.8f))
-    ) {
-        Column(
-            modifier = Modifier.padding(10.dp).padding(top = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            BasicOutlinedTextField(
-                value = name,
-                enabled = false,
-                onValueChange = {}
-            )
-
-            Divider(modifier = Modifier.padding(top = 12.dp))
-
-            StartEndDateTimeEditItem(
-                startDateTime = cardInfo.startDate,
-                endDateTime = cardInfo.endDate,
-                onStartChanged = { onChangeStart(it) },
-                onEndChanged = { onChangeEnd(it) }
-            )
         }
     }
 }
@@ -749,8 +514,8 @@ fun CardUsageItem(cardInfo: TripDTO.CardUsagesInfo, name: String, onChangeStart:
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CardBottomSheet(
-    tripAddState: TripAddState,
-    onEvent: (TripAddEvent) -> Unit,
+    tripEditState: TripEditState,
+    onEvent: (TripEditEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
     val field = TripSearchField.CARD
@@ -771,8 +536,8 @@ private fun CardBottomSheet(
             DropDownField(
                 modifier = Modifier.fillMaxWidth(),
                 options = listOf("전체", "카드명"),
-                selected = tripAddState.cardState.type,
-                onSelected = { onEvent(TripAddEvent.SelectedCardTypeWith(it)) }
+                selected = tripEditState.cardState.type,
+                onSelected = { onEvent(TripEditEvent.SelectedCardTypeWith(it)) }
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -780,16 +545,16 @@ private fun CardBottomSheet(
             SearchBar(
                 modifier = Modifier.fillMaxWidth(),
                 searchState = SearchState(
-                    value = tripAddState.cardState.searchText,
-                    onValueChange = { onEvent(TripAddEvent.ChangedSearchValueWith(field, it)) },
-                    onClickSearch = { onEvent(TripAddEvent.ClickedSearch(field)) },
-                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInit(field)) }
+                    value = tripEditState.cardState.searchText,
+                    onValueChange = { onEvent(TripEditEvent.ChangedSearchValueWith(field, it)) },
+                    onClickSearch = { onEvent(TripEditEvent.ClickedSearch(field)) },
+                    onClickInit = { onEvent(TripEditEvent.ClickedSearchInit(field)) }
                 )
             )
 
             Divider(modifier = Modifier.padding(vertical = 20.dp))
 
-            if (tripAddState.cardState.cards.isEmpty()) {
+            if (tripEditState.cardState.cards.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxWidth().padding(top = 30.dp),
                     contentAlignment = Alignment.Center
@@ -806,13 +571,13 @@ private fun CardBottomSheet(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(tripAddState.cardState.cards) { cardInfo ->
-                        val isChecked = tripAddState.inputData.cardUsages.any { it.id in cardInfo.id }
+                    items(tripEditState.cardState.cards) { cardInfo ->
+                        val isChecked = tripEditState.inputData.cardUsages.any { it.id in cardInfo.id }
 
                         CardListItem(
                             cardInfo = cardInfo,
                             isChecked = isChecked,
-                            onChecked = { onEvent(TripAddEvent.CheckedCardWith(it, cardInfo))}
+                            onChecked = { onEvent(TripEditEvent.CheckedCardWith(it, cardInfo))}
                         )
                     }
 
@@ -825,46 +590,17 @@ private fun CardBottomSheet(
     }
 }
 
-/* 카드 정보 목록 아이템 */
-@Composable
-fun CardListItem(cardInfo: CardDTO.CardsInfo, isChecked: Boolean, onChecked: (Boolean) -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(width = 0.5.dp, color = DividerDefaults.color.copy(alpha = 0.8f))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            BasicCheckbox(
-                isChecked = isChecked,
-                onChecked = { onChecked(it) }
-            )
-
-            Text(
-                text = cardInfo.name,
-                fontSize = 15.sp
-            )
-        }
-    }
-}
-
 /* 차량 사용 수정 카드 */
 @Composable
-private fun AddCarCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> Unit) {
+private fun EditCarCard(tripEditState: TripEditState, onEvent: (TripEditEvent) -> Unit) {
     var openSheet by remember { mutableStateOf(false) } // 바텀 시트
 
     if (openSheet) {
         CarBottomSheet(
-            tripAddState = tripAddState,
+            tripEditState = tripEditState,
             onEvent = onEvent,
             onDismiss = {
-                onEvent(TripAddEvent.ClickedSearchInit(TripSearchField.CAR))
+                onEvent(TripEditEvent.ClickedSearchInit(TripSearchField.CAR))
                 openSheet = false
             }
         )
@@ -903,7 +639,7 @@ private fun AddCarCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> Un
                 }
             }
 
-            if (tripAddState.carState.cars.isEmpty()) {
+            if (tripEditState.carState.cars.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -916,11 +652,11 @@ private fun AddCarCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> Un
                 }
             }
             else {
-                tripAddState.inputData.carUsages.forEach { carUsage ->
+                tripEditState.inputData.carUsages.forEach { carUsage ->
                     CarUsageItem(
-                        tripAddState = tripAddState,
+                        tripEditState = tripEditState,
                         carInfo = carUsage,
-                        name = tripAddState.carState.cars.find { it.id == carUsage.id }?.name ?: "",
+                        name = tripEditState.carState.cars.find { it.id == carUsage.id }?.name ?: "",
                         onEvent = onEvent
                     )
                 }
@@ -931,14 +667,14 @@ private fun AddCarCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> Un
 
 /* 차량 사용 현황 목록 아이템 */
 @Composable
-private fun CarUsageItem(tripAddState: TripAddState, carInfo: TripDTO.CarUsagesInfo, name: String, onEvent: (TripAddEvent) -> Unit) {
+private fun CarUsageItem(tripEditState: TripEditState, carInfo: TripDTO.CarUsagesInfo, name: String, onEvent: (TripEditEvent) -> Unit) {
     var openSheet by remember { mutableStateOf(false) } // 운전자 선택 바텀 시트
 
     if (openSheet) {
         DriverBottomSheet(
-            tripAddState = tripAddState,
+            tripEditState = tripEditState,
             onEvent = onEvent,
-            onClick = { onEvent(TripAddEvent.SelectedDriverWith(carInfo.id, it)) },
+            onClick = { onEvent(TripEditEvent.SelectedDriverWith(carInfo.id, it)) },
             onDismiss = { openSheet = false }
         )
     }
@@ -963,7 +699,7 @@ private fun CarUsageItem(tripAddState: TripAddState, carInfo: TripDTO.CarUsagesI
 
             TwoLineSearchEditBar(
                 name = "운전자",
-                value = tripAddState.employeeState.employees.find { it.userId == carInfo.driverId }?.name ?: "",
+                value = tripEditState.employeeState.employees.find { it.userId == carInfo.driverId }?.name ?: "",
                 onClick = { openSheet = true },
                 isRequired = true,
                 enabled = false
@@ -972,9 +708,9 @@ private fun CarUsageItem(tripAddState: TripAddState, carInfo: TripDTO.CarUsagesI
             StartEndDateTimeEditItem(
                 startDateTime = carInfo.startDate,
                 endDateTime = carInfo.endDate,
-                onStartChanged = { onEvent(TripAddEvent.ChangedCarDateWith(carInfo.id, true, it))
+                onStartChanged = { onEvent(TripEditEvent.ChangedCarDateWith(carInfo.id, true, it))
                 },
-                onEndChanged = { onEvent(TripAddEvent.ChangedCarDateWith(carInfo.id, false, it)) }
+                onEndChanged = { onEvent(TripEditEvent.ChangedCarDateWith(carInfo.id, false, it)) }
             )
         }
     }
@@ -984,8 +720,8 @@ private fun CarUsageItem(tripAddState: TripAddState, carInfo: TripDTO.CarUsagesI
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CarBottomSheet(
-    tripAddState: TripAddState,
-    onEvent: (TripAddEvent) -> Unit,
+    tripEditState: TripEditState,
+    onEvent: (TripEditEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
     val field = TripSearchField.CAR
@@ -1006,8 +742,8 @@ private fun CarBottomSheet(
             DropDownField(
                 modifier = Modifier.fillMaxWidth(),
                 options = listOf("전체", "차량명", "차량번호"),
-                selected = tripAddState.carState.type,
-                onSelected = { onEvent(TripAddEvent.SelectedCarTypeWith(it)) }
+                selected = tripEditState.carState.type,
+                onSelected = { onEvent(TripEditEvent.SelectedCarTypeWith(it)) }
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -1015,16 +751,16 @@ private fun CarBottomSheet(
             SearchBar(
                 modifier = Modifier.fillMaxWidth(),
                 searchState = SearchState(
-                    value = tripAddState.carState.searchText,
-                    onValueChange = { onEvent(TripAddEvent.ChangedSearchValueWith(field, it)) },
-                    onClickSearch = { onEvent(TripAddEvent.ClickedSearch(field)) },
-                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInit(field)) }
+                    value = tripEditState.carState.searchText,
+                    onValueChange = { onEvent(TripEditEvent.ChangedSearchValueWith(field, it)) },
+                    onClickSearch = { onEvent(TripEditEvent.ClickedSearch(field)) },
+                    onClickInit = { onEvent(TripEditEvent.ClickedSearchInit(field)) }
                 )
             )
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            if (tripAddState.carState.cars.isEmpty()) {
+            if (tripEditState.carState.cars.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxWidth().padding(top = 30.dp),
                     contentAlignment = Alignment.Center
@@ -1041,13 +777,13 @@ private fun CarBottomSheet(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(tripAddState.carState.cars) { carInfo ->
-                        val isChecked = tripAddState.inputData.carUsages.any { it.id in carInfo.id }
+                    items(tripEditState.carState.cars) { carInfo ->
+                        val isChecked = tripEditState.inputData.carUsages.any { it.id in carInfo.id }
 
                         CarListItem(
                             carInfo = carInfo,
                             isChecked = isChecked,
-                            onChecked = { onEvent(TripAddEvent.CheckedCarWith(it, carInfo))}
+                            onChecked = { onEvent(TripEditEvent.CheckedCarWith(it, carInfo))}
                         )
                     }
 
@@ -1060,41 +796,12 @@ private fun CarBottomSheet(
     }
 }
 
-/* 차량 정보 목록 아이템 */
-@Composable
-fun CarListItem(carInfo: CarDTO.CarsInfo, isChecked: Boolean, onChecked: (Boolean) -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(width = 0.5.dp, color = DividerDefaults.color.copy(alpha = 0.8f))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            BasicCheckbox(
-                isChecked = isChecked,
-                onChecked = { onChecked(it) }
-            )
-
-            Text(
-                text = carInfo.name,
-                fontSize = 15.sp
-            )
-        }
-    }
-}
-
 /* 운전자 선택 바텀 시트 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DriverBottomSheet(
-    tripAddState: TripAddState,
-    onEvent: (TripAddEvent) -> Unit,
+    tripEditState: TripEditState,
+    onEvent: (TripEditEvent) -> Unit,
     onClick: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -1108,8 +815,8 @@ private fun DriverBottomSheet(
             val total = info.totalItemsCount
             lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !tripAddState.employeeState.paginationState.isLoading && tripAddState.employeeState.paginationState.currentPage < tripAddState.employeeState.paginationState.totalPage) {
-                onEvent(TripAddEvent.LoadNextPage)
+            if (shouldLoad && !tripEditState.employeeState.paginationState.isLoading && tripEditState.employeeState.paginationState.currentPage < tripEditState.employeeState.paginationState.totalPage) {
+                onEvent(TripEditEvent.LoadNextPage)
             }
         }
     }
@@ -1129,13 +836,13 @@ private fun DriverBottomSheet(
             SearchBar(
                 modifier = Modifier.fillMaxWidth(),
                 searchState = SearchState(
-                    value = tripAddState.employeeState.searchText,
-                    onValueChange = { onEvent(TripAddEvent.ChangedSearchValueWith(TripSearchField.DRIVER, it)) },
+                    value = tripEditState.employeeState.searchText,
+                    onValueChange = { onEvent(TripEditEvent.ChangedSearchValueWith(TripSearchField.DRIVER, it)) },
                     onClickSearch = {
-                        if (tripAddState.employeeState.paginationState.currentPage <= tripAddState.employeeState.paginationState.totalPage) {
-                            onEvent(TripAddEvent.ClickedSearch(TripSearchField.DRIVER)) }
+                        if (tripEditState.employeeState.paginationState.currentPage <= tripEditState.employeeState.paginationState.totalPage) {
+                            onEvent(TripEditEvent.ClickedSearch(TripSearchField.DRIVER)) }
                     },
-                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInit(TripSearchField.DRIVER)) }
+                    onClickInit = { onEvent(TripEditEvent.ClickedSearchInit(TripSearchField.DRIVER)) }
                 ),
                 hint = "직원명"
             )
@@ -1145,7 +852,7 @@ private fun DriverBottomSheet(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 state = listState
             ) {
-                if (tripAddState.employeeState.employees.isEmpty()) {
+                if (tripEditState.employeeState.employees.isEmpty()) {
                     item {
                         Box(
                             modifier = Modifier.fillMaxSize().padding(top = 30.dp),
@@ -1159,7 +866,7 @@ private fun DriverBottomSheet(
                         }
                     }
                 } else {
-                    items(tripAddState.employeeState.employees) { employeeInfo ->
+                    items(tripEditState.employeeState.employees) { employeeInfo ->
                         ManagerInfoItem(
                             managerInfo = employeeInfo,
                             onClick = {

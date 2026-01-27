@@ -14,7 +14,6 @@ import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAd
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddReducer
 import com.example.attendancemanagementapp.ui.attendance.vacation.add.VacationAddState
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailEvent
-import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailReducer
 import com.example.attendancemanagementapp.ui.attendance.vacation.detail.VacationDetailState
 import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditEvent
 import com.example.attendancemanagementapp.ui.attendance.vacation.edit.VacationEditReducer
@@ -34,6 +33,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 enum class VacationTarget { ADD, EDIT }
@@ -79,8 +81,6 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
     }
 
     fun onDetailEvent(e: VacationDetailEvent) {
-        _vacationDetailState.update { VacationDetailReducer.reduce(it, e) }
-
         when (e) {
             VacationDetailEvent.ClickedCancel -> cancelVacation()
             VacationDetailEvent.ClickedDelete -> deleteVacation()
@@ -214,6 +214,15 @@ class VacationViewModel @Inject constructor(private val vacationRepository: Vaca
     /* 휴가 신청 취소 */
     fun cancelVacation() {
         val vacationId = vacationDetailState.value.vacationInfo.id
+
+        // 휴가 신청 취소는 신청 기간 당일까지만 가능
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+        val isToday = LocalDateTime.parse(vacationDetailState.value.vacationInfo.appliedDate, formatter).toLocalDate() == LocalDate.now()
+
+        if (!isToday) {
+            _uiEffect.tryEmit(UiEffect.ShowToast("휴가 신청 당일에만 취소할 수 있습니다"))
+            return
+        }
 
         viewModelScope.launch {
             vacationRepository.cancelVacation(
