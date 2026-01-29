@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import com.example.attendancemanagementapp.data.datastore.TokenDataStore
 import com.example.attendancemanagementapp.navigation.MainNavGraph
 import com.example.attendancemanagementapp.ui.theme.AttendanceManagementAppTheme
+import com.example.attendancemanagementapp.ui.theme.FixedFontScaleTheme
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -20,8 +21,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AttendanceManagementAppTheme {
-                MainNavGraph(tokenDataStore = tokenDataStore)
+            FixedFontScaleTheme {
+                AttendanceManagementAppTheme {
+                    MainNavGraph(tokenDataStore = tokenDataStore)
+                }
             }
         }
     }
