@@ -67,7 +67,7 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
                 getCards(TripTarget.ADD)
                 getCars(TripTarget.ADD)
             }
-            is TripAddEvent.ClickedSearch -> {
+            is TripAddEvent.ClickedSearchWith -> {
                 when (e.field) {
                     TripSearchField.APPROVER -> getEmployees(TripTarget.ADD)
                     TripSearchField.ATTENDEE -> getEmployees(TripTarget.ADD)
@@ -76,7 +76,7 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
                     TripSearchField.DRIVER -> getEmployees(TripTarget.ADD)
                 }
             }
-            is TripAddEvent.ClickedSearchInit -> {
+            is TripAddEvent.ClickedSearchInitWith -> {
                 when (e.field) {
                     TripSearchField.APPROVER -> getEmployees(TripTarget.ADD)
                     TripSearchField.ATTENDEE -> getEmployees(TripTarget.ADD)
@@ -106,6 +106,7 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
                 }
             }
             TripDetailEvent.ClickedDownload -> downloadTripPdf()
+            TripDetailEvent.ClickedAddReport -> _uiEffect.tryEmit(UiEffect.Navigate("reportAdd"))
             else -> Unit
         }
     }

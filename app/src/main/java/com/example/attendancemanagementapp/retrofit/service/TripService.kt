@@ -64,4 +64,10 @@ interface TripService {
     // 이전 승인자 불러오기
     @GET("/api/bsrps/latest-confmers")
     suspend fun getPrevApprovers(): ApproverDTO.GetPrevApproversResponse
+
+    // 출장 복명서 등록
+    @POST("/api/bsrp-rports")
+    suspend fun addTripReport(
+        @Body request: TripDTO.AddTripReportRequest
+    )
 }

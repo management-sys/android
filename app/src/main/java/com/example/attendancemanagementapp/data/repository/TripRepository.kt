@@ -102,4 +102,14 @@ class TripRepository @Inject constructor(private val service: TripService, priva
     }.catch { e ->
         emit(Result.failure(e))
     }
+
+    // 출장 복명서 등록
+    fun addTripReport(request: TripDTO.AddTripReportRequest): Flow<Result<Unit>> = flow {
+        val response = service.addTripReport(
+            request = request
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
 }

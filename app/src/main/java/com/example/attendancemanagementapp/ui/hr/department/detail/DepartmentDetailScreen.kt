@@ -296,7 +296,7 @@ private fun EmployeesBottomSheet(
                         modifier = Modifier.fillMaxWidth().align(Alignment.BottomEnd)
                             .padding(vertical = 15.dp),
                         horizontalArrangement = Arrangement.End
-                    ) { // TODO: 확인 버튼 삭제, 그냥 체크하는대로 바로 반영
+                    ) {
                         BasicButton(
                             name = "확인",
                             onClick = { onSaveAdd() }

@@ -42,6 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.TripDTO
+import com.example.attendancemanagementapp.ui.attendance.report.ReportViewModel
+import com.example.attendancemanagementapp.ui.attendance.report.add.ReportAddEvent
 import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
@@ -54,7 +56,7 @@ import com.example.attendancemanagementapp.util.rememberOnce
 
 /* 출장 상세 화면 */
 @Composable
-fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel) {
+fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel, reportViewModel: ReportViewModel) {
     val onEvent = tripViewModel::onDetailEvent
     val tripDetailState by tripViewModel.tripDetailState.collectAsState()
 
@@ -66,7 +68,7 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel)
 
     if (openDelete) {
         BasicDialog(
-            title = "출장품의서를 삭제하시겠습니까?",
+            title = "출장 품의서를 삭제하시겠습니까?",
             onDismiss = { openDelete = false },
             onClickConfirm = {
                 onEvent(TripDetailEvent.ClickedDelete)
@@ -77,7 +79,7 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel)
 
     if (openCancel) {
         BasicDialog(
-            title = "출장품의서를 취소하시겠습니까?",
+            title = "출장 품의서를 취소하시겠습니까?",
             onDismiss = { openCancel = false },
             onClickConfirm = {
                 onEvent(TripDetailEvent.ClickedCancel)
@@ -90,7 +92,7 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel)
         modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
-                title = "출장품의서",
+                title = "출장 품의서",
                 actIcon = Icons.Default.Delete,
                 actTint = Color.Red,
                 onClickNavIcon = rememberOnce { navController.popBackStack() },
@@ -142,15 +144,18 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel)
                     )
 
                     // 승인되었으면 복명서 작성 버튼 활성화
-                    if (tripDetailState.tripInfo.status == "승인") {
+//                    if (tripDetailState.tripInfo.status == "승인") {
                         Spacer(modifier = Modifier.width(10.dp))
 
                         BasicButton(
                             name = "복명서 작성",
                             wrapContent = true,
-                            onClick = {  }
+                            onClick = {
+                                reportViewModel.onAddEvent(ReportAddEvent.InitWith(tripDetailState.tripInfo))
+                                onEvent(TripDetailEvent.ClickedAddReport)
+                            }
                         )
-                    }
+//                    }
                 }
             }
         }

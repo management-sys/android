@@ -128,4 +128,20 @@ object TripDTO {
         @Json(name = "nmprs")           val attendeeIds: List<String> = emptyList(),        // 동행자 아이디 목록
         @Json(name = "vhcleUseList")    val carUsages: List<CarUsagesInfo> = emptyList()    // 법인차량 사용 목록
     )
+
+    /* 출장 복명서 등록 요청 */
+    data class AddTripReportRequest(
+        @Json(name = "bsrpId")      val tripId: String = "",                                // 출장 아이디
+        @Json(name = "cn")          val content: String = "",                               // 복명내용
+        @Json(name = "confmerIds")  val approverIds: List<String> = emptyList(),            // 승인자 아이디 목록 (승인 순서대로)
+        @Json(name = "trvctList")   val tripExpenses: List<TripExpenseInfo> = emptyList()   // 여비 계산 목록
+    )
+
+    /* 여비 계산 목록 데이터 */
+    data class TripExpenseInfo(
+        @Json(name = "amount")      val amount: Int = 0,        // 금액
+        @Json(name = "se")          val type: String = "",      // 구분 (개인/법인)
+        @Json(name = "setleMbyId")  val id: String = "",        // 결제 주체 아이디 (법인카드코드: CARD / 결제자아이디: USER)
+        @Json(name = "ty")          val category: String = ""   // 타입 (교통, 운임비 등)
+    )
 }

@@ -1,7 +1,5 @@
 package com.example.attendancemanagementapp.ui.attendance.trip.detail
 
-import android.content.Context
-
 sealed interface TripDetailEvent {
     // 출장 신청 삭제 버튼 클릭 이벤트
     data object ClickedDelete: TripDetailEvent
@@ -14,4 +12,7 @@ sealed interface TripDetailEvent {
 
     // 품의서 다운로드 버튼 클릭 이벤트
     data object ClickedDownload: TripDetailEvent
+
+    // 복명서 작성 버튼 클릭 이벤트
+    data object ClickedAddReport: TripDetailEvent
 }

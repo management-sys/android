@@ -8,7 +8,7 @@ object TripAddReducer {
     fun reduce(s: TripAddState, e: TripAddEvent): TripAddState = when (e) {
         is TripAddEvent.ChangedValueWith -> handleChangedValue(s, e.field, e.value)
         is TripAddEvent.ChangedSearchValueWith -> handleChangedSearchValue(s, e.field, e.value)
-        is TripAddEvent.ClickedSearchInit -> handleClickedSearchInit(s, e.field)
+        is TripAddEvent.ClickedSearchInitWith -> handleClickedSearchInit(s, e.field)
         is TripAddEvent.SelectedCardTypeWith -> handleSelectedCardType(s, e.type)
         is TripAddEvent.SelectedCarTypeWith -> handleSelectedCarType(s, e.type)
         is TripAddEvent.SelectedApproverWith -> handleSelectedApprover(s, e. checked, e.id)

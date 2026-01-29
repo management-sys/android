@@ -247,7 +247,7 @@ private fun AddTripCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> U
                     field = TripSearchField.ATTENDEE,
                     onEvent = onEvent,
                     onDismiss = {
-                        onEvent(TripAddEvent.ClickedSearchInit(TripSearchField.ATTENDEE))
+                        onEvent(TripAddEvent.ClickedSearchInitWith(TripSearchField.ATTENDEE))
                         openSheet = ""
                     }
                 )
@@ -258,7 +258,7 @@ private fun AddTripCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> U
                     field = TripSearchField.APPROVER,
                     onEvent = onEvent,
                     onDismiss = {
-                        onEvent(TripAddEvent.ClickedSearchInit(TripSearchField.APPROVER))
+                        onEvent(TripAddEvent.ClickedSearchInitWith(TripSearchField.APPROVER))
                         openSheet = ""
                     }
                 )
@@ -580,10 +580,10 @@ private fun AttendeeApproverBottomSheet(
                     onValueChange = { onEvent(TripAddEvent.ChangedSearchValueWith(field, it)) },
                     onClickSearch = {
                         if (tripAddState.employeeState.paginationState.currentPage <= tripAddState.employeeState.paginationState.totalPage) {
-                            onEvent(TripAddEvent.ClickedSearch(field))
+                            onEvent(TripAddEvent.ClickedSearchWith(field))
                         }
                     },
-                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInit(field)) }
+                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInitWith(field)) }
                 ),
                 hint = "직원명"
             )
@@ -650,7 +650,7 @@ private fun AddCardCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> U
             tripAddState = tripAddState,
             onEvent = onEvent,
             onDismiss = {
-                onEvent(TripAddEvent.ClickedSearchInit(TripSearchField.CARD))
+                onEvent(TripAddEvent.ClickedSearchInitWith(TripSearchField.CARD))
                 openSheet = false
             }
         )
@@ -783,8 +783,8 @@ private fun CardBottomSheet(
                 searchState = SearchState(
                     value = tripAddState.cardState.searchText,
                     onValueChange = { onEvent(TripAddEvent.ChangedSearchValueWith(field, it)) },
-                    onClickSearch = { onEvent(TripAddEvent.ClickedSearch(field)) },
-                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInit(field)) }
+                    onClickSearch = { onEvent(TripAddEvent.ClickedSearchWith(field)) },
+                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInitWith(field)) }
                 )
             )
 
@@ -865,7 +865,7 @@ private fun AddCarCard(tripAddState: TripAddState, onEvent: (TripAddEvent) -> Un
             tripAddState = tripAddState,
             onEvent = onEvent,
             onDismiss = {
-                onEvent(TripAddEvent.ClickedSearchInit(TripSearchField.CAR))
+                onEvent(TripAddEvent.ClickedSearchInitWith(TripSearchField.CAR))
                 openSheet = false
             }
         )
@@ -1018,8 +1018,8 @@ private fun CarBottomSheet(
                 searchState = SearchState(
                     value = tripAddState.carState.searchText,
                     onValueChange = { onEvent(TripAddEvent.ChangedSearchValueWith(field, it)) },
-                    onClickSearch = { onEvent(TripAddEvent.ClickedSearch(field)) },
-                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInit(field)) }
+                    onClickSearch = { onEvent(TripAddEvent.ClickedSearchWith(field)) },
+                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInitWith(field)) }
                 )
             )
 
@@ -1134,9 +1134,9 @@ private fun DriverBottomSheet(
                     onValueChange = { onEvent(TripAddEvent.ChangedSearchValueWith(TripSearchField.DRIVER, it)) },
                     onClickSearch = {
                         if (tripAddState.employeeState.paginationState.currentPage <= tripAddState.employeeState.paginationState.totalPage) {
-                            onEvent(TripAddEvent.ClickedSearch(TripSearchField.DRIVER)) }
+                            onEvent(TripAddEvent.ClickedSearchWith(TripSearchField.DRIVER)) }
                     },
-                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInit(TripSearchField.DRIVER)) }
+                    onClickInit = { onEvent(TripAddEvent.ClickedSearchInitWith(TripSearchField.DRIVER)) }
                 ),
                 hint = "직원명"
             )

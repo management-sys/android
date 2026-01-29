@@ -42,12 +42,12 @@ sealed interface TripAddEvent {
     ): TripAddEvent
 
     // 검색 버튼 클릭 이벤트
-    data class ClickedSearch(
+    data class ClickedSearchWith(
         val field: TripSearchField
     ): TripAddEvent
 
     // 검색어 초기화 버튼 클릭 이벤트
-    data class ClickedSearchInit(
+    data class ClickedSearchInitWith(
         val field: TripSearchField
     ): TripAddEvent
 
@@ -60,11 +60,6 @@ sealed interface TripAddEvent {
     // 동행자 선택 이벤트
     data class SelectedAttendeeWith(
         val checked: Boolean,
-        val id: String
-    ): TripAddEvent
-
-    // 차량 선택 이벤트
-    data class ClickedCarWith(
         val id: String
     ): TripAddEvent
 

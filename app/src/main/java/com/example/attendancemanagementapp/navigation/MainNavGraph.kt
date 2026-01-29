@@ -29,6 +29,8 @@ import com.example.attendancemanagementapp.ui.asset.card.detail.CardDetailScreen
 import com.example.attendancemanagementapp.ui.asset.card.edit.CardEditScreen
 import com.example.attendancemanagementapp.ui.asset.card.manage.CardManageScreen
 import com.example.attendancemanagementapp.ui.asset.card.usage.CardUsageScreen
+import com.example.attendancemanagementapp.ui.attendance.report.ReportViewModel
+import com.example.attendancemanagementapp.ui.attendance.report.add.TripReportAddScreen
 import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
 import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddScreen
 import com.example.attendancemanagementapp.ui.attendance.trip.add.TripAddState
@@ -101,6 +103,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
     val carViewModel: CarViewModel = hiltViewModel()
     val cardViewModel: CardViewModel = hiltViewModel()
     val tripViewModel: TripViewModel = hiltViewModel()
+    val reportViewModel: ReportViewModel = hiltViewModel()
 
     val logoutFlag by tokenDataStore.logoutFlagFlow.collectAsState(initial = false)
 
@@ -126,7 +129,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
         vacationViewModel.uiEffect,
         carViewModel.uiEffect,
         cardViewModel.uiEffect,
-        tripViewModel.uiEffect
+        tripViewModel.uiEffect,
+        reportViewModel.uiEffect
     )
 
     BasicDrawer(
@@ -193,10 +197,12 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
                 composable("cardManage") { CardManageScreen(navController, cardViewModel) } // 카드정보 관리 화면
                 composable("cardUsage") { CardUsageScreen(navController, cardViewModel) }   // 카드 사용현황 화면
 
-                composable("tripAdd") { TripAddScreen(navController, tripViewModel) }       // 출장 신청 화면
-                composable("tripDetail") { TripDetailScreen(navController, tripViewModel) } // 출장 상세 화면
-                composable("tripEdit") { TripEditScreen(navController, tripViewModel) }     // 출장 수정 화면
-                composable("tripStatus") { TripStatusScreen(navController, tripViewModel) } // 출장 현황 화면
+                composable("tripAdd") { TripAddScreen(navController, tripViewModel) }                           // 출장 신청 화면
+                composable("tripDetail") { TripDetailScreen(navController, tripViewModel, reportViewModel) }    // 출장 상세 화면
+                composable("tripEdit") { TripEditScreen(navController, tripViewModel) }                         // 출장 수정 화면
+                composable("tripStatus") { TripStatusScreen(navController, tripViewModel) }                     // 출장 현황 화면
+
+                composable("reportAdd") { TripReportAddScreen(navController, reportViewModel) } // 출장 복명서 등록 화면
             }
         }
     }

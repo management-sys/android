@@ -102,7 +102,7 @@ fun TripEditScreen(navController: NavController, tripViewModel: TripViewModel) {
         modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
-                title = "출장품의서 수정",
+                title = "출장 품의서 수정",
                 onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         }
