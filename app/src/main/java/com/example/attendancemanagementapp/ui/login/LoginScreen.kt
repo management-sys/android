@@ -87,7 +87,8 @@ fun LoginCard(loginState: LoginState, navController: NavController, onEvent: (Lo
                 name = "비밀번호",
                 value = loginState.password,
                 onValueChange = { onEvent(LoginEvent.ChangedValueWith(LoginField.PASSWORD, it)) },
-                hint = "비밀번호를 입력하세요."
+                hint = "비밀번호를 입력하세요.",
+                isPassword = true
             )
 
             Spacer(modifier = Modifier.height(20.dp))
