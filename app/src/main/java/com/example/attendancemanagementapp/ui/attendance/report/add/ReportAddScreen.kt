@@ -88,7 +88,7 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
 
     val focusManager = LocalFocusManager.current    // 포커스 관리
 
-    val tabs = listOf("기본정보", "입력정보", "여비계산")
+    val tabs = listOf("입력정보", "여비계산")
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
 
@@ -141,22 +141,7 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
                         verticalArrangement = Arrangement.Top
                     ) {
                         when (page) {
-                            0 -> {  // 기본 정보
-                                TripInfoCard(
-                                    tripInfo = reportAddState.tripInfo
-                                )
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    BasicButton(
-                                        name = "다음",
-                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
-                                    )
-                                }
-                            }
-                            1 -> {  // 입력 정보
+                            0 -> {  // 입력 정보
                                 AddReportCard(
                                     reportAddState = reportAddState,
                                     onEvent = onEvent
@@ -167,11 +152,6 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     SubButton(
-                                        name = "이전",
-                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
-                                    )
-
-                                    SubButton(
                                         name = "이전 승인자 불러오기",
                                         wrapContent = true,
                                         onClick = { onEvent(ReportAddEvent.ClickedGetPrevApprover) }
@@ -179,11 +159,11 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
 
                                     BasicButton(
                                         name = "다음",
-                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } }
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
                                     )
                                 }
                             }
-                            2 -> {  // 여비계산
+                            1 -> {  // 여비계산
                                 AddTripExpenseCard(
                                     reportAddState = reportAddState,
                                     onEvent = onEvent
@@ -195,7 +175,7 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
                                 ) {
                                     SubButton(
                                         name = "이전",
-                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } }
+                                        onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } }
                                     )
 
                                     BasicButton(
@@ -697,7 +677,10 @@ private fun CardBottomSheet(
 
 /* 카드 정보 목록 아이템 */
 @Composable
-private fun CardListItem(cardInfo: CardDTO.CardsInfo, onClick: () -> Unit) {
+private fun CardListItem(
+    cardInfo: CardDTO.CardsInfo,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
