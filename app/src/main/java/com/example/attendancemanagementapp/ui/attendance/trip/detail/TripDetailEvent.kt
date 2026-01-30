@@ -15,4 +15,10 @@ sealed interface TripDetailEvent {
 
     // 복명서 작성 버튼 클릭 이벤트
     data object ClickedAddReport: TripDetailEvent
+
+    // 복명서 신청 수정 버튼 클릭 이벤트
+    data object ClickedUpdateReport: TripDetailEvent
+
+    // 복명서 다운로드 버튼 클릭 이벤트
+    data object ClickedDownloadReport: TripDetailEvent
 }

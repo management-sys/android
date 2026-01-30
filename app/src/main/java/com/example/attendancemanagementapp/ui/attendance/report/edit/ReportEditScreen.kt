@@ -1,4 +1,4 @@
-package com.example.attendancemanagementapp.ui.attendance.report.add
+package com.example.attendancemanagementapp.ui.attendance.report.edit
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -41,7 +41,6 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -59,19 +58,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.attendancemanagementapp.data.dto.CardDTO
-import com.example.attendancemanagementapp.data.dto.TripDTO
 import com.example.attendancemanagementapp.ui.asset.car.edit.ManagerInfoItem
 import com.example.attendancemanagementapp.ui.attendance.report.ReportViewModel
-import com.example.attendancemanagementapp.ui.attendance.report.edit.ReportEditEvent
-import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
+import com.example.attendancemanagementapp.ui.attendance.report.add.CardListItem
+import com.example.attendancemanagementapp.ui.attendance.report.add.TripExpenseField
+import com.example.attendancemanagementapp.ui.attendance.report.add.TripExpenseSearchField
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicOutlinedTextField
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
 import com.example.attendancemanagementapp.ui.components.DropDownField
 import com.example.attendancemanagementapp.ui.components.SubButton
-import com.example.attendancemanagementapp.ui.components.TowLineInfoBar
-import com.example.attendancemanagementapp.ui.components.TwoInfoBar
 import com.example.attendancemanagementapp.ui.components.TwoLineBigEditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineEditBar
 import com.example.attendancemanagementapp.ui.components.TwoLineSearchEditBar
@@ -86,11 +82,11 @@ import com.example.attendancemanagementapp.util.rememberOnce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-/* 출장 복명서 등록 화면 */
+/* 출장 복명서 수정 화면 */
 @Composable
-fun TripReportAddScreen(navController: NavController, reportViewModel: ReportViewModel, tripViewModel: TripViewModel) {
-    val onEvent = reportViewModel::onAddEvent
-    val reportAddState by reportViewModel.reportAddState.collectAsState()
+fun ReportEditScreen(navController: NavController, reportViewModel: ReportViewModel) {
+    val onEvent = reportViewModel::onEditEvent
+    val reportEditState by reportViewModel.reportEditState.collectAsState()
 
     val focusManager = LocalFocusManager.current    // 포커스 관리
 
@@ -102,7 +98,7 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
         modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
-                title = "출장 복명서 등록",
+                title = "출장 복명서 수정",
                 onClickNavIcon = rememberOnce { navController.popBackStack() }
             )
         }
@@ -148,8 +144,8 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
                     ) {
                         when (page) {
                             0 -> {  // 입력 정보
-                                AddReportCard(
-                                    reportAddState = reportAddState,
+                                EditReportCard(
+                                    reportEditState = reportEditState,
                                     onEvent = onEvent
                                 )
 
@@ -160,7 +156,7 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
                                     SubButton(
                                         name = "이전 승인자 불러오기",
                                         wrapContent = true,
-                                        onClick = { onEvent(ReportAddEvent.ClickedGetPrevApprover) }
+                                        onClick = { onEvent(ReportEditEvent.ClickedGetPrevApprover) }
                                     )
 
                                     BasicButton(
@@ -170,8 +166,8 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
                                 }
                             }
                             1 -> {  // 여비계산
-                                AddTripExpenseCard(
-                                    reportAddState = reportAddState,
+                                EditTripExpenseCard(
+                                    reportEditState = reportEditState,
                                     onEvent = onEvent
                                 )
 
@@ -186,7 +182,7 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
 
                                     BasicButton(
                                         name = "저장",
-                                        onClick = { onEvent(ReportAddEvent.ClickedAdd) }
+                                        onClick = { onEvent(ReportEditEvent.ClickedEdit) }
                                     )
                                 }
                             }
@@ -196,25 +192,19 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
             }
         }
     }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            tripViewModel.getTrip(reportAddState.tripInfo.id)
-        }
-    }
 }
 
 /* 복명서 등록 카드 */
 @Composable
-private fun AddReportCard(reportAddState: ReportAddState, onEvent: (ReportAddEvent) -> Unit) {
+private fun EditReportCard(reportEditState: ReportEditState, onEvent: (ReportEditEvent) -> Unit) {
     var openSheet by remember { mutableStateOf(false) }
 
     if (openSheet) {
         ApproverBottomSheet(
-            reportAddState = reportAddState,
+            reportEditState = reportEditState,
             onEvent = onEvent,
             onDismiss = {
-                onEvent(ReportAddEvent.ClickedSearchInitWith(TripExpenseSearchField.APPROVER))
+                onEvent(ReportEditEvent.ClickedSearchInitWith(TripExpenseSearchField.APPROVER))
                 openSheet = false
             }
         )
@@ -231,8 +221,8 @@ private fun AddReportCard(reportAddState: ReportAddState, onEvent: (ReportAddEve
         ) {
             TwoLineSearchEditBar(
                 name = "승인자",
-                value = reportAddState.employeeState.employees
-                    .filter { it.userId in reportAddState.inputData.approverIds }
+                value = reportEditState.employeeState.employees
+                    .filter { it.userId in reportEditState.inputData.approverIds }
                     .joinToString(", ") { it.name },
                 onClick = { openSheet = true },
                 isRequired = true
@@ -240,17 +230,104 @@ private fun AddReportCard(reportAddState: ReportAddState, onEvent: (ReportAddEve
 
             TwoLineBigEditBar(
                 name = "복명내용",
-                value = reportAddState.inputData.content,
-                onValueChange = { onEvent(ReportAddEvent.ChangedContentWith(it)) },
+                value = reportEditState.inputData.content,
+                onValueChange = { onEvent(ReportEditEvent.ChangedContentWith(it)) },
                 isRequired = true
             )
         }
     }
 }
 
+/* 승인자 선택 바텀 시트 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ApproverBottomSheet(
+    reportEditState: ReportEditState,
+    onEvent: (ReportEditEvent) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val lastVisibleIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
+        }.distinctUntilChanged().collect { shouldLoad ->
+            if (shouldLoad && !reportEditState.employeeState.paginationState.isLoading && reportEditState.employeeState.paginationState.currentPage < reportEditState.employeeState.paginationState.totalPage) {
+                onEvent(ReportEditEvent.LoadNextPage)
+            }
+        }
+    }
+
+    ModalBottomSheet(
+        modifier = Modifier.fillMaxSize(),
+        onDismissRequest = { onDismiss() },
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+        containerColor = BackgroundColor
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            SearchBar(
+                modifier = Modifier.fillMaxWidth(),
+                searchState = SearchState(
+                    value = reportEditState.employeeState.searchText,
+                    onValueChange = { onEvent(ReportEditEvent.ChangedSearchValueWith(TripExpenseSearchField.APPROVER, it)) },
+                    onClickSearch = {
+                        if (reportEditState.employeeState.paginationState.currentPage <= reportEditState.employeeState.paginationState.totalPage) {
+                            onEvent(ReportEditEvent.ClickedSearchWith(TripExpenseSearchField.APPROVER))
+                        }
+                    },
+                    onClickInit = { onEvent(ReportEditEvent.ClickedSearchInitWith(TripExpenseSearchField.APPROVER)) }
+                ),
+                hint = "직원명"
+            )
+
+            if (reportEditState.employeeState.employees.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "조회된 결과가 없습니다",
+                        color = TextGray,
+                        fontSize = 15.sp
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    state = listState
+                ) {
+                    items(reportEditState.employeeState.employees) { item ->
+                        val isChecked = reportEditState.inputData.approverIds.any { it == item.userId }
+
+                        EmployeeItem(
+                            info = item,
+                            isChecked = isChecked,
+                            onChecked = { onEvent(ReportEditEvent.SelectedApproverWith(it, item.userId)) }
+                        )
+                    }
+
+                    item {
+                        Spacer(Modifier.height(5.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
 /* 여비계산 등록 카드 */
 @Composable
-private fun AddTripExpenseCard(reportAddState: ReportAddState, onEvent: (ReportAddEvent) -> Unit) {
+private fun EditTripExpenseCard(reportEditState: ReportEditState, onEvent: (ReportEditEvent) -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -274,7 +351,7 @@ private fun AddTripExpenseCard(reportAddState: ReportAddState, onEvent: (ReportA
                 )
 
                 IconButton(
-                    onClick = { onEvent(ReportAddEvent.ClickedAddExpense) }
+                    onClick = { onEvent(ReportEditEvent.ClickedAddExpense) }
                 ) {
                     Icon(
                         imageVector = Icons.Default.AddCircle,
@@ -284,7 +361,7 @@ private fun AddTripExpenseCard(reportAddState: ReportAddState, onEvent: (ReportA
                 }
             }
 
-            if (reportAddState.inputData.tripExpenses.isEmpty()) {
+            if (reportEditState.inputData.tripExpenses.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -297,9 +374,9 @@ private fun AddTripExpenseCard(reportAddState: ReportAddState, onEvent: (ReportA
                 }
             }
             else {
-                reportAddState.inputData.tripExpenses.forEachIndexed { idx, tripExpense ->
+                reportEditState.inputData.tripExpenses.forEachIndexed { idx, tripExpense ->
                     TripExpenseItem(
-                        reportAddState = reportAddState,
+                        reportEditState = reportEditState,
                         idx = idx,
                         onEvent = onEvent
                     )
@@ -311,11 +388,11 @@ private fun AddTripExpenseCard(reportAddState: ReportAddState, onEvent: (ReportA
 
 /* 여비계산 목록 아이템 */
 @Composable
-private fun TripExpenseItem(reportAddState: ReportAddState, idx: Int, onEvent: (ReportAddEvent) -> Unit) {
-    val tripExpenseInfo = reportAddState.inputData.tripExpenses[idx]
+private fun TripExpenseItem(reportEditState: ReportEditState, idx: Int, onEvent: (ReportEditEvent) -> Unit) {
+    val tripExpenseInfo = reportEditState.inputData.tripExpenses[idx]
     val name = when (tripExpenseInfo.type) {
-        "개인" -> reportAddState.employeeState.employees.find { it.userId == tripExpenseInfo.buyerId }?.name ?: ""
-        "법인" -> reportAddState.cardState.cards.find { it.id == tripExpenseInfo.buyerId }?.name ?: ""
+        "개인" -> reportEditState.employeeState.employees.find { it.userId == tripExpenseInfo.buyerId }?.name ?: ""
+        "법인" -> reportEditState.cardState.cards.find { it.id == tripExpenseInfo.buyerId }?.name ?: ""
         else -> ""
     }
 
@@ -324,17 +401,17 @@ private fun TripExpenseItem(reportAddState: ReportAddState, idx: Int, onEvent: (
     if (openSheet) {
         if (tripExpenseInfo.type == "개인") {
             PayerBottomSheet(
-                reportAddState = reportAddState,
+                reportEditState = reportEditState,
                 idx = idx,
                 onEvent = onEvent,
                 onDismiss = {
-                    onEvent(ReportAddEvent.ClickedSearchInitWith(TripExpenseSearchField.PAYER))
+                    onEvent(ReportEditEvent.ClickedSearchInitWith(TripExpenseSearchField.PAYER))
                     openSheet = false
                 }
             )
         } else if (tripExpenseInfo.type == "법인") {
             CardBottomSheet(
-                reportAddState = reportAddState,
+                reportEditState = reportEditState,
                 idx = idx,
                 onEvent = onEvent,
                 onDismiss = { openSheet = false }
@@ -356,7 +433,7 @@ private fun TripExpenseItem(reportAddState: ReportAddState, idx: Int, onEvent: (
                 horizontalArrangement = Arrangement.End
             ) {
                 IconButton(
-                    onClick = { onEvent(ReportAddEvent.ClickedDeleteTripExpenseWith(idx)) }
+                    onClick = { onEvent(ReportEditEvent.ClickedDeleteTripExpenseWith(idx)) }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
@@ -376,7 +453,7 @@ private fun TripExpenseItem(reportAddState: ReportAddState, idx: Int, onEvent: (
                     selected = tripExpenseInfo.type,
                     onSelected = {
                         onEvent(
-                            ReportAddEvent.ChangedExpenseValueWith(
+                            ReportEditEvent.ChangedExpenseValueWith(
                                 TripExpenseField.TYPE,
                                 idx,
                                 it
@@ -418,7 +495,7 @@ private fun TripExpenseItem(reportAddState: ReportAddState, idx: Int, onEvent: (
                     value = tripExpenseInfo.category,
                     onValueChange = {
                         onEvent(
-                            ReportAddEvent.ChangedExpenseValueWith(
+                            ReportEditEvent.ChangedExpenseValueWith(
                                 TripExpenseField.CATEGORY,
                                 idx,
                                 it
@@ -432,7 +509,7 @@ private fun TripExpenseItem(reportAddState: ReportAddState, idx: Int, onEvent: (
                     value = tripExpenseInfo.amount.toString(),
                     onValueChange = {
                         onEvent(
-                            ReportAddEvent.ChangedExpenseValueWith(
+                            ReportEditEvent.ChangedExpenseValueWith(
                                 TripExpenseField.AMOUNT,
                                 idx,
                                 it
@@ -446,100 +523,13 @@ private fun TripExpenseItem(reportAddState: ReportAddState, idx: Int, onEvent: (
     }
 }
 
-/* 승인자 선택 바텀 시트 */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ApproverBottomSheet(
-    reportAddState: ReportAddState,
-    onEvent: (ReportAddEvent) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val sheetState = rememberModalBottomSheetState()
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(listState) {
-        snapshotFlow {
-            val info = listState.layoutInfo
-            val lastVisibleIndex = info.visibleItemsInfo.lastOrNull()?.index ?: -1
-            val total = info.totalItemsCount
-            lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
-        }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !reportAddState.employeeState.paginationState.isLoading && reportAddState.employeeState.paginationState.currentPage < reportAddState.employeeState.paginationState.totalPage) {
-                onEvent(ReportAddEvent.LoadNextPage)
-            }
-        }
-    }
-
-    ModalBottomSheet(
-        modifier = Modifier.fillMaxSize(),
-        onDismissRequest = { onDismiss() },
-        sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
-        containerColor = BackgroundColor
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp, horizontal = 26.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            SearchBar(
-                modifier = Modifier.fillMaxWidth(),
-                searchState = SearchState(
-                    value = reportAddState.employeeState.searchText,
-                    onValueChange = { onEvent(ReportAddEvent.ChangedSearchValueWith(TripExpenseSearchField.APPROVER, it)) },
-                    onClickSearch = {
-                        if (reportAddState.employeeState.paginationState.currentPage <= reportAddState.employeeState.paginationState.totalPage) {
-                            onEvent(ReportAddEvent.ClickedSearchWith(TripExpenseSearchField.APPROVER))
-                        }
-                    },
-                    onClickInit = { onEvent(ReportAddEvent.ClickedSearchInitWith(TripExpenseSearchField.APPROVER)) }
-                ),
-                hint = "직원명"
-            )
-
-            if (reportAddState.employeeState.employees.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "조회된 결과가 없습니다",
-                        color = TextGray,
-                        fontSize = 15.sp
-                    )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    state = listState
-                ) {
-                    items(reportAddState.employeeState.employees) { item ->
-                        val isChecked = reportAddState.inputData.approverIds.any { it == item.userId }
-
-                        EmployeeItem(
-                            info = item,
-                            isChecked = isChecked,
-                            onChecked = { onEvent(ReportAddEvent.SelectedApproverWith(it, item.userId)) }
-                        )
-                    }
-
-                    item {
-                        Spacer(Modifier.height(5.dp))
-                    }
-                }
-            }
-        }
-    }
-}
-
 /* 결제자 선택 바텀 시트 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PayerBottomSheet(
-    reportAddState: ReportAddState,
+    reportEditState: ReportEditState,
     idx: Int,
-    onEvent: (ReportAddEvent) -> Unit,
+    onEvent: (ReportEditEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -552,8 +542,8 @@ private fun PayerBottomSheet(
             val total = info.totalItemsCount
             lastVisibleIndex >= total - 3 && total > 0  // 끝에서 2개 남았을 때 미리 조회
         }.distinctUntilChanged().collect { shouldLoad ->
-            if (shouldLoad && !reportAddState.employeeState.paginationState.isLoading && reportAddState.employeeState.paginationState.currentPage < reportAddState.employeeState.paginationState.totalPage) {
-                onEvent(ReportAddEvent.LoadNextPage)
+            if (shouldLoad && !reportEditState.employeeState.paginationState.isLoading && reportEditState.employeeState.paginationState.currentPage < reportEditState.employeeState.paginationState.totalPage) {
+                onEvent(ReportEditEvent.LoadNextPage)
             }
         }
     }
@@ -573,13 +563,13 @@ private fun PayerBottomSheet(
             SearchBar(
                 modifier = Modifier.fillMaxWidth(),
                 searchState = SearchState(
-                    value = reportAddState.employeeState.searchText,
-                    onValueChange = { onEvent(ReportAddEvent.ChangedSearchValueWith(TripExpenseSearchField.PAYER, it)) },
+                    value = reportEditState.employeeState.searchText,
+                    onValueChange = { onEvent(ReportEditEvent.ChangedSearchValueWith(TripExpenseSearchField.PAYER, it)) },
                     onClickSearch = {
-                        if (reportAddState.employeeState.paginationState.currentPage <= reportAddState.employeeState.paginationState.totalPage) {
-                            onEvent(ReportAddEvent.ClickedSearchWith(TripExpenseSearchField.PAYER)) }
+                        if (reportEditState.employeeState.paginationState.currentPage <= reportEditState.employeeState.paginationState.totalPage) {
+                            onEvent(ReportEditEvent.ClickedSearchWith(TripExpenseSearchField.PAYER)) }
                     },
-                    onClickInit = { onEvent(ReportAddEvent.ClickedSearchInitWith(TripExpenseSearchField.PAYER)) }
+                    onClickInit = { onEvent(ReportEditEvent.ClickedSearchInitWith(TripExpenseSearchField.PAYER)) }
                 ),
                 hint = "직원명"
             )
@@ -589,7 +579,7 @@ private fun PayerBottomSheet(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 state = listState
             ) {
-                if (reportAddState.employeeState.employees.isEmpty()) {
+                if (reportEditState.employeeState.employees.isEmpty()) {
                     item {
                         Box(
                             modifier = Modifier.fillMaxSize().padding(top = 30.dp),
@@ -603,11 +593,11 @@ private fun PayerBottomSheet(
                         }
                     }
                 } else {
-                    items(reportAddState.employeeState.employees) { employeeInfo ->
+                    items(reportEditState.employeeState.employees) { employeeInfo ->
                         ManagerInfoItem(
                             managerInfo = employeeInfo,
                             onClick = {
-                                onEvent(ReportAddEvent.SelectedManagerWith(employeeInfo.userId, idx))
+                                onEvent(ReportEditEvent.SelectedManagerWith(employeeInfo.userId, idx))
                                 onDismiss()
                             }
                         )
@@ -626,9 +616,9 @@ private fun PayerBottomSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CardBottomSheet(
-    reportAddState: ReportAddState,
+    reportEditState: ReportEditState,
     idx: Int,
-    onEvent: (ReportAddEvent) -> Unit,
+    onEvent: (ReportEditEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
     val field = TripExpenseSearchField.CARD
@@ -649,8 +639,8 @@ private fun CardBottomSheet(
             DropDownField(
                 modifier = Modifier.fillMaxWidth(),
                 options = listOf("전체", "카드명"),
-                selected = reportAddState.cardState.type,
-                onSelected = { onEvent(ReportAddEvent.SelectedCardTypeWith(it)) }
+                selected = reportEditState.cardState.type,
+                onSelected = { onEvent(ReportEditEvent.SelectedCardTypeWith(it)) }
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -658,16 +648,16 @@ private fun CardBottomSheet(
             SearchBar(
                 modifier = Modifier.fillMaxWidth(),
                 searchState = SearchState(
-                    value = reportAddState.cardState.searchText,
-                    onValueChange = { onEvent(ReportAddEvent.ChangedSearchValueWith(field, it)) },
-                    onClickSearch = { onEvent(ReportAddEvent.ClickedSearchWith(field)) },
-                    onClickInit = { onEvent(ReportAddEvent.ClickedSearchInitWith(field)) }
+                    value = reportEditState.cardState.searchText,
+                    onValueChange = { onEvent(ReportEditEvent.ChangedSearchValueWith(field, it)) },
+                    onClickSearch = { onEvent(ReportEditEvent.ClickedSearchWith(field)) },
+                    onClickInit = { onEvent(ReportEditEvent.ClickedSearchInitWith(field)) }
                 )
             )
 
             Divider(modifier = Modifier.padding(vertical = 20.dp))
 
-            if (reportAddState.cardState.cards.isEmpty()) {
+            if (reportEditState.cardState.cards.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxWidth().padding(top = 30.dp),
                     contentAlignment = Alignment.Center
@@ -684,12 +674,12 @@ private fun CardBottomSheet(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(reportAddState.cardState.cards) { cardInfo ->
+                    items(reportEditState.cardState.cards) { cardInfo ->
                         // TODO: 체크박스 빼기, 추가한 여비계산 아이템 삭제 버튼 추가
                         CardListItem(
                             cardInfo = cardInfo,
                             onClick = {
-                                onEvent(ReportAddEvent.SelectedCardWith(cardInfo, idx))
+                                onEvent(ReportEditEvent.SelectedCardWith(cardInfo, idx))
                                 onDismiss()
                             }
                         )
@@ -701,24 +691,5 @@ private fun CardBottomSheet(
                 }
             }
         }
-    }
-}
-
-/* 카드 정보 목록 아이템 */
-@Composable
-fun CardListItem(
-    cardInfo: CardDTO.CardsInfo,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(1.dp),
-        onClick = onClick
-    ) {
-        Spacer(modifier = Modifier.height(12.dp))
-        TwoInfoBar(cardInfo.name, "")
-        Spacer(modifier = Modifier.height(12.dp))
     }
 }

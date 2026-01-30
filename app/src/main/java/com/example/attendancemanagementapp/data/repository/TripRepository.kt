@@ -123,6 +123,17 @@ class TripRepository @Inject constructor(private val service: TripService, priva
         emit(Result.failure(e))
     }
 
+    // 출장 복명서 수정
+    fun updateTripReport(id: String, request: TripDTO.UpdateTripReportRequest): Flow<Result<TripDTO.GetTripReportResponse>> = flow {
+        val response = service.updateTripReport(
+            id = id,
+            request = request
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
     // 출장 복명서 삭제
     fun deleteTripReport(id: String): Flow<Result<Unit>> = flow {
         val response = service.deleteTripReport(
@@ -138,6 +149,14 @@ class TripRepository @Inject constructor(private val service: TripService, priva
         val response = service.cancelTripReport(
             id = id
         )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 이전 승인자 불러오기 (복명서)
+    fun getReportPrevApprovers(): Flow<Result<ApproverDTO.GetPrevApproversResponse>> = flow {
+        val response = service.getReportPrevApprovers()
         emit(Result.success(response))
     }.catch { e ->
         emit(Result.failure(e))

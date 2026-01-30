@@ -52,6 +52,7 @@ import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.TripDTO
 import com.example.attendancemanagementapp.ui.attendance.report.ReportViewModel
 import com.example.attendancemanagementapp.ui.attendance.report.add.ReportAddEvent
+import com.example.attendancemanagementapp.ui.attendance.report.edit.ReportEditEvent
 import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicDialog
@@ -214,20 +215,22 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel,
                                             // TODO: 출장 승인 기능 생기면 주석 해제 (승인 상태인 경우 수정 버튼 비출력, 복명서 작성 버튼 출력)
                                             // 승인되었으면 복명서 작성 버튼 활성화
                                             //                    if (tripDetailState.tripInfo.status == "승인") {
-                                            Spacer(modifier = Modifier.width(10.dp))
+                                            if (tripDetailState.tripInfo.hasReport == "N") {
+                                                Spacer(modifier = Modifier.width(10.dp))
 
-                                            BasicButton(
-                                                name = "복명서 작성",
-                                                wrapContent = true,
-                                                onClick = {
-                                                    reportViewModel.onAddEvent(
-                                                        ReportAddEvent.InitWith(
-                                                            tripDetailState.tripInfo
+                                                BasicButton(
+                                                    name = "복명서 작성",
+                                                    wrapContent = true,
+                                                    onClick = {
+                                                        reportViewModel.onAddEvent(
+                                                            ReportAddEvent.InitWith(
+                                                                tripDetailState.tripInfo
+                                                            )
                                                         )
-                                                    )
-                                                    onEvent(TripDetailEvent.ClickedAddReport)
-                                                }
-                                            )
+                                                        onEvent(TripDetailEvent.ClickedAddReport)
+                                                    }
+                                                )
+                                            }
                                             //                    }
                                         }
                                     }
@@ -255,7 +258,7 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel,
                                             BasicButton(
                                                 name = "복명서 다운로드",
                                                 wrapContent = true,
-                                                onClick = {}
+                                                onClick = { onEvent(TripDetailEvent.ClickedDownloadReport) }
                                             )
                                         }
 
@@ -263,7 +266,10 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel,
                                             BasicButton(
                                                 name = if (tripDetailState.tripInfo.rejection.isNullOrBlank()) "복명서 수정" else "복명서 재신청",
                                                 wrapContent = true,
-                                                onClick = {}
+                                                onClick = {
+                                                    reportViewModel.onEditEvent(ReportEditEvent.InitWith(tripDetailState.tripInfo, reportDetailState.reportInfo))
+                                                    onEvent(TripDetailEvent.ClickedUpdateReport)
+                                                }
                                             )
                                         }
 

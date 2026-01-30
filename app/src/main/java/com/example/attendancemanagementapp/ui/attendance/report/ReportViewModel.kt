@@ -12,6 +12,9 @@ import com.example.attendancemanagementapp.ui.attendance.report.add.ReportAddRed
 import com.example.attendancemanagementapp.ui.attendance.report.add.ReportAddState
 import com.example.attendancemanagementapp.ui.attendance.report.add.TripExpenseSearchField
 import com.example.attendancemanagementapp.ui.attendance.report.detail.ReportDetailState
+import com.example.attendancemanagementapp.ui.attendance.report.edit.ReportEditEvent
+import com.example.attendancemanagementapp.ui.attendance.report.edit.ReportEditReducer
+import com.example.attendancemanagementapp.ui.attendance.report.edit.ReportEditState
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 import com.example.attendancemanagementapp.util.ErrorHandler
@@ -41,6 +44,8 @@ class ReportViewModel @Inject constructor(private val tripRepository: TripReposi
     val reportAddState = _reportAddState.asStateFlow()
     private val _reportDetailState = MutableStateFlow(ReportDetailState())
     val reportDetailState = _reportDetailState.asStateFlow()
+    private val _reportEditState = MutableStateFlow(ReportEditState())
+    val reportEditState = _reportEditState.asStateFlow()
 
     fun onAddEvent(e: ReportAddEvent) {
         _reportAddState.update { ReportAddReducer.reduce(it, e) }
@@ -66,8 +71,36 @@ class ReportViewModel @Inject constructor(private val tripRepository: TripReposi
             }
             ReportAddEvent.LoadNextPage -> getEmployees(ReportTarget.ADD)
             ReportAddEvent.ClickedAdd -> addTripReport()
-            ReportAddEvent.ClickedGetPrevApprover -> {}
-//            ReportAddEvent.ClickedGetPrevApprover -> getPrevApprovers(ReportTarget.ADD)
+            ReportAddEvent.ClickedGetPrevApprover -> getPrevApprover(ReportTarget.ADD)
+            else -> Unit
+        }
+    }
+
+    fun onEditEvent(e: ReportEditEvent) {
+        _reportEditState.update { ReportEditReducer.reduce(it, e) }
+
+        when (e) {
+            is ReportEditEvent.InitWith -> {
+                getEmployees(ReportTarget.EDIT)
+                getCards(ReportTarget.EDIT)
+            }
+            is ReportEditEvent.ClickedSearchWith -> {
+                when (e.field) {
+                    TripExpenseSearchField.APPROVER -> getEmployees(ReportTarget.EDIT)
+                    TripExpenseSearchField.CARD -> getCards(ReportTarget.EDIT)
+                    TripExpenseSearchField.PAYER -> getEmployees(ReportTarget.EDIT)
+                }
+            }
+            is ReportEditEvent.ClickedSearchInitWith -> {
+                when (e.field) {
+                    TripExpenseSearchField.APPROVER -> getEmployees(ReportTarget.EDIT)
+                    TripExpenseSearchField.CARD -> getCards(ReportTarget.EDIT)
+                    TripExpenseSearchField.PAYER -> getEmployees(ReportTarget.EDIT)
+                }
+            }
+            ReportEditEvent.LoadNextPage -> getEmployees(ReportTarget.EDIT)
+            ReportEditEvent.ClickedEdit -> updateTripReport()
+            ReportEditEvent.ClickedGetPrevApprover -> getPrevApprover(ReportTarget.EDIT)
             else -> Unit
         }
     }
@@ -87,6 +120,29 @@ class ReportViewModel @Inject constructor(private val tripRepository: TripReposi
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "addTripReport")
+                    }
+            }
+        }
+    }
+
+    /* 출장 복명서 수정 */
+    fun updateTripReport() {
+        viewModelScope.launch {
+            tripRepository.updateTripReport(
+                id = reportEditState.value.tripInfo.id,
+                request = reportEditState.value.inputData
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        _reportDetailState.update { it.copy(reportInfo = data) }
+
+                        _uiEffect.emit(UiEffect.ShowToast("출장 복명서 수정이 완료되었습니다"))
+                        _uiEffect.emit(UiEffect.NavigateBack)
+
+                        Log.d(TAG, "[updateTripReport] 출장 복명서 수정 성공\n${data}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "updateTripReport")
                     }
             }
         }
@@ -158,17 +214,42 @@ class ReportViewModel @Inject constructor(private val tripRepository: TripReposi
         }
     }
 
+    /* 이전 승인자 불러오기 */
+    fun getPrevApprover(target: ReportTarget) {
+        viewModelScope.launch {
+            tripRepository.getReportPrevApprovers().collect { result ->
+                result
+                    .onSuccess { data ->
+                        val newApproverIds = data.approvers.map { it.userId }
+
+                        when(target) {
+                            ReportTarget.ADD -> _reportAddState.update { it.copy(it.inputData.copy(approverIds = newApproverIds)) }
+                            ReportTarget.EDIT -> _reportEditState.update { it.copy(it.inputData.copy(approverIds = newApproverIds)) }
+                        }
+
+                        _uiEffect.emit(UiEffect.ShowToast("이전 승인자를 불러왔습니다"))
+
+                        Log.d(TAG, "[getPrevApprovers-${target}] 이전 승인자 불러오기 성공\n${data}")
+
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "getPrevApprover")
+                    }
+            }
+        }
+    }
+
     /* 카드 목록 조회 및 검색 */
     fun getCards(target: ReportTarget) {
         val state = when (target) {
             ReportTarget.ADD -> reportAddState.value.cardState
-            ReportTarget.EDIT -> reportAddState.value.cardState
+            ReportTarget.EDIT -> reportEditState.value.cardState
         }
 
         val updateState: (CardManageState) -> Unit = { newState ->
             when (target) {
                 ReportTarget.ADD -> _reportAddState.update { it.copy(cardState = newState) }
-                ReportTarget.EDIT -> _reportAddState.update { it.copy(cardState = newState) }
+                ReportTarget.EDIT -> _reportEditState.update { it.copy(cardState = newState) }
             }
         }
 
@@ -194,13 +275,13 @@ class ReportViewModel @Inject constructor(private val tripRepository: TripReposi
     fun getEmployees(target: ReportTarget) {
         val state = when (target) {
             ReportTarget.ADD -> reportAddState.value.employeeState
-            ReportTarget.EDIT -> reportAddState.value.employeeState
+            ReportTarget.EDIT -> reportEditState.value.employeeState
         }
 
         val updateState: (EmployeeSearchState) -> Unit = { newState ->
             when (target) {
                 ReportTarget.ADD -> _reportAddState.update { it.copy(employeeState = newState) }
-                ReportTarget.EDIT -> _reportAddState.update { it.copy(employeeState = newState) }
+                ReportTarget.EDIT -> _reportEditState.update { it.copy(employeeState = newState) }
             }
         }
 

@@ -166,4 +166,11 @@ object TripDTO {
         @Json(name = "setleMbyNm")  val buyerNm: String = "",   // 결제 주체명 (법인카드/결제자)
         @Json(name = "ty")          val category: String = ""   // 타입 (교통, 운임비 등)
     )
+
+    /* 출장 복명서 수정 요청 */
+    data class UpdateTripReportRequest(
+        @Json(name = "cn")          val content: String = "",                                   // 복명내용
+        @Json(name = "confmerIds")  val approverIds: List<String> = emptyList(),                // 승인자 아이디
+        @Json(name = "trvctList")   val tripExpenses: List<AddTripExpenseInfo> = emptyList()    // 여비 계산 목록
+    )
 }

@@ -1,88 +1,83 @@
-package com.example.attendancemanagementapp.ui.attendance.report.add
+package com.example.attendancemanagementapp.ui.attendance.report.edit
 
 import com.example.attendancemanagementapp.data.dto.CardDTO
 import com.example.attendancemanagementapp.data.dto.TripDTO
-import com.example.attendancemanagementapp.ui.attendance.report.edit.ReportEditEvent
+import com.example.attendancemanagementapp.ui.attendance.report.add.ReportAddEvent
+import com.example.attendancemanagementapp.ui.attendance.report.add.TripExpenseField
+import com.example.attendancemanagementapp.ui.attendance.report.add.TripExpenseSearchField
 
-enum class TripExpenseField {
-    AMOUNT, CATEGORY, TYPE
-}
-
-enum class TripExpenseSearchField {
-    APPROVER, CARD, PAYER
-}
-
-sealed interface ReportAddEvent {
+sealed interface ReportEditEvent {
     // 초기화
     data class InitWith(
-        val tripInfo: TripDTO.GetTripResponse
-    ): ReportAddEvent
+        val tripInfo: TripDTO.GetTripResponse,
+        val reportInfo: TripDTO.GetTripReportResponse
+    ): ReportEditEvent
 
     // 다음 페이지 조회 이벤트
-    data object LoadNextPage: ReportAddEvent
+    data object LoadNextPage: ReportEditEvent
 
     // 검색어 필드 값 변경 이벤트
     data class ChangedSearchValueWith(
         val field: TripExpenseSearchField,
         val value: String
-    ): ReportAddEvent
+    ): ReportEditEvent
 
     // 검색 버튼 클릭 이벤트
     data class ClickedSearchWith(
         val field: TripExpenseSearchField
-    ): ReportAddEvent
+    ): ReportEditEvent
 
     // 검색어 초기화 버튼 클릭 이벤트
     data class ClickedSearchInitWith(
         val field: TripExpenseSearchField
-    ): ReportAddEvent
+    ): ReportEditEvent
 
     // 승인자 선택 이벤트
     data class SelectedApproverWith(
         val checked: Boolean,
         val id: String
-    ): ReportAddEvent
+    ): ReportEditEvent
 
     // 복명내용 필드 값 변경 이벤트
     data class ChangedContentWith(
         val value: String
-    ): ReportAddEvent
+    ): ReportEditEvent
 
     // 여비계산 아이템 추가 버튼 클릭 이벤트
-    data object ClickedAddExpense: ReportAddEvent
+    data object ClickedAddExpense: ReportEditEvent
 
     // 여비계산 아이템 값 변경 이벤트
     data class ChangedExpenseValueWith(
         val field: TripExpenseField,
         val idx: Int,
         val value: String
-    ): ReportAddEvent
+    ): ReportEditEvent
 
     // 카드 검색 타입 선택 이벤트
     data class SelectedCardTypeWith(
         val type: String
-    ): ReportAddEvent
+    ): ReportEditEvent
 
     // 카드 체크박스 클릭 이벤트
     data class SelectedCardWith(
         val card: CardDTO.CardsInfo,
         val idx: Int
-    ): ReportAddEvent
+    ): ReportEditEvent
 
     // 결제자 선택 이벤트
     data class SelectedManagerWith(
         val id: String,
         val idx: Int
-    ): ReportAddEvent
+    ): ReportEditEvent
 
     // 이전 승인자 불러오기 버튼 클릭 이벤트
-    data object ClickedGetPrevApprover: ReportAddEvent
+    data object ClickedGetPrevApprover: ReportEditEvent
 
-    // 신청 버튼 클릭 이벤트
-    data object ClickedAdd: ReportAddEvent
+    // 수정 버튼 클릭 이벤트
+    data object ClickedEdit: ReportEditEvent
 
     // 여비계산 아이템 삭제 버튼 클릭 이벤트
     data class ClickedDeleteTripExpenseWith(
         val idx: Int
-    ): ReportAddEvent
+    ): ReportEditEvent
 }

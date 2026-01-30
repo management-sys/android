@@ -108,6 +108,8 @@ class TripViewModel @Inject constructor(private val tripRepository: TripReposito
             }
             TripDetailEvent.ClickedDownload -> downloadTripPdf()
             TripDetailEvent.ClickedAddReport -> _uiEffect.tryEmit(UiEffect.Navigate("reportAdd"))
+            TripDetailEvent.ClickedUpdateReport -> _uiEffect.tryEmit(UiEffect.Navigate("reportEdit"))
+            TripDetailEvent.ClickedDownloadReport -> {}
             else -> Unit
         }
     }

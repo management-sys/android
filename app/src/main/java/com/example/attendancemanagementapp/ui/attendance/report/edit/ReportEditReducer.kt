@@ -1,35 +1,50 @@
-package com.example.attendancemanagementapp.ui.attendance.report.add
+package com.example.attendancemanagementapp.ui.attendance.report.edit
 
 import com.example.attendancemanagementapp.data.dto.CardDTO
 import com.example.attendancemanagementapp.data.dto.TripDTO
+import com.example.attendancemanagementapp.ui.attendance.report.add.TripExpenseField
+import com.example.attendancemanagementapp.ui.attendance.report.add.TripExpenseSearchField
 
-object ReportAddReducer {
-    fun reduce(s: ReportAddState, e: ReportAddEvent): ReportAddState = when (e) {
-        is ReportAddEvent.InitWith -> handleInit(e.tripInfo)
-        is ReportAddEvent.ChangedSearchValueWith -> handleChangedSearchValue(s, e.field, e.value)
-        is ReportAddEvent.ClickedSearchInitWith -> handleClickedSearchInit(s, e.field)
-        is ReportAddEvent.SelectedApproverWith -> handleSelectedApprover(s, e. checked, e.id)
-        is ReportAddEvent.ChangedContentWith -> handleChangedContent(s, e.value)
-        ReportAddEvent.ClickedAddExpense -> handleClickedAddExpense(s)
-        is ReportAddEvent.SelectedCardTypeWith -> handleSelectedCardType(s, e.type)
-        is ReportAddEvent.SelectedCardWith -> handleCheckCard(s, e.card, e.idx)
-        is ReportAddEvent.SelectedManagerWith -> handleSelectedManager(s, e.id, e.idx)
-        is ReportAddEvent.ChangedExpenseValueWith -> handleChangedExpenseValue(s, e.field, e.idx, e.value)
-        is ReportAddEvent.ClickedDeleteTripExpenseWith -> handleClickedDeleteTripExpense(s, e.idx)
+object ReportEditReducer {
+    fun reduce(s: ReportEditState, e: ReportEditEvent): ReportEditState = when (e) {
+        is ReportEditEvent.InitWith -> handleInit(e.tripInfo, e.reportInfo)
+        is ReportEditEvent.ChangedSearchValueWith -> handleChangedSearchValue(s, e.field, e.value)
+        is ReportEditEvent.ClickedSearchInitWith -> handleClickedSearchInit(s, e.field)
+        is ReportEditEvent.SelectedApproverWith -> handleSelectedApprover(s, e. checked, e.id)
+        is ReportEditEvent.ChangedContentWith -> handleChangedContent(s, e.value)
+        ReportEditEvent.ClickedAddExpense -> handleClickedAddExpense(s)
+        is ReportEditEvent.SelectedCardTypeWith -> handleSelectedCardType(s, e.type)
+        is ReportEditEvent.SelectedCardWith -> handleCheckCard(s, e.card, e.idx)
+        is ReportEditEvent.SelectedManagerWith -> handleSelectedManager(s, e.id, e.idx)
+        is ReportEditEvent.ChangedExpenseValueWith -> handleChangedExpenseValue(s, e.field, e.idx, e.value)
+        is ReportEditEvent.ClickedDeleteTripExpenseWith -> handleClickedDeleteTripExpense(s, e.idx)
         else -> s
     }
 
     private fun handleInit(
-        tripInfo: TripDTO.GetTripResponse
-    ): ReportAddState {
-        return ReportAddState(inputData = TripDTO.AddTripReportRequest(tripId = tripInfo.id), tripInfo = tripInfo)
+        tripInfo: TripDTO.GetTripResponse,
+        reportInfo: TripDTO.GetTripReportResponse
+    ): ReportEditState {
+        val inputData = TripDTO.UpdateTripReportRequest(
+            content = reportInfo.content,
+            approverIds = listOf(reportInfo.approverId),
+            tripExpenses = reportInfo.tripExpenses.map { tripExpenseInfo ->
+                TripDTO.AddTripExpenseInfo(
+                    amount = tripExpenseInfo.amount,
+                    type = tripExpenseInfo.type,
+                    buyerId = tripExpenseInfo.buyerId,
+                    category = tripExpenseInfo.category
+                )
+            }
+        )
+        return ReportEditState(inputData = inputData, tripInfo = tripInfo)
     }
 
     private fun handleChangedSearchValue(
-        state: ReportAddState,
+        state: ReportEditState,
         field: TripExpenseSearchField,
         value: String
-    ): ReportAddState {
+    ): ReportEditState {
         return when (field) {
             TripExpenseSearchField.APPROVER -> {
                 state.copy(employeeState = state.employeeState.copy(searchText = value, paginationState = state.employeeState.paginationState.copy(currentPage = 0)))
@@ -44,9 +59,9 @@ object ReportAddReducer {
     }
 
     private fun handleClickedSearchInit(
-        state: ReportAddState,
+        state: ReportEditState,
         field: TripExpenseSearchField
-    ): ReportAddState {
+    ): ReportEditState {
         return when (field) {
             TripExpenseSearchField.APPROVER -> {
                 state.copy(employeeState = state.employeeState.copy(searchText = "", paginationState = state.employeeState.paginationState.copy(currentPage = 0)))
@@ -61,39 +76,39 @@ object ReportAddReducer {
     }
 
     private fun handleSelectedApprover(
-        state: ReportAddState,
+        state: ReportEditState,
         checked: Boolean,
         id: String
-    ): ReportAddState {
+    ): ReportEditState {
         val updatedList = if (checked) state.inputData.approverIds + id else state.inputData.approverIds - id
         return state.copy(inputData = state.inputData.copy(approverIds = updatedList))
     }
 
     private fun handleChangedContent(
-        state: ReportAddState,
+        state: ReportEditState,
         value: String
-    ): ReportAddState {
+    ): ReportEditState {
         return state.copy(inputData = state.inputData.copy(content = value))
     }
 
     private fun handleClickedAddExpense(
-        state: ReportAddState
-    ): ReportAddState {
+        state: ReportEditState
+    ): ReportEditState {
         return state.copy(inputData = state.inputData.copy(tripExpenses = state.inputData.tripExpenses + TripDTO.AddTripExpenseInfo()))
     }
 
     private fun handleSelectedCardType(
-        state: ReportAddState,
+        state: ReportEditState,
         type: String
-    ): ReportAddState {
+    ): ReportEditState {
         return state.copy(cardState = state.cardState.copy(type = type))
     }
 
     private fun handleCheckCard(
-        state: ReportAddState,
+        state: ReportEditState,
         card: CardDTO.CardsInfo,
         idx: Int
-    ): ReportAddState {
+    ): ReportEditState {
         val newTripExpenses = state.inputData.tripExpenses.mapIndexed { index, tripExpense ->
             if (index == idx) {
                 tripExpense.copy(buyerId = card.id)
@@ -106,10 +121,10 @@ object ReportAddReducer {
     }
 
     private fun handleSelectedManager(
-        state: ReportAddState,
+        state: ReportEditState,
         id: String,
         idx: Int
-    ): ReportAddState {
+    ): ReportEditState {
         val newTripExpenses = state.inputData.tripExpenses.mapIndexed { index, tripExpense ->
             if (index == idx) {
                 tripExpense.copy(buyerId = id)
@@ -122,11 +137,11 @@ object ReportAddReducer {
     }
 
     private fun handleChangedExpenseValue(
-        state: ReportAddState,
+        state: ReportEditState,
         field: TripExpenseField,
         idx: Int,
         value: String
-    ): ReportAddState {
+    ): ReportEditState {
         val tripExpense = state.inputData.tripExpenses[idx]
         val newTripExpense = when (field) {
             TripExpenseField.TYPE -> tripExpense.copy(type = value, buyerId = "")
@@ -145,9 +160,9 @@ object ReportAddReducer {
     }
 
     private fun handleClickedDeleteTripExpense(
-        state: ReportAddState,
+        state: ReportEditState,
         idx: Int
-    ): ReportAddState {
+    ): ReportEditState {
         val tripExpenses = state.inputData.tripExpenses
         val updated = tripExpenses.toMutableList().apply { removeAt(idx) }
 

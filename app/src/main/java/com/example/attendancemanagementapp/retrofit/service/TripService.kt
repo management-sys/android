@@ -77,6 +77,12 @@ interface TripService {
         @Path("bsrpId") id: String
     ): TripDTO.GetTripReportResponse
 
+    @PUT("/api/bsrp-rports/{bsrpId}")
+    suspend fun updateTripReport(
+        @Path("bsrpId") id: String,
+        @Body request: TripDTO.UpdateTripReportRequest
+    ): TripDTO.GetTripReportResponse
+
     // 출장 복명서 삭제
     @DELETE("/api/bsrp-rports/{bsrpId}")
     suspend fun deleteTripReport(
@@ -88,4 +94,8 @@ interface TripService {
     suspend fun cancelTripReport(
         @Path("bsrpId") id: String
     ): TripDTO.GetTripReportResponse
+
+    // 이전 승인자 불러오기 (복명서)
+    @GET("/api/bsrp-rports/latest-confmers")
+    suspend fun getReportPrevApprovers(): ApproverDTO.GetPrevApproversResponse
 }
