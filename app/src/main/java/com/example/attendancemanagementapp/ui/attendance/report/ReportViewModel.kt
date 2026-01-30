@@ -11,6 +11,7 @@ import com.example.attendancemanagementapp.ui.attendance.report.add.ReportAddEve
 import com.example.attendancemanagementapp.ui.attendance.report.add.ReportAddReducer
 import com.example.attendancemanagementapp.ui.attendance.report.add.ReportAddState
 import com.example.attendancemanagementapp.ui.attendance.report.add.TripExpenseSearchField
+import com.example.attendancemanagementapp.ui.attendance.report.detail.ReportDetailState
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 import com.example.attendancemanagementapp.util.ErrorHandler
@@ -38,6 +39,8 @@ class ReportViewModel @Inject constructor(private val tripRepository: TripReposi
 
     private val _reportAddState = MutableStateFlow(ReportAddState())
     val reportAddState = _reportAddState.asStateFlow()
+    private val _reportDetailState = MutableStateFlow(ReportDetailState())
+    val reportDetailState = _reportDetailState.asStateFlow()
 
     fun onAddEvent(e: ReportAddEvent) {
         _reportAddState.update { ReportAddReducer.reduce(it, e) }
@@ -84,6 +87,25 @@ class ReportViewModel @Inject constructor(private val tripRepository: TripReposi
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "addTripReport")
+                    }
+            }
+        }
+    }
+
+    /* 출장 복명서 조회 */
+    fun getTripReport(id: String) {
+        viewModelScope.launch {
+            tripRepository.getTripReport(
+                id = id
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        _reportDetailState.update { it.copy(reportInfo = data) }
+
+                        Log.d(TAG, "출장 복명서 조회 성공\n${data}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "getTripReport")
                     }
             }
         }

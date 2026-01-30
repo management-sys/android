@@ -78,7 +78,7 @@ object ReportAddReducer {
     private fun handleClickedAddExpense(
         state: ReportAddState
     ): ReportAddState {
-        return state.copy(inputData = state.inputData.copy(tripExpenses = state.inputData.tripExpenses + TripDTO.TripExpenseInfo()))
+        return state.copy(inputData = state.inputData.copy(tripExpenses = state.inputData.tripExpenses + TripDTO.AddTripExpenseInfo()))
     }
 
     private fun handleSelectedCardType(
@@ -95,7 +95,7 @@ object ReportAddReducer {
     ): ReportAddState {
         val newTripExpenses = state.inputData.tripExpenses.mapIndexed { index, tripExpense ->
             if (index == idx) {
-                tripExpense.copy(id = card.id)
+                tripExpense.copy(buyerId = card.id)
             } else {
                 tripExpense
             }
@@ -111,7 +111,7 @@ object ReportAddReducer {
     ): ReportAddState {
         val newTripExpenses = state.inputData.tripExpenses.mapIndexed { index, tripExpense ->
             if (index == idx) {
-                tripExpense.copy(id = id)
+                tripExpense.copy(buyerId = id)
             } else {
                 tripExpense
             }
@@ -128,7 +128,7 @@ object ReportAddReducer {
     ): ReportAddState {
         val tripExpense = state.inputData.tripExpenses[idx]
         val newTripExpense = when (field) {
-            TripExpenseField.TYPE -> tripExpense.copy(type = value, id = "")
+            TripExpenseField.TYPE -> tripExpense.copy(type = value, buyerId = "")
             TripExpenseField.AMOUNT -> tripExpense.copy(amount = value.toInt())
             TripExpenseField.CATEGORY -> tripExpense.copy(category = value)
         }

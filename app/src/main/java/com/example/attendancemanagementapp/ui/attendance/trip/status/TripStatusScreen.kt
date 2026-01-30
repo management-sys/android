@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.attendancemanagementapp.data.dto.TripDTO
+import com.example.attendancemanagementapp.ui.attendance.report.ReportViewModel
 import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
 import com.example.attendancemanagementapp.ui.components.BasicOutlinedTextField
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -47,7 +48,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 /* 출장 현황 화면 */
 @Composable
-fun TripStatusScreen(navController: NavController, tripViewModel: TripViewModel) {
+fun TripStatusScreen(navController: NavController, tripViewModel: TripViewModel, reportViewModel: ReportViewModel) {
     val onEvent = tripViewModel::onStatusEvent
     val tripStatusState by tripViewModel.tripStatusState.collectAsState()
 
@@ -72,7 +73,8 @@ fun TripStatusScreen(navController: NavController, tripViewModel: TripViewModel)
         ) {
             TripStatusCard(
                 tripStatusState = tripStatusState,
-                onEvent = onEvent
+                onEvent = onEvent,
+                reportViewModel = reportViewModel
             )
         }
     }
@@ -80,7 +82,7 @@ fun TripStatusScreen(navController: NavController, tripViewModel: TripViewModel)
 
 /* 출장 현황 정보 카드 */
 @Composable
-private fun TripStatusCard(tripStatusState: TripStatusState, onEvent: (TripStatusEvent) -> Unit) {
+private fun TripStatusCard(tripStatusState: TripStatusState, onEvent: (TripStatusEvent) -> Unit, reportViewModel: ReportViewModel) {
     val listState = rememberLazyListState()
 
     LaunchedEffect(listState) {
@@ -164,7 +166,10 @@ private fun TripStatusCard(tripStatusState: TripStatusState, onEvent: (TripStatu
                     items(tripStatusState.tripStatusInfo.trips) { tripInfo ->
                         TripInfoItem(
                             tripInfo = tripInfo,
-                            onClick = { onEvent(TripStatusEvent.ClickedTripWith(tripInfo.id)) }
+                            onClick = {
+                                onEvent(TripStatusEvent.ClickedTripWith(tripInfo.id))
+                                reportViewModel.getTripReport(tripInfo.id)
+                            }
                         )
                     }
                 }

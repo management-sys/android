@@ -70,4 +70,10 @@ interface TripService {
     suspend fun addTripReport(
         @Body request: TripDTO.AddTripReportRequest
     )
+
+    // 출장 복명서 조회
+    @GET("/api/bsrp-rports/{bsrpId}")
+    suspend fun getTripReport(
+        @Path("bsrpId") id: String
+    ): TripDTO.GetTripReportResponse
 }

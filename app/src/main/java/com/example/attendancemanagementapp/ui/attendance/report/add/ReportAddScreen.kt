@@ -330,8 +330,8 @@ private fun AddTripExpenseCard(reportAddState: ReportAddState, onEvent: (ReportA
 private fun TripExpenseItem(reportAddState: ReportAddState, idx: Int, onEvent: (ReportAddEvent) -> Unit) {
     val tripExpenseInfo = reportAddState.inputData.tripExpenses[idx]
     val name = when (tripExpenseInfo.type) {
-        "개인" -> reportAddState.employeeState.employees.find { it.userId == tripExpenseInfo.id }?.name ?: ""
-        "법인" -> reportAddState.cardState.cards.find { it.id == tripExpenseInfo.id }?.name ?: ""
+        "개인" -> reportAddState.employeeState.employees.find { it.userId == tripExpenseInfo.buyerId }?.name ?: ""
+        "법인" -> reportAddState.cardState.cards.find { it.id == tripExpenseInfo.buyerId }?.name ?: ""
         else -> ""
     }
 

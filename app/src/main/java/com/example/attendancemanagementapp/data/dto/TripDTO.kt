@@ -131,17 +131,39 @@ object TripDTO {
 
     /* 출장 복명서 등록 요청 */
     data class AddTripReportRequest(
+        @Json(name = "bsrpId")      val tripId: String = "",                                    // 출장 아이디
+        @Json(name = "cn")          val content: String = "",                                   // 복명내용
+        @Json(name = "confmerIds")  val approverIds: List<String> = emptyList(),                // 승인자 아이디 목록 (승인 순서대로)
+        @Json(name = "trvctList")   val tripExpenses: List<AddTripExpenseInfo> = emptyList()    // 여비 계산 목록
+    )
+
+    /* 여비 계산 목록 등록 데이터 */
+    data class AddTripExpenseInfo(
+        @Json(name = "amount")      val amount: Int = 0,        // 금액
+        @Json(name = "se")          val type: String = "",      // 구분 (개인/법인)
+        @Json(name = "setleMbyId")  val buyerId: String = "",   // 결제 주체 아이디 (법인카드코드: CARD / 결제자아이디: USER)
+        @Json(name = "ty")          val category: String = ""   // 타입 (교통, 운임비 등)
+    )
+
+    /* 출장 복명서 조회 응답 */
+    data class GetTripReportResponse(
         @Json(name = "bsrpId")      val tripId: String = "",                                // 출장 아이디
         @Json(name = "cn")          val content: String = "",                               // 복명내용
-        @Json(name = "confmerIds")  val approverIds: List<String> = emptyList(),            // 승인자 아이디 목록 (승인 순서대로)
+        @Json(name = "confmAt")     val status: String = "",                                // 상태
+        @Json(name = "confmerId")   val approverId: String = "",                            // 승인자 아이디
+        @Json(name = "confmerNm")   val approverName: String = "",                          // 승인자 이름
+        @Json(name = "returnResn")  val rejection: String? = "",                            // 반려사유
+        @Json(name = "rgsde")       val appliedDate: String = "",                           // 신청일
         @Json(name = "trvctList")   val tripExpenses: List<TripExpenseInfo> = emptyList()   // 여비 계산 목록
     )
 
     /* 여비 계산 목록 데이터 */
     data class TripExpenseInfo(
         @Json(name = "amount")      val amount: Int = 0,        // 금액
+        @Json(name = "bsrpTrvctId") val id: Int = 0,            // 여비 아이디
         @Json(name = "se")          val type: String = "",      // 구분 (개인/법인)
-        @Json(name = "setleMbyId")  val id: String = "",        // 결제 주체 아이디 (법인카드코드: CARD / 결제자아이디: USER)
+        @Json(name = "setleMbyId")  val buyerId: String = "",   // 결제 주체 아이디 (법인카드코드/결제자아이디)
+        @Json(name = "setleMbyNm")  val buyerNm: String = "",   // 결제 주체명 (법인카드/결제자)
         @Json(name = "ty")          val category: String = ""   // 타입 (교통, 운임비 등)
     )
 }

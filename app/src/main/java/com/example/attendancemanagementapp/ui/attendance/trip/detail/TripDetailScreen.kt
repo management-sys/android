@@ -10,10 +10,13 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -22,7 +25,12 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -30,12 +38,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,26 +60,40 @@ import com.example.attendancemanagementapp.ui.components.SubButton
 import com.example.attendancemanagementapp.ui.components.TowLineInfoBar
 import com.example.attendancemanagementapp.ui.theme.LightBlue
 import com.example.attendancemanagementapp.ui.theme.LightGray
+import com.example.attendancemanagementapp.ui.theme.MainBlue
 import com.example.attendancemanagementapp.util.rememberOnce
+import kotlinx.coroutines.launch
 
 /* 출장 상세 화면 */
 @Composable
 fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel, reportViewModel: ReportViewModel) {
     val onEvent = tripViewModel::onDetailEvent
     val tripDetailState by tripViewModel.tripDetailState.collectAsState()
+    val reportDetailState by reportViewModel.reportDetailState.collectAsState()
+    val hasReport = tripDetailState.tripInfo.hasReport == "Y"
 
     val focusManager = LocalFocusManager.current    // 포커스 관리
-    val context = LocalContext.current
+
+    val tabs = if (hasReport) listOf("출장 품의서", "출장 복명서") else listOf("출장 품의서")
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
+    val coroutineScope = rememberCoroutineScope()
 
     var openDelete by remember { mutableStateOf(false) }
     var openCancel by remember { mutableStateOf(false) }
 
     if (openDelete) {
         BasicDialog(
-            title = "출장 품의서를 삭제하시겠습니까?",
+            title = when (pagerState.currentPage) {
+                0 -> "출장 품의서를 삭제하시겠습니까?"
+                1 -> "출장 복명서를 삭제하시겠습니까?"
+                else -> ""
+            },
             onDismiss = { openDelete = false },
             onClickConfirm = {
-                onEvent(TripDetailEvent.ClickedDelete)
+                when (pagerState.currentPage) {
+                    0 -> onEvent(TripDetailEvent.ClickedDelete)
+                    1 -> {}
+                }
                 openDelete = false
             }
         )
@@ -79,10 +101,17 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel,
 
     if (openCancel) {
         BasicDialog(
-            title = "출장 품의서를 취소하시겠습니까?",
+            title = when (pagerState.currentPage) {
+                0 -> "출장 품의서를 취소하시겠습니까?"
+                1 -> "출장 복명서를 취소하시겠습니까?"
+                else -> ""
+            },
             onDismiss = { openCancel = false },
             onClickConfirm = {
-                onEvent(TripDetailEvent.ClickedCancel)
+                when (pagerState.currentPage) {
+                    0 -> onEvent(TripDetailEvent.ClickedCancel)
+                    1 -> {}
+                }
                 openCancel = false
             }
         )
@@ -92,7 +121,7 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel,
         modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
         topBar = {
             BasicTopBar(
-                title = "출장 품의서",
+                title = "출장 상세",
                 actIcon = Icons.Default.Delete,
                 actTint = Color.Red,
                 onClickNavIcon = rememberOnce { navController.popBackStack() },
@@ -102,60 +131,124 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel,
     ) { paddingValues ->
         Column(
             modifier = Modifier.padding(paddingValues)
-                .padding(horizontal = 26.dp, vertical = 10.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            ApproverInfoCard(
-                tripInfo = tripDetailState.tripInfo
-            )
-
-            TripInfoCard(
-                tripInfo = tripDetailState.tripInfo
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box {
-                    BasicButton(
-                        name = "품의서 다운로드",
-                        wrapContent = true,
-                        onClick = { onEvent(TripDetailEvent.ClickedDownload) }
+            TabRow(
+                selectedTabIndex = pagerState.currentPage,
+                containerColor = MaterialTheme.colorScheme.background,
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                        color = MainBlue
                     )
                 }
-
-                Row {
-                    if (tripDetailState.tripInfo.status != "승인") {
-                        BasicButton(
-                            name = if (tripDetailState.tripInfo.rejection.isNullOrBlank()) "수정" else "재신청",
-                            wrapContent = true,
-                            onClick = { onEvent(TripDetailEvent.ClickedUpdate) }
-                        )
-
-                        Spacer(modifier = Modifier.width(10.dp))
-                    }
-
-                    SubButton(
-                        name = "취소",
-                        onClick = { openCancel = true }
+            ) {
+                tabs.forEachIndexed { idx, title ->
+                    Tab(
+                        selected = pagerState.currentPage == idx,
+                        onClick = {
+                            coroutineScope.launch { pagerState.animateScrollToPage(idx) }
+                        },
+                        text = { Text(title) },
+                        selectedContentColor = MainBlue,
+                        unselectedContentColor = Color.Black
                     )
+                }
+            }
 
-                    // 승인되었으면 복명서 작성 버튼 활성화
-//                    if (tripDetailState.tripInfo.status == "승인") {
-                        Spacer(modifier = Modifier.width(10.dp))
+            Box(Modifier.weight(1f)) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 26.dp, vertical = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        when (page) {
+                            0 -> {  // 출장 품의서
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                                ) {
+                                    ApproverInfoCard(
+                                        approverName = tripDetailState.tripInfo.approverName,
+                                        status = tripDetailState.tripInfo.status
+                                    )
 
-                        BasicButton(
-                            name = "복명서 작성",
-                            wrapContent = true,
-                            onClick = {
-                                reportViewModel.onAddEvent(ReportAddEvent.InitWith(tripDetailState.tripInfo))
-                                onEvent(TripDetailEvent.ClickedAddReport)
+                                    TripInfoCard(
+                                        tripInfo = tripDetailState.tripInfo
+                                    )
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box {
+                                            BasicButton(
+                                                name = "품의서 다운로드",
+                                                wrapContent = true,
+                                                onClick = { onEvent(TripDetailEvent.ClickedDownload) }
+                                            )
+                                        }
+
+                                        Row {
+                                            if (tripDetailState.tripInfo.status != "승인") {
+                                                BasicButton(
+                                                    name = if (tripDetailState.tripInfo.rejection.isNullOrBlank()) "수정" else "재신청",
+                                                    wrapContent = true,
+                                                    onClick = { onEvent(TripDetailEvent.ClickedUpdate) }
+                                                )
+
+                                                Spacer(modifier = Modifier.width(10.dp))
+                                            }
+
+                                            SubButton(
+                                                name = "취소",
+                                                onClick = { openCancel = true }
+                                            )
+
+                                            // TODO: 출장 승인 기능 생기면 주석 해제 (승인 상태인 경우 수정 버튼 비출력, 복명서 작성 버튼 출력)
+                                            // 승인되었으면 복명서 작성 버튼 활성화
+                                            //                    if (tripDetailState.tripInfo.status == "승인") {
+                                            Spacer(modifier = Modifier.width(10.dp))
+
+                                            BasicButton(
+                                                name = "복명서 작성",
+                                                wrapContent = true,
+                                                onClick = {
+                                                    reportViewModel.onAddEvent(
+                                                        ReportAddEvent.InitWith(
+                                                            tripDetailState.tripInfo
+                                                        )
+                                                    )
+                                                    onEvent(TripDetailEvent.ClickedAddReport)
+                                                }
+                                            )
+                                            //                    }
+                                        }
+                                    }
+                                }
                             }
-                        )
-//                    }
+                            1 -> {  // 출장 복명서
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                                ) {
+                                    ApproverInfoCard(
+                                        approverName = reportDetailState.reportInfo.approverName,
+                                        status = reportDetailState.reportInfo.status
+                                    )
+
+                                    TripReportInfoCard(
+                                        reportInfo = reportDetailState.reportInfo
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -164,7 +257,7 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel,
 
 /* 승인자 정보 출력 카드 */
 @Composable
-private fun ApproverInfoCard(tripInfo: TripDTO.GetTripResponse) {
+private fun ApproverInfoCard(approverName: String, status: String) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(14.dp)
@@ -193,7 +286,7 @@ private fun ApproverInfoCard(tripInfo: TripDTO.GetTripResponse) {
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = tripInfo.approverName,
+                        text = approverName,
                         fontSize = 14.sp,
                         modifier = Modifier.padding(vertical = 10.dp)
                     )
@@ -206,7 +299,7 @@ private fun ApproverInfoCard(tripInfo: TripDTO.GetTripResponse) {
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = if (tripInfo.status == "승인" || tripInfo.status == "반려") tripInfo.status else "",
+                        text = if (status == "승인" || status == "반려") status else "",
                         fontSize = 14.sp,
                         modifier = Modifier.padding(vertical = 10.dp)
                     )
@@ -246,6 +339,31 @@ private fun TripInfoCard(tripInfo: TripDTO.GetTripResponse) {
             if (tripInfo.status == "반려") {
                 TowLineInfoBar(name = "반려사유", value = tripInfo.rejection ?: "-")
             }
+        }
+    }
+}
+
+/* 출장 복명서 정보 출력 카드 */
+@Composable
+private fun TripReportInfoCard(reportInfo: TripDTO.GetTripReportResponse) {
+    val tripExpensesStr = reportInfo.tripExpenses.joinToString(",") {
+        "${it.type}결재 (${it.buyerNm})${it.category}${"%,d".format(it.amount)}원"
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(14.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(20.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            TowLineInfoBar(name = "복명내용", value = reportInfo.content)
+            TowLineInfoBar(name = "여비계산", value = tripExpensesStr)
+            TowLineInfoBar(name = "복명 신청일", value = reportInfo.appliedDate)
         }
     }
 }
