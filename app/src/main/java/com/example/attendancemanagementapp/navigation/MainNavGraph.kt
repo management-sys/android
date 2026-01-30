@@ -202,7 +202,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
                 composable("tripEdit") { TripEditScreen(navController, tripViewModel) }                         // 출장 수정 화면
                 composable("tripStatus") { TripStatusScreen(navController, tripViewModel, reportViewModel) }    // 출장 현황 화면
 
-                composable("reportAdd") { TripReportAddScreen(navController, reportViewModel) } // 출장 복명서 등록 화면
+                composable("reportAdd") { TripReportAddScreen(navController, reportViewModel, tripViewModel) }  // 출장 복명서 등록 화면
             }
         }
     }

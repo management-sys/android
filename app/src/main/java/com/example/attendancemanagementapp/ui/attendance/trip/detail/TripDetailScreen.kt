@@ -92,7 +92,7 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel,
             onClickConfirm = {
                 when (pagerState.currentPage) {
                     0 -> onEvent(TripDetailEvent.ClickedDelete)
-                    1 -> {}
+                    1 -> reportViewModel.deleteTripReport()
                 }
                 openDelete = false
             }
@@ -110,7 +110,7 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel,
             onClickConfirm = {
                 when (pagerState.currentPage) {
                     0 -> onEvent(TripDetailEvent.ClickedCancel)
-                    1 -> {}
+                    1 -> reportViewModel.cancelTripReport()
                 }
                 openCancel = false
             }
@@ -245,6 +245,34 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel,
                                     TripReportInfoCard(
                                         reportInfo = reportDetailState.reportInfo
                                     )
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box {
+                                            BasicButton(
+                                                name = "복명서 다운로드",
+                                                wrapContent = true,
+                                                onClick = {}
+                                            )
+                                        }
+
+                                        if (tripDetailState.tripInfo.status != "승인") {
+                                            BasicButton(
+                                                name = if (tripDetailState.tripInfo.rejection.isNullOrBlank()) "복명서 수정" else "복명서 재신청",
+                                                wrapContent = true,
+                                                onClick = {}
+                                            )
+                                        }
+
+                                        SubButton(
+                                            name = "복명서 취소",
+                                            wrapContent = true,
+                                            onClick = { openCancel = true }
+                                        )
+                                    }
                                 }
                             }
                         }

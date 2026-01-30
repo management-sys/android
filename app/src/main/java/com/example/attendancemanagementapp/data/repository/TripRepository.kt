@@ -122,4 +122,24 @@ class TripRepository @Inject constructor(private val service: TripService, priva
     }.catch { e ->
         emit(Result.failure(e))
     }
+
+    // 출장 복명서 삭제
+    fun deleteTripReport(id: String): Flow<Result<Unit>> = flow {
+        val response = service.deleteTripReport(
+            id = id
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
+    // 출장 복명서 취소
+    fun cancelTripReport(id: String): Flow<Result<TripDTO.GetTripReportResponse>> = flow {
+        val response = service.cancelTripReport(
+            id = id
+        )
+        emit(Result.success(response))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
 }

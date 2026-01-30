@@ -39,6 +39,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,6 +61,7 @@ import com.example.attendancemanagementapp.data.dto.CardDTO
 import com.example.attendancemanagementapp.data.dto.TripDTO
 import com.example.attendancemanagementapp.ui.asset.car.edit.ManagerInfoItem
 import com.example.attendancemanagementapp.ui.attendance.report.ReportViewModel
+import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
 import com.example.attendancemanagementapp.ui.components.BasicButton
 import com.example.attendancemanagementapp.ui.components.BasicOutlinedTextField
 import com.example.attendancemanagementapp.ui.components.BasicTopBar
@@ -82,7 +84,7 @@ import kotlinx.coroutines.launch
 
 /* 출장 복명서 등록 화면 */
 @Composable
-fun TripReportAddScreen(navController: NavController, reportViewModel: ReportViewModel) {
+fun TripReportAddScreen(navController: NavController, reportViewModel: ReportViewModel, tripViewModel: TripViewModel) {
     val onEvent = reportViewModel::onAddEvent
     val reportAddState by reportViewModel.reportAddState.collectAsState()
 
@@ -188,6 +190,12 @@ fun TripReportAddScreen(navController: NavController, reportViewModel: ReportVie
                     }
                 }
             }
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            tripViewModel.getTrip(reportAddState.tripInfo.id)
         }
     }
 }

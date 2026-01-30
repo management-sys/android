@@ -111,6 +111,53 @@ class ReportViewModel @Inject constructor(private val tripRepository: TripReposi
         }
     }
 
+    /* 출장 복명서 삭제 */
+    fun deleteTripReport() {
+        viewModelScope.launch {
+            tripRepository.deleteTripReport(
+                id = reportDetailState.value.reportInfo.tripId
+            ).collect { result ->
+                result
+                    .onSuccess {
+                        _uiEffect.emit(UiEffect.ShowToast("출장 복명서가 삭제되었습니다"))
+                        _uiEffect.emit(UiEffect.NavigateBack)
+
+                        Log.d(TAG, "[deleteTripReport] 출장 복명서 삭제 성공")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "deleteTripReport")
+                    }
+            }
+        }
+    }
+
+    /* 출장 복명서 취소 */
+    fun cancelTripReport() {
+        // 이미 취소 상태인 경우 토스트
+        if (reportDetailState.value.reportInfo.status == "C") {
+            _uiEffect.tryEmit(UiEffect.ShowToast("이미 취소 상태입니다"))
+            return
+        }
+
+        viewModelScope.launch {
+            tripRepository.cancelTripReport(
+                id = reportDetailState.value.reportInfo.tripId
+            ).collect { result ->
+                result
+                    .onSuccess { data ->
+                        _reportDetailState.update { it.copy(reportInfo = data) }
+
+                        _uiEffect.emit(UiEffect.ShowToast("출장 복명서가 취소되었습니다"))
+
+                        Log.d(TAG, "[cancelTripReport] 출장 복명서 취소 성공\n${data}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "cancelTripReport")
+                    }
+            }
+        }
+    }
+
     /* 카드 목록 조회 및 검색 */
     fun getCards(target: ReportTarget) {
         val state = when (target) {

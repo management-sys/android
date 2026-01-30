@@ -76,4 +76,16 @@ interface TripService {
     suspend fun getTripReport(
         @Path("bsrpId") id: String
     ): TripDTO.GetTripReportResponse
+
+    // 출장 복명서 삭제
+    @DELETE("/api/bsrp-rports/{bsrpId}")
+    suspend fun deleteTripReport(
+        @Path("bsrpId") id: String
+    )
+
+    // 출장 복명서 취소
+    @PUT("/api/bsrp-rports/{bsrpId}/cancel")
+    suspend fun cancelTripReport(
+        @Path("bsrpId") id: String
+    ): TripDTO.GetTripReportResponse
 }
