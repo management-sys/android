@@ -152,7 +152,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
             ) {
                 composable("login") { LoginScreen(navController, loginViewModel) }      // 로그인 화면
                 composable("mypage") { MyPageScreen(navController, myPageViewModel) }   // 마이페이지 화면
-                composable("home") { HomeScreen(navController, calendarViewModel, attendanceViewModel) { scope.launch { drawerState.open() } } }    // 홈 화면
+                composable("home") { HomeScreen(navController, calendarViewModel, attendanceViewModel, projectViewModel) { scope.launch { drawerState.open() } } }    // 홈 화면
 
                 composable("codeAdd") { CodeAddScreen(navController, codeViewModel) }       // 공통코드 등록 화면
                 composable("codeDetail") { CodeDetailScreen(navController, codeViewModel) } // 공통코드 상세 화면

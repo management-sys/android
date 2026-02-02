@@ -16,9 +16,11 @@ import com.example.attendancemanagementapp.ui.home.attendance.AttendanceScreen
 import com.example.attendancemanagementapp.ui.home.attendance.AttendanceViewModel
 import com.example.attendancemanagementapp.ui.home.calendar.CalendarScreen
 import com.example.attendancemanagementapp.ui.home.calendar.CalendarViewModel
+import com.example.attendancemanagementapp.ui.home.project.ProjectScreen
+import com.example.attendancemanagementapp.ui.project.ProjectViewModel
 
 @Composable
-fun HomeScreen(navController: NavController, calendarViewModel: CalendarViewModel, attendanceViewModel: AttendanceViewModel, onOpenDrawer: () -> Unit) {
+fun HomeScreen(navController: NavController, calendarViewModel: CalendarViewModel, attendanceViewModel: AttendanceViewModel, projectViewModel: ProjectViewModel, onOpenDrawer: () -> Unit) {
     var selected by rememberSaveable { mutableStateOf(1) }  // 출력 화면
     var openMonthInfo by rememberSaveable { mutableStateOf(false) } // 월 현황 열림 여부
 
@@ -40,7 +42,7 @@ fun HomeScreen(navController: NavController, calendarViewModel: CalendarViewMode
             when (selected) {
                 0 -> { AttendanceScreen(navController, attendanceViewModel) }
                 1 -> { CalendarScreen(navController, calendarViewModel, openMonthInfo, onClick = { openMonthInfo = !openMonthInfo }) }
-                2 -> {}
+                2 -> { ProjectScreen(projectViewModel) }
             }
         }
     }
