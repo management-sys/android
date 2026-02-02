@@ -15,6 +15,7 @@ import com.example.attendancemanagementapp.ui.attendance.report.detail.ReportDet
 import com.example.attendancemanagementapp.ui.attendance.report.edit.ReportEditEvent
 import com.example.attendancemanagementapp.ui.attendance.report.edit.ReportEditReducer
 import com.example.attendancemanagementapp.ui.attendance.report.edit.ReportEditState
+import com.example.attendancemanagementapp.ui.attendance.trip.TripViewModel
 import com.example.attendancemanagementapp.ui.base.UiEffect
 import com.example.attendancemanagementapp.ui.project.add.EmployeeSearchState
 import com.example.attendancemanagementapp.util.ErrorHandler
@@ -209,6 +210,25 @@ class ReportViewModel @Inject constructor(private val tripRepository: TripReposi
                     }
                     .onFailure { e ->
                         ErrorHandler.handle(e, TAG, "cancelTripReport")
+                    }
+            }
+        }
+    }
+
+    /* 출장 복명서 다운로드 (PDF) */
+    fun downloadTripReportPdf() {
+        viewModelScope.launch {
+            tripRepository.downloadTripReportPdf(
+                id = reportDetailState.value.reportInfo.tripId
+            ).collect { result ->
+                result
+                    .onSuccess { uri ->
+                        _uiEffect.emit(UiEffect.ShowToast("다운로드가 완료되었습니다"))
+
+                        Log.d(TAG, "[downloadTripReportPdf] 출장 복명서 다운로드 성공: ${uri}")
+                    }
+                    .onFailure { e ->
+                        ErrorHandler.handle(e, TAG, "downloadTripReportPdf")
                     }
             }
         }

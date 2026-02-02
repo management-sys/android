@@ -258,7 +258,7 @@ fun TripDetailScreen(navController: NavController, tripViewModel: TripViewModel,
                                             BasicButton(
                                                 name = "복명서 다운로드",
                                                 wrapContent = true,
-                                                onClick = { onEvent(TripDetailEvent.ClickedDownloadReport) }
+                                                onClick = { reportViewModel.downloadTripReportPdf() }
                                             )
                                         }
 

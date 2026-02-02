@@ -154,6 +154,24 @@ class TripRepository @Inject constructor(private val service: TripService, priva
         emit(Result.failure(e))
     }
 
+    // 출장 복명서 다운로드(PDF)
+    fun downloadTripReportPdf(id: String): Flow<Result<Uri>> = flow {
+        val response = service.downloadTripReportPdf(id = id)
+        val body = response.body() ?: throw IllegalStateException("Empty body")
+
+        val uri = withContext(Dispatchers.IO) {
+            fileRepository.savePdf(
+                body = body,
+                contentDisposition = response.headers()["content-disposition"],
+                fallback = "trip_report_$id.pdf"
+            )
+        }
+
+        emit(Result.success(uri))
+    }.catch { e ->
+        emit(Result.failure(e))
+    }
+
     // 이전 승인자 불러오기 (복명서)
     fun getReportPrevApprovers(): Flow<Result<ApproverDTO.GetPrevApproversResponse>> = flow {
         val response = service.getReportPrevApprovers()

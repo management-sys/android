@@ -95,6 +95,13 @@ interface TripService {
         @Path("bsrpId") id: String
     ): TripDTO.GetTripReportResponse
 
+    // 출장 복명서 다운로드(PDF)
+    @Streaming  // InputStream에 저장
+    @GET("/api/bsrp-rports/{bsrpId}/download/pdf")
+    suspend fun downloadTripReportPdf(
+        @Path("bsrpId") id: String
+    ): Response<ResponseBody>
+
     // 이전 승인자 불러오기 (복명서)
     @GET("/api/bsrp-rports/latest-confmers")
     suspend fun getReportPrevApprovers(): ApproverDTO.GetPrevApproversResponse
