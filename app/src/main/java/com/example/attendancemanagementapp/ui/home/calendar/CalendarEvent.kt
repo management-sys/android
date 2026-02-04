@@ -3,6 +3,9 @@ package com.example.attendancemanagementapp.ui.home.calendar
 import java.time.LocalDate
 
 sealed interface CalendarEvent {
+    // 초기화
+    data object Init: CalendarEvent
+
     // 이전 달 이동 버튼 클릭 이벤트
     data object ClickedPrev: CalendarEvent
 

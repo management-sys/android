@@ -17,6 +17,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.attendancemanagementapp.data.datastore.TokenDataStore
+import com.example.attendancemanagementapp.ui.approver.ApproverViewModel
+import com.example.attendancemanagementapp.ui.approver.request.ApproverRequestScreen
 import com.example.attendancemanagementapp.ui.asset.car.CarViewModel
 import com.example.attendancemanagementapp.ui.asset.car.add.CarAddScreen
 import com.example.attendancemanagementapp.ui.asset.car.detail.CarDetailScreen
@@ -105,6 +107,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
     val cardViewModel: CardViewModel = hiltViewModel()
     val tripViewModel: TripViewModel = hiltViewModel()
     val reportViewModel: ReportViewModel = hiltViewModel()
+    val approverViewModel: ApproverViewModel = hiltViewModel()
 
     val logoutFlag by tokenDataStore.logoutFlagFlow.collectAsState(initial = false)
 
@@ -131,7 +134,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
         carViewModel.uiEffect,
         cardViewModel.uiEffect,
         tripViewModel.uiEffect,
-        reportViewModel.uiEffect
+        reportViewModel.uiEffect,
+        approverViewModel.uiEffect
     )
 
     BasicDrawer(
@@ -205,6 +209,8 @@ fun MainNavGraph(navController: NavHostController = rememberNavController(), tok
 
                 composable("reportAdd") { TripReportAddScreen(navController, reportViewModel, tripViewModel) }  // 출장 복명서 등록 화면
                 composable("reportEdit") { ReportEditScreen(navController, reportViewModel) }                   // 출장 복명서 수정 화면
+
+                composable("approverRequest") { ApproverRequestScreen(navController, approverViewModel) }   // 결재 요청 목록 화면
             }
         }
     }

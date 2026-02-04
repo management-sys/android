@@ -183,6 +183,7 @@ class ProjectViewModel @Inject constructor(private val projectRepository: Projec
                 getAllDepartments(target = ProjectTarget.STATUS)
                 getProjectStatus()
             }
+            ProjectStatusEvent.InitLast -> getProjectStatus()
             ProjectStatusEvent.LoadNextPage -> getProjectStatus()
             ProjectStatusEvent.ClickedSearch -> getProjectStatus()
             ProjectStatusEvent.ClickedInitSearchText -> getProjectStatus()

@@ -1,5 +1,6 @@
 package com.example.attendancemanagementapp.di
 
+import com.example.attendancemanagementapp.retrofit.service.ApproverService
 import com.example.attendancemanagementapp.retrofit.service.AuthService
 import com.example.attendancemanagementapp.retrofit.service.AuthorService
 import com.example.attendancemanagementapp.retrofit.service.CarService
@@ -134,4 +135,10 @@ object NetworkModule {
     @Singleton
     fun provideTripService(retrofit: Retrofit): TripService =
         retrofit.create(TripService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideApproverService(retrofit: Retrofit): ApproverService =
+        retrofit.create(ApproverService::class.java)
+
 }

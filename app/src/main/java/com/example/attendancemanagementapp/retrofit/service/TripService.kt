@@ -1,6 +1,6 @@
 package com.example.attendancemanagementapp.retrofit.service
 
-import com.example.attendancemanagementapp.data.dto.ApproverDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.dto.TripDTO
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -63,7 +63,7 @@ interface TripService {
 
     // 이전 승인자 불러오기
     @GET("/api/bsrps/latest-confmers")
-    suspend fun getPrevApprovers(): ApproverDTO.GetPrevApproversResponse
+    suspend fun getPrevApprovers(): EmployeeDTO.GetPrevApproversResponse
 
     // 출장 복명서 등록
     @POST("/api/bsrp-rports")
@@ -104,5 +104,5 @@ interface TripService {
 
     // 이전 승인자 불러오기 (복명서)
     @GET("/api/bsrp-rports/latest-confmers")
-    suspend fun getReportPrevApprovers(): ApproverDTO.GetPrevApproversResponse
+    suspend fun getReportPrevApprovers(): EmployeeDTO.GetPrevApproversResponse
 }

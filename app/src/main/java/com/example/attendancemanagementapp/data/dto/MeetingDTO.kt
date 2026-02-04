@@ -60,7 +60,7 @@ object MeetingDTO {
 
     /* 회의비 사용 내역 등록 목록 데이터 */
     data class AddExpensesInfo(
-        @Json(name = "amount")  val amount: Int,   // 금액
+        @Json(name = "amount")  val amount: Int,    // 금액
         @Json(name = "se")      val type: String    // 여비 내역
     )
 

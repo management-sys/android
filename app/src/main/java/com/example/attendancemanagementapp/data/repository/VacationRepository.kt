@@ -1,13 +1,7 @@
 package com.example.attendancemanagementapp.data.repository
 
-import android.app.DownloadManager
-import android.content.ContentValues
-import android.content.Context
 import android.net.Uri
-import android.os.Environment
-import android.provider.MediaStore
-import android.util.Log
-import com.example.attendancemanagementapp.data.dto.ApproverDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.dto.VacationDTO
 import com.example.attendancemanagementapp.data.param.VacationsQuery
 import com.example.attendancemanagementapp.retrofit.service.VacationService
@@ -16,8 +10,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
-import okhttp3.ResponseBody
-import java.net.URLDecoder
 import javax.inject.Inject
 
 class VacationRepository @Inject constructor(private val service: VacationService, private val fileRepository: FileRepository) {
@@ -73,7 +65,7 @@ class VacationRepository @Inject constructor(private val service: VacationServic
     }
 
     // 이전 승인자 불러오기
-    fun getPrevApprovers(userId: String): Flow<Result<ApproverDTO.GetPrevApproversResponse>> = flow {
+    fun getPrevApprovers(userId: String): Flow<Result<EmployeeDTO.GetPrevApproversResponse>> = flow {
         val response = service.getPrevApprovers(
             userId = userId
         )

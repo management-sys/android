@@ -1,8 +1,7 @@
 package com.example.attendancemanagementapp.data.repository
 
-import android.content.Context
 import android.net.Uri
-import com.example.attendancemanagementapp.data.dto.ApproverDTO
+import com.example.attendancemanagementapp.data.dto.EmployeeDTO
 import com.example.attendancemanagementapp.data.dto.TripDTO
 import com.example.attendancemanagementapp.data.param.TripsQuery
 import com.example.attendancemanagementapp.retrofit.service.TripService
@@ -96,7 +95,7 @@ class TripRepository @Inject constructor(private val service: TripService, priva
     }
 
     // 이전 승인자 불러오기
-    fun getPrevApprovers(): Flow<Result<ApproverDTO.GetPrevApproversResponse>> = flow {
+    fun getPrevApprovers(): Flow<Result<EmployeeDTO.GetPrevApproversResponse>> = flow {
         val response = service.getPrevApprovers()
         emit(Result.success(response))
     }.catch { e ->
@@ -173,7 +172,7 @@ class TripRepository @Inject constructor(private val service: TripService, priva
     }
 
     // 이전 승인자 불러오기 (복명서)
-    fun getReportPrevApprovers(): Flow<Result<ApproverDTO.GetPrevApproversResponse>> = flow {
+    fun getReportPrevApprovers(): Flow<Result<EmployeeDTO.GetPrevApproversResponse>> = flow {
         val response = service.getReportPrevApprovers()
         emit(Result.success(response))
     }.catch { e ->

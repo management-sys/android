@@ -1,13 +1,17 @@
 package com.example.attendancemanagementapp.ui.home.calendar
 
+import com.example.attendancemanagementapp.ui.attendance.trip.status.TripStatusState
+import com.example.attendancemanagementapp.ui.attendance.vacation.status.VacationStatusState
 import java.time.LocalDate
 import java.time.YearMonth
 
 data class CalendarState(
-    val yearMonth: YearMonth = YearMonth.now(),                 // 출력할 월
-    val selectedDate: LocalDate = LocalDate.now(),              // 선택한 날짜
-    val openSheet: Boolean = false,                             // 일정 목록 바텀 시트 열림 여부
-    val filteredSchedules: List<ScheduleInfo> = emptyList(),    // 선택한 날짜 일정
+    val yearMonth: YearMonth = YearMonth.now(),                             // 출력할 월
+    val selectedDate: LocalDate = LocalDate.now(),                          // 선택한 날짜
+    val openSheet: Boolean = false,                                         // 일정 목록 바텀 시트 열림 여부
+    val tripStatusState: TripStatusState = TripStatusState(),               // 출장 목록
+    val vacationStatusState: VacationStatusState = VacationStatusState(),   // 휴가 목록
+    val filteredSchedules: List<ScheduleInfo> = emptyList(),                // 선택한 날짜 일정
     val schedules: List<ScheduleInfo> = listOf(
         ScheduleInfo(
             title = "연말 결산 회의",

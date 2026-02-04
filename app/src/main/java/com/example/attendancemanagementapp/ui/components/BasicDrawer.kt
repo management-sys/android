@@ -87,7 +87,7 @@ fun BasicDrawer(drawerState: DrawerState, enableGesture: Boolean, onItemClick: (
                         NavigationDrawerItem(
                             label = { Text("결재 요청") },
                             selected = false,
-                            onClick = { /* Handle click */ }
+                            onClick = { onItemClick("approverRequest") }
                         )
                         NavigationDrawerItem(
                             label = { Text("승인 대기 목록") },

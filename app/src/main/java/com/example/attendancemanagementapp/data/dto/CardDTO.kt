@@ -52,15 +52,15 @@ object CardDTO {
 
     /* 카드 예약현황/사용이력 목록 데이터 */
     data class CardUsageInfo(
-        @Json(name = "applcntNm")       val applicantName: String,
-        @Json(name = "beginHour")       val startHour: String,
-        @Json(name = "beginMnt")        val startMinute: String,
-        @Json(name = "bgnde")           val startDate: String,
-        @Json(name = "cardNm")          val name: String,
-        @Json(name = "cardUserHistId")  val id: String,
-        @Json(name = "deptNm")          val departmentName: String,
-        @Json(name = "endHour")         val endHour: String,
-        @Json(name = "endMnt")          val endMinute: String,
-        @Json(name = "endde")           val endDate: String,
+        @Json(name = "applcntNm")       val applicantName: String,  // 신청자
+        @Json(name = "beginHour")       val startHour: String,      // 사용 시작 시
+        @Json(name = "beginMnt")        val startMinute: String,    // 사용 시작 분
+        @Json(name = "bgnde")           val startDate: String,      // 사용 시작일시
+        @Json(name = "cardNm")          val name: String,           // 카드명
+        @Json(name = "cardUserHistId")  val id: String,             // 카드 사용 이력 아이디
+        @Json(name = "deptNm")          val departmentName: String, // 부서
+        @Json(name = "endHour")         val endHour: String,        // 사용 종료 시
+        @Json(name = "endMnt")          val endMinute: String,      // 사용 종료 분
+        @Json(name = "endde")           val endDate: String,        // 사용 종료일시
     )
 }

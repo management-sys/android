@@ -46,6 +46,7 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -108,6 +109,10 @@ fun CalendarScreen(navController: NavController, calendarViewModel: CalendarView
             schedules = calendarState.filteredSchedules,
             onDismiss = { showSheet = false },
         )
+    }
+
+    LaunchedEffect(Unit) {
+        onEvent(CalendarEvent.Init)
     }
 
     Column(
